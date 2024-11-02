@@ -1,0 +1,51 @@
+[project]
+name = "space-miner"
+version = "0.1.0"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "kivy==2.3.1",
+    "cymunk",
+    "kivent-core",
+    "kivent-cymunk",
+]
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "pillow",
+    "pytest",
+    "ruff",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources.cymunk]
+git = "https://github.com/kivy/cymunk"
+
+[tool.uv.sources.kivent-core]
+git = "https://github.com/kivy/kivent"
+subdirectory = "modules/core"
+
+[tool.uv.sources.kivent-cymunk]
+git = "https://github.com/kivy/kivent"
+subdirectory = "modules/cymunk"
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["main.py", "app", "tests", "tools"]
+strict = true
+# Kivy, KivEnt and cymunk ship no type information
+ignore_missing_imports = true
+disallow_subclassing_any = false
+disallow_any_unimported = false
