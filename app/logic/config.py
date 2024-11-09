@@ -5,3 +5,4 @@ part of the game has its own in its package. """
 
 # Space repeats itself every WORLD_SIZE, the solar system fits in it
 WORLD_SIZE = 72000.
+STAR_TILE = 12000.            # the star field repeats on a smaller tile
