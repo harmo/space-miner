@@ -3,6 +3,7 @@ import math
 import pytest
 
 from app.logic.config import STAR_TILE, WORLD_SIZE
+from app.logic.world.config import SUN_GRAVITY, SUN_GRAVITY_FALLOFF, SUN_RADIUS
 from app.logic.world.space import (
     Celestial,
     Orbit,
@@ -10,8 +11,19 @@ from app.logic.world.space import (
     angle_diff,
     closest_to,
     nearest,
+    strongest,
     wrap_shift,
 )
+
+
+def attractor(gravity: float = 100., falloff: float = 2.,
+              gravity_range: float | None = None) -> Celestial:
+    """ Radius 10 at the origin """
+    return Celestial(
+        0, 10., gravity=gravity, gravity_falloff=falloff,
+        gravity_range=gravity_range,
+    )
+
 
 # Periodic space
 
@@ -106,6 +118,45 @@ def test_moving_the_sun_moves_its_satellites() -> None:
 
 # Gravity
 
+def test_pull_at_the_surface_is_the_gravity() -> None:
+    assert attractor().pull(10., 0.) == pytest.approx((-100., 0.))
+
+
+def test_pull_points_to_the_center() -> None:
+    pull_x, pull_y = attractor().pull(30., 40.)
+    assert pull_x < 0 and pull_y < 0
+    assert pull_y / pull_x == pytest.approx(40. / 30.)
+
+
+@pytest.mark.parametrize('falloff, expected', [(2., 25.), (1., 50.)])
+def test_pull_fades_with_distance(falloff: float, expected: float) -> None:
+    pull_x, _ = attractor(falloff=falloff).pull(20., 0.)
+    assert -pull_x == pytest.approx(expected)
+
+
+def test_pull_is_capped_inside_the_body() -> None:
+    assert attractor().pull(5., 0.) == pytest.approx((-100., 0.))
+
+
+def test_no_pull_out_of_range() -> None:
+    planet = attractor(gravity_range=6.)
+    assert planet.pull(59., 0.) != (0., 0.)
+    assert planet.pull(61., 0.) == (0., 0.)
+
+
+def test_no_gravity_no_pull() -> None:
+    assert Celestial(0, 10.).pull(10., 0.) == (0., 0.)
+
+
+def test_sun_pulls_from_anywhere_in_the_world() -> None:
+    sun = Celestial(
+        0, SUN_RADIUS, gravity=SUN_GRAVITY,
+        gravity_falloff=SUN_GRAVITY_FALLOFF, gravity_range=None,
+    )
+    far = WORLD_SIZE / 2
+    pull_x, _ = sun.pull(far, 0.)
+    assert -pull_x == pytest.approx(SUN_GRAVITY * SUN_RADIUS / far)
+
 
 # Neighbors
 
@@ -114,6 +165,15 @@ def test_nearest_body_within_a_distance() -> None:
     assert nearest((0., 0.), bodies, 100.) is bodies[0]
     assert nearest((280., 0.), bodies, 100.) is bodies[1]
     assert nearest((1000., 0.), bodies, 100.) is None
+
+
+def test_strongest_attractor() -> None:
+    sun = Celestial(0, 600., gravity=400., gravity_falloff=1.,
+                    gravity_range=None)
+    planet = Celestial(1, 200., pos=(5000., 0.), gravity=250.)
+    assert strongest((5250., 0.), [sun, planet]) is planet
+    assert strongest((-3000., 0.), [sun, planet]) is sun
+    assert strongest((0., 0.), []) is None
 
 
 def test_closest_thing_under_a_click() -> None:
