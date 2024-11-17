@@ -7,6 +7,7 @@ from app.logic.world.config import SUN_GRAVITY, SUN_GRAVITY_FALLOFF, SUN_RADIUS
 from app.logic.world.space import (
     Celestial,
     Orbit,
+    Station,
     Vec2,
     angle_diff,
     closest_to,
@@ -115,6 +116,40 @@ def test_moving_the_sun_moves_its_satellites() -> None:
 
 # Stations
 
+def orbiting_target() -> Celestial:
+    planet = Celestial(0, 100., pos=(0., 0.))
+    return Celestial(1, 8., orbit=Orbit(planet, 400., 50., 0.))
+
+
+def test_station_is_on_the_side_it_started_from() -> None:
+    target = orbiting_target()            # at (400, 0)
+    station = Station(target, (400., 900.), 120.)
+    assert station.position == pytest.approx((400., 120.))
+
+
+def test_station_turns_along_with_the_orbit() -> None:
+    target = orbiting_target()
+    station = Station(target, (900., 0.), 120.)   # outside of the orbit
+    assert target.orbit
+    target.orbit.advance(10.)
+    x, y = station.position
+    tx, ty = target.pos
+    # Still on the line from the planet, outside of the orbit
+    assert math.atan2(y, x) == pytest.approx(math.atan2(ty, tx))
+    assert math.hypot(x, y) == pytest.approx(400. + 120.)
+
+
+def test_station_velocity_matches_its_motion() -> None:
+    target = orbiting_target()
+    station = Station(target, (450., 300.), 120.)
+    assert target.orbit
+    before = station.position
+    velocity = station.velocity
+    target.orbit.advance(1e-4)
+    after = station.position
+    moved = ((after[0] - before[0]) / 1e-4, (after[1] - before[1]) / 1e-4)
+    assert moved == pytest.approx(velocity, rel=1e-3)
+
 
 # Gravity
 
@@ -174,6 +209,7 @@ def test_strongest_attractor() -> None:
     assert strongest((5250., 0.), [sun, planet]) is planet
     assert strongest((-3000., 0.), [sun, planet]) is sun
     assert strongest((0., 0.), []) is None
+
 
 
 def test_closest_thing_under_a_click() -> None:
