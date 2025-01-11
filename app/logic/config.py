@@ -2,6 +2,8 @@
 the interface and the physics. Sizes are in pixels, speeds in px/s. Each
 part of the game has its own in its package. """
 
+PLANETS = [f'planet{i}' for i in range(1, 8)]
+MOON = 'moon'
 
 # Space repeats itself every WORLD_SIZE, the solar system fits in it
 WORLD_SIZE = 72000.

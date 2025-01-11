@@ -5,6 +5,37 @@ SUN_RADIUS = 600.
 SUN_GRAVITY = 400.            # pull at its surface (px/s²)
 SUN_GRAVITY_FALLOFF = 1.      # pull in 1/distance: it reaches everywhere
 
+# Planets
+FIRST_ORBIT = 2200.           # distance of the closest planet to the sun
+# Between an orbit and the next, wider and wider outwards like in the real
+# solar system, the belt around the sun taking an orbit of its own
+ORBIT_GAPS = (1600., 1700., 1900., 2800., 2800., 3300., 3800., 4400.)
+GAP_SPREAD = (.9, 1.15)       # each gap times as much, game after game
+EARTH_ORBIT = 2               # the Earth is the third planet
+BELT_AFTER = 3                # the belt around the sun, after the fourth
+PLANET_SPEED = 40.            # on the first orbit, slower farther out
+PLANET_RADIUS = (150., 350.)
+PLANET_MASS = 1e6             # heavy enough not to be pushed by the ship
+EARTH_RADIUS = 200.
 
+GRAVITY = 1.25                # planet surface gravity is GRAVITY * radius
 GRAVITY_FALLOFF = 2.          # planets pull in 1/distance²
 GRAVITY_RANGE = 6.            # planets pull the ship up to this many radii
+
+# Moon and asteroids
+MOON_RADIUS = 45.
+MOON_ORBIT = 550.             # distance from the Earth's center
+MOON_SPEED = 60.
+MOON_MASS = 500.
+
+BELT_COUNT = 3                # planets with an asteroid belt
+BELT_ASTEROIDS = 30
+BELT_WIDTH = (120., 350.)     # orbits start this far from the planet surface
+BELT_SPEED = (30., 70.)
+# The belt around the sun, between the fourth and the fifth planet
+SUN_BELT_ASTEROIDS = 120
+SUN_BELT_WIDTH = 1000.
+SUN_BELT_SPEED = (.9, 1.1)    # times the speed of a planet on that orbit
+ASTEROID_RADIUS = (4., 10.)
+ASTEROID_MASS = 5.
+ASTEROID_SPIN = 60.           # degrees/s
