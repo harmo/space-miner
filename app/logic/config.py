@@ -9,3 +9,6 @@ SUN_DISC = .7                 # part of the sun texture that is not glow
 # Space repeats itself every WORLD_SIZE, the solar system fits in it
 WORLD_SIZE = 72000.
 STAR_TILE = 12000.            # the star field repeats on a smaller tile
+
+
+EXPLOSION_DURATION = 1.2      # seconds
