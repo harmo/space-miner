@@ -5,3 +5,6 @@ pixels, speeds in px/s. The rest depends on its parts: see parts.py """
 MIN_SPEED = 120.
 MIN_THRUST = .4
 MIN_TURN_SPEED = 1.5
+
+
+LASER_RATE = 3.               # rock extracted per second
