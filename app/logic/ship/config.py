@@ -9,6 +9,8 @@ MIN_TURN_SPEED = 1.5
 
 # Landing legs, the ship stands on them on the ground
 LEG_LENGTH = 4.               # behind the rear of the ship
+LEG_SPREAD = 1.5              # beyond its sides
+LEG_DEPLOY_TIME = .6          # seconds to unfold or fold them
 
 # Crashes: touching anything is fatal, except landing softly on the Earth
 LANDING_MAX_SPEED = 120.      # relative to the Earth
