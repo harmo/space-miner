@@ -12,3 +12,7 @@ STAR_TILE = 12000.            # the star field repeats on a smaller tile
 
 
 EXPLOSION_DURATION = 1.2      # seconds
+
+MARKER_LENGTH = (12., 120.)   # from far away to close
+MARKER_NEAR = 1500.           # distances of the shortest and longest markers
+MARKER_FAR = 30000.
