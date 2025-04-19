@@ -1,4 +1,5 @@
 import math
+from itertools import pairwise
 
 import pytest
 
@@ -11,6 +12,7 @@ from app.logic.hud import (
     edge_point,
     is_on_screen,
     marker_length,
+    orbit_dots,
 )
 from app.logic.world.space import Vec2
 
@@ -64,6 +66,50 @@ def test_target_on_screen() -> None:
 # Orbits
 
 VIEW = (960., 540.)
+
+
+def test_no_dots_for_an_orbit_out_of_view() -> None:
+    assert orbit_dots((0., 0.), 5000., (0., 0.), VIEW, 14.) == []
+    assert orbit_dots((0., 0.), 5000., (9000., 0.), VIEW, 14.) == []
+
+
+def test_dots_are_on_the_orbit_and_in_view() -> None:
+    view_center = (5000., 300.)
+    dots = orbit_dots((0., 0.), 5000., view_center, VIEW, 14.)
+    assert len(dots) > 50
+    for x, y in dots:
+        assert math.hypot(x, y) == pytest.approx(5000.)
+        assert abs(x - view_center[0]) <= VIEW[0]
+        assert abs(y - view_center[1]) <= VIEW[1]
+
+
+def test_dots_are_evenly_spaced() -> None:
+    dots = orbit_dots((0., 0.), 5000., (0., 5000.), VIEW, 14.)
+    gaps = [math.dist(a, b) for a, b in pairwise(sorted(dots))]
+    assert min(gaps) == pytest.approx(14., rel=.01)
+    assert max(gaps) == pytest.approx(14., rel=.01)
+
+
+def test_dots_do_not_slide_as_the_view_moves() -> None:
+    before = orbit_dots((0., 0.), 5000., (5000., 0.), VIEW, 14.)
+    after = orbit_dots((0., 0.), 5000., (5000., 37.), VIEW, 14.)
+    common = set(before) & set(after)
+    assert len(common) > len(before) * .8
+
+
+def test_small_orbit_in_view_is_complete() -> None:
+    dots = orbit_dots((0., 0.), 200., (0., 0.), VIEW, 14.)
+    assert len(dots) == round(2 * math.pi * 200. / 14.)
+    assert len(set(dots)) == len(dots)
+
+
+def test_no_dots_over_the_planet() -> None:
+    planet = (5000., 0.)
+    dots = orbit_dots(
+        (0., 0.), 5000., planet, VIEW, 14., hidden=(planet, 250.)
+    )
+    assert dots
+    assert all(math.dist(dot, planet) >= 250. for dot in dots)
 
 
 # Compact interface

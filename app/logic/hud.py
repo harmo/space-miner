@@ -38,3 +38,44 @@ def marker_length(distance: float) -> float:
     shortest, longest = MARKER_LENGTH
     closeness = (MARKER_FAR - distance) / (MARKER_FAR - MARKER_NEAR)
     return shortest + (longest - shortest) * min(1., max(0., closeness))
+
+
+def orbit_dots(center: Vec2, radius: float, view_center: Vec2,
+               half_size: Vec2, spacing: float,
+               hidden: tuple[Vec2, float] | None = None) -> list[Vec2]:
+    """ Dots of a circular orbit inside the view, `spacing` apart. They are
+    fixed on the orbit, so they don't slide as the view moves. No dot
+    within `hidden`: a (position, radius) disc. """
+    distance = math.dist(center, view_center)
+    half_diagonal = math.hypot(*half_size)
+    if abs(distance - radius) > half_diagonal:
+        return []
+
+    count = max(3, round(2 * math.pi * radius / spacing))
+    step = 2 * math.pi / count
+    if radius <= half_diagonal or distance <= half_diagonal:
+        indices = range(count)
+    else:
+        middle = math.atan2(
+            view_center[1] - center[1], view_center[0] - center[0]
+        )
+        half_span = min(math.pi, half_diagonal / radius * 1.1)
+        indices = range(
+            math.floor((middle - half_span) / step),
+            math.ceil((middle + half_span) / step) + 1,
+        )
+
+    dots = []
+    for index in indices:
+        angle = index * step
+        x = center[0] + math.cos(angle) * radius
+        y = center[1] + math.sin(angle) * radius
+        if (
+            abs(x - view_center[0]) > half_size[0]
+            or abs(y - view_center[1]) > half_size[1]
+        ):
+            continue
+        if hidden is not None and math.dist((x, y), hidden[0]) < hidden[1]:
+            continue
+        dots.append((x, y))
+    return dots
