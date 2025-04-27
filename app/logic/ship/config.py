@@ -23,8 +23,10 @@ LANDED_SPEED = 20.            # slower relative to the Earth is landed
 LANDED_GAP = 2.               # and its legs closer to the ground than this
 GROUND_SAFETY = 3             # degrees of ground beyond the ship sides
 
+MINING_DISTANCE = 120.        # the locked ship holds this far from it
 HOLD_GAIN = 1.5               # how fast the ship reaches its holding spot
 # How fast the thrusters match the velocity needed to hold: 4 * HOLD_GAIN
 # reaches the spot as fast as possible without overshooting it
 HOLD_RESPONSE = 4 * HOLD_GAIN
+LASER_RANGE = 200.            # from the nose of the ship
 LASER_RATE = 3.               # rock extracted per second

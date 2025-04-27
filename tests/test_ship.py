@@ -4,6 +4,8 @@ import pytest
 
 from app.logic.ship.config import (
     LANDING_MAX_SPEED,
+    LASER_RANGE,
+    MINING_DISTANCE,
     SHIP_DRAG,
 )
 from app.logic.ship.ship import Ship, is_crash
@@ -14,7 +16,7 @@ from app.logic.world.config import (
     SUN_GRAVITY_FALLOFF,
     SUN_RADIUS,
 )
-from app.logic.world.space import Celestial, Orbit, Vec2
+from app.logic.world.space import Celestial, Orbit, Station, Vec2, angle_diff
 
 from .fakes import FakeBody
 
@@ -133,3 +135,90 @@ def test_landing_on_the_earth() -> None:
 def test_nose_is_in_front_of_the_ship() -> None:
     ship, _ = make_ship(position=(100., 100.), angle=math.pi / 2)
     assert ship.nose == pytest.approx((100., 100. + SHIP_LENGTH / 2))
+
+
+def make_belt() -> tuple[Celestial, Celestial, Celestial]:
+    """ A sun, a planet and one of its asteroids """
+    sun = make_sun()
+    planet = Celestial(
+        1, 250., orbit=Orbit(sun, 7000., 22., 0.), gravity=GRAVITY * 250.,
+    )
+    asteroid = Celestial(2, 8., orbit=Orbit(planet, 450., 50., 0.))
+    return sun, planet, asteroid
+
+
+def hold(ship: Ship, body: FakeBody, seconds: float,
+         system: tuple[Celestial, Celestial, Celestial]) -> list[Vec2]:
+    """ Lock on the asteroid, then return on each frame the distance to it
+    and the angle between the ship and the planet, seen from the asteroid """
+    sun, planet, asteroid = system
+    station = Station(asteroid, ship.position, MINING_DISTANCE)
+    frames = []
+    for _ in range(round(seconds / DT)):
+        for celestial in (planet, asteroid):
+            assert celestial.orbit
+            celestial.orbit.advance(DT)
+        ship.hold(DT, station, [sun, planet])
+        body.step(DT)
+        (x, y), (ax, ay), (px, py) = ship.position, asteroid.pos, planet.pos
+        angle = math.atan2(y - ay, x - ax) - math.atan2(py - ay, px - ax)
+        frames.append((math.dist((x, y), (ax, ay)), angle))
+    return frames
+
+
+def outside_of_the_belt(system: tuple[Celestial, Celestial, Celestial],
+                        distance: float) -> Vec2:
+    """ Point beyond the asteroid, on the line from its planet """
+    _, planet, asteroid = system
+    (px, py), (ax, ay) = planet.pos, asteroid.pos
+    gap = math.dist((px, py), (ax, ay))
+    return (
+        ax + (ax - px) / gap * distance,
+        ay + (ay - py) / gap * distance,
+    )
+
+
+def test_locked_ship_holds_in_front_of_its_target() -> None:
+    system = make_belt()
+    asteroid = system[2]
+    ship, body = make_ship(
+        position=outside_of_the_belt(system, 500.), velocity=asteroid.velocity
+    )
+    distances = [d for d, _ in hold(ship, body, 6., system)]
+    assert distances[-1] == pytest.approx(MINING_DISTANCE, abs=2.)
+    tx, ty = asteroid.pos
+    x, y = ship.position
+    assert abs(angle_diff(body.angle, math.atan2(ty - y, tx - x))) < .05
+
+
+def test_locked_ship_does_not_overshoot_towards_its_target() -> None:
+    # Overshooting could make it hit the asteroid
+    system = make_belt()
+    ship, body = make_ship(position=outside_of_the_belt(system, 900.))
+    distances = [d for d, _ in hold(ship, body, 8., system)]
+    assert min(distances) > MINING_DISTANCE - 5.
+
+
+def test_locked_ship_follows_its_target_in_formation() -> None:
+    # Once there, it keeps its place relative to the orbit of the asteroid
+    system = make_belt()
+    ship, body = make_ship(
+        position=outside_of_the_belt(system, 500.), velocity=system[2].velocity
+    )
+    frames = hold(ship, body, 20., system)[round(5 / DT):]
+    distances = [d for d, _ in frames]
+    assert max(distances) - min(distances) < 2.
+    angles = [a for _, a in frames]
+    assert max(abs(angle_diff(a, angles[0])) for a in angles) < .02
+    # Locked from outside of the belt, it never gets closer to the planet
+    assert all(abs(angle_diff(a, math.pi)) < .05 for a in angles)
+
+
+def test_locked_ship_stays_in_laser_range() -> None:
+    system = make_belt()
+    asteroid = system[2]
+    ship, body = make_ship(
+        position=outside_of_the_belt(system, 500.), velocity=asteroid.velocity
+    )
+    hold(ship, body, 6., system)
+    assert math.dist(ship.nose, asteroid.pos) < LASER_RANGE
