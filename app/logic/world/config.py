@@ -39,3 +39,8 @@ SUN_BELT_SPEED = (.9, 1.1)    # times the speed of a planet on that orbit
 ASTEROID_RADIUS = (4., 10.)
 ASTEROID_MASS = 5.
 ASTEROID_SPIN = 60.           # degrees/s
+
+
+# Belts mined below this part of their asteroids grow back, until full
+REGROW_THRESHOLD = .4
+REGROW_TIME = 300.            # seconds for a whole belt
