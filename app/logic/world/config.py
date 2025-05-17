@@ -44,3 +44,11 @@ ASTEROID_SPIN = 60.           # degrees/s
 # Belts mined below this part of their asteroids grow back, until full
 REGROW_THRESHOLD = .4
 REGROW_TIME = 300.            # seconds for a whole belt
+
+# Swarms of rich asteroids, passing between the orbits of the planets
+SWARM_EVERY = (300., 540.)    # seconds between them
+SWARM_STAYS = 240.            # seconds
+SWARM_ASTEROIDS = 12
+SWARM_WIDTH = 300.            # across their orbit
+SWARM_SPREAD = 8.             # degrees, along it
+SWARM_RADIUS = (6., 12.)      # of its asteroids, bigger than in belts
