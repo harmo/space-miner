@@ -30,3 +30,5 @@ HOLD_GAIN = 1.5               # how fast the ship reaches its holding spot
 HOLD_RESPONSE = 4 * HOLD_GAIN
 LASER_RANGE = 200.            # from the nose of the ship
 LASER_RATE = 3.               # rock extracted per second
+
+TRAIL_MAX = 800               # sparks at most
