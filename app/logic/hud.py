@@ -5,6 +5,8 @@ bar, the glow of the shortcut, and when to be compact as on phones """
 import math
 
 from .config import (
+    CHEVRON_OPACITY,
+    CHEVRON_SIZE,
     MARKER_FAR,
     MARKER_LENGTH,
     MARKER_NEAR,
@@ -38,6 +40,17 @@ def marker_length(distance: float) -> float:
     shortest, longest = MARKER_LENGTH
     closeness = (MARKER_FAR - distance) / (MARKER_FAR - MARKER_NEAR)
     return shortest + (longest - shortest) * min(1., max(0., closeness))
+
+
+def chevron_look(distance: float, reach: float) -> tuple[float, float]:
+    """ Size and opacity, growing from the edge of the scanner reach as the
+    asteroid gets close """
+    closeness = min(1., max(0., 1. - distance / reach)) if reach > 0 else 0.
+    (smallest, biggest), (faint, bright) = CHEVRON_SIZE, CHEVRON_OPACITY
+    return (
+        smallest + (biggest - smallest) * closeness,
+        faint + (bright - faint) * closeness,
+    )
 
 
 def orbit_dots(center: Vec2, radius: float, view_center: Vec2,

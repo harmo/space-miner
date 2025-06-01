@@ -16,3 +16,5 @@ EXPLOSION_DURATION = 1.2      # seconds
 MARKER_LENGTH = (12., 120.)   # from far away to close
 MARKER_NEAR = 1500.           # distances of the shortest and longest markers
 MARKER_FAR = 30000.
+CHEVRON_SIZE = (9., 16.)      # from the edge of its reach to close
+CHEVRON_OPACITY = (.35, .7)   # likewise, discreet
