@@ -131,3 +131,19 @@ def test_same_parts_same_key() -> None:
     second = Design(parts={'rear': 'engine', 'nose': 'laser'})
     assert design_key(first) == design_key(second)
     assert design_key(first) != design_key(Design())
+
+
+def test_scanners_reach_farther_and_do_not_show() -> None:
+    assert ship_stats(Design()).scan == 0
+    scanned = Design(parts={'internal': 'long_scanner'})
+    assert ship_stats(scanned).scan == PARTS['long_scanner'].scan
+    assert pieces(scanned) == pieces(Design())
+    assert ship_size(scanned) == ship_size(Design())
+
+
+def test_some_hulls_add_to_the_scanners() -> None:
+    assert ship_stats(Design('driller')).scan == 0
+    scanned = Design('driller', {'internal_1': 'scanner'})
+    assert ship_stats(scanned).scan == (
+        HULLS['driller'].scan + PARTS['scanner'].scan
+    )
