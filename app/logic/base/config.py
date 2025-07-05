@@ -6,3 +6,6 @@ UNLOAD_RATE = 15.             # units per second, into the depot
 # Trade
 RESALE = .5                   # parts sell back for this part of their price
 ORE_SALE = .5                 # ore sells for this part of what it is worth
+
+# Reputation: missions validated to reach each tier of parts
+TIER_MISSIONS = (0, 3, 8, 15, 25)
