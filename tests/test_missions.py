@@ -1,0 +1,107 @@
+from random import Random
+
+from app.logic.base.config import (
+    MISSION_OFFERS,
+    MISSIONS_ACTIVE,
+    TIER_MISSIONS,
+)
+from app.logic.base.missions import (
+    Board,
+    Mission,
+    make_mission,
+)
+from app.logic.base.wallet import Wallet
+
+
+def test_missions_want_a_few_rare_minerals() -> None:
+    rng = Random(1)
+    for _ in range(200):
+        mission = make_mission(rng)
+        assert 1 <= len(mission.wanted) <= 2
+        assert 'rock' not in mission.wanted and 'ice' not in mission.wanted
+        assert all(units >= 2 for units in mission.wanted.values())
+        assert mission.reward > 0 and mission.reward % 10 == 0
+
+
+def test_rarer_minerals_are_wanted_in_smaller_amounts() -> None:
+    rng = Random(2)
+    amounts: dict[str, list[int]] = {}
+    for _ in range(2000):
+        for name, units in make_mission(rng).wanted.items():
+            amounts.setdefault(name, []).append(units)
+    def mean(name: str) -> float:
+        return sum(amounts[name]) / len(amounts[name])
+    assert mean('iron') > mean('gold') > mean('antimatter')
+
+
+MISSION = Mission('Test', {'iron': 10, 'gold': 2}, 300)
+
+
+def test_missing_ore() -> None:
+    assert MISSION.missing({'iron': 4.5}) == {'iron': 6, 'gold': 2}
+    assert MISSION.missing({'iron': 12., 'gold': 1.9999999}) == {}
+    assert MISSION.can_validate({'iron': 10., 'gold': 2.})
+
+
+def test_two_missions_at_a_time_at_first() -> None:
+    board = Board(Random(3), Wallet())
+    assert len(board.offers) == MISSION_OFFERS[0]
+    assert board.most == MISSIONS_ACTIVE[0] == 2
+    for _ in range(board.most):
+        board.accept(board.offers[0])
+    assert board.full
+    offers = list(board.offers)
+    board.accept(board.offers[0])
+    assert len(board.active) == board.most
+    assert board.offers == offers
+
+
+def test_more_missions_with_more_reputation() -> None:
+    board = Board(Random(3), Wallet())
+    board.validated = TIER_MISSIONS[-1] - 1
+    mission = Mission('Test', {'iron': 2}, 10)
+    board.offers[0] = mission
+    board.accept(mission)
+    board.validate(mission, {'iron': 2.})
+    assert board.most == MISSIONS_ACTIVE[-1] == 8
+    assert len(board.offers) == MISSION_OFFERS[-1] == 8
+    assert MISSIONS_ACTIVE == tuple(sorted(MISSIONS_ACTIVE))
+    assert MISSION_OFFERS == tuple(sorted(MISSION_OFFERS))
+
+
+def test_accepted_offer_is_replaced() -> None:
+    board = Board(Random(4), Wallet())
+    taken = board.offers[1]
+    board.accept(taken)
+    assert board.active == [taken]
+    assert len(board.offers) == MISSION_OFFERS[0]
+
+
+def test_validating_takes_the_ore_and_pays() -> None:
+    board = Board(Random(5), Wallet())
+    board.offers[0] = MISSION
+    board.accept(MISSION)
+    stock = {'iron': 12., 'gold': 2.}
+    board.validate(MISSION, stock)
+    assert stock == {'iron': 2.}
+    assert board.wallet.credits == 300
+    assert board.active == []
+
+
+def test_validating_needs_the_ore() -> None:
+    board = Board(Random(6), Wallet())
+    board.offers[0] = MISSION
+    board.accept(MISSION)
+    stock = {'iron': 12.}
+    board.validate(MISSION, stock)
+    assert stock == {'iron': 12.}
+    assert board.wallet.credits == 0
+    assert board.active == [MISSION]
+
+
+def test_abandon() -> None:
+    board = Board(Random(7), Wallet())
+    mission = board.offers[0]
+    board.accept(mission)
+    board.abandon(mission)
+    assert board.active == [] and board.wallet.credits == 0
