@@ -14,6 +14,7 @@ from app.logic.config import (
 from app.logic.hud import (
     cargo_color,
     edge_point,
+    is_compact,
     is_on_screen,
     marker_length,
     orbit_dots,
@@ -118,6 +119,16 @@ def test_no_dots_over_the_planet() -> None:
 
 
 # Compact interface
+
+def test_compact_interface_on_mobile_platforms() -> None:
+    assert is_compact('android', 2000., 1200.)
+    assert is_compact('ios', 2000., 1200.)
+
+
+def test_compact_interface_on_small_screens() -> None:
+    assert is_compact('linux', 800., 360.)       # phone in landscape
+    assert not is_compact('linux', 1920., 1080.)
+    assert not is_compact('win', 1024., 768.)    # small laptop
 
 
 # Cargo

@@ -23,3 +23,7 @@ MARKER_NEAR = 1500.           # distances of the shortest and longest markers
 MARKER_FAR = 30000.
 CHEVRON_SIZE = (9., 16.)      # from the edge of its reach to close
 CHEVRON_OPACITY = (.35, .7)   # likewise, discreet
+# Compact interface on phones: on mobile platforms, or on any screen whose
+# shorter side is below this many dp
+MOBILE_PLATFORMS = ('android', 'ios')
+COMPACT_SCREEN = 520.

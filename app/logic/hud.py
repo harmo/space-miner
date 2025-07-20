@@ -12,9 +12,11 @@ from .config import (
     CARGO_FULL_COLOR,
     CHEVRON_OPACITY,
     CHEVRON_SIZE,
+    COMPACT_SCREEN,
     MARKER_FAR,
     MARKER_LENGTH,
     MARKER_NEAR,
+    MOBILE_PLATFORMS,
 )
 from .world.space import Vec2
 
@@ -97,6 +99,14 @@ def orbit_dots(center: Vec2, radius: float, view_center: Vec2,
             continue
         dots.append((x, y))
     return dots
+
+
+def is_compact(platform: str, width_dp: float, height_dp: float) -> bool:
+    """ Whether the interface must be compact, as on a phone """
+    return (
+        platform in MOBILE_PLATFORMS
+        or min(width_dp, height_dp) < COMPACT_SCREEN
+    )
 
 
 def cargo_color(fill: float) -> Rgb:
