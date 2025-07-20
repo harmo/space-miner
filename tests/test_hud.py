@@ -4,15 +4,20 @@ from itertools import pairwise
 import pytest
 
 from app.logic.config import (
+    CARGO_ALMOST_FULL_COLOR,
+    CARGO_COLOR,
+    CARGO_FULL_COLOR,
     MARKER_FAR,
     MARKER_LENGTH,
     MARKER_NEAR,
 )
 from app.logic.hud import (
+    cargo_color,
     edge_point,
     is_on_screen,
     marker_length,
     orbit_dots,
+    pulse,
 )
 from app.logic.world.space import Vec2
 
@@ -116,3 +121,16 @@ def test_no_dots_over_the_planet() -> None:
 
 
 # Cargo
+
+def test_cargo_bar_warns_when_almost_full_then_full() -> None:
+    assert cargo_color(0.) == CARGO_COLOR
+    assert cargo_color(.5) == CARGO_COLOR
+    assert cargo_color(.95) == CARGO_ALMOST_FULL_COLOR
+    assert cargo_color(1.) == CARGO_FULL_COLOR
+
+
+def test_pulse_goes_smoothly_back_and_forth() -> None:
+    assert pulse(0., 2.) == pytest.approx(0.)
+    assert pulse(1., 2.) == pytest.approx(1.)
+    assert pulse(2., 2.) == pytest.approx(0., abs=1e-12)
+    assert all(0. <= pulse(t / 10, 2.) <= 1. for t in range(100))

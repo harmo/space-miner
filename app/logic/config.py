@@ -13,6 +13,11 @@ STAR_TILE = 12000.            # the star field repeats on a smaller tile
 
 EXPLOSION_DURATION = 1.2      # seconds
 
+# Interface, drawn in screen pixels
+CARGO_COLOR = (.36, .71, .9)  # bar of the load, from empty to full
+CARGO_ALMOST_FULL = .9
+CARGO_ALMOST_FULL_COLOR = (1., .62, .3)
+CARGO_FULL_COLOR = (1., .35, .3)
 MARKER_LENGTH = (12., 120.)   # from far away to close
 MARKER_NEAR = 1500.           # distances of the shortest and longest markers
 MARKER_FAR = 30000.

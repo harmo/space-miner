@@ -4,7 +4,12 @@ bar, the glow of the shortcut, and when to be compact as on phones """
 
 import math
 
+from .colors import Rgb
 from .config import (
+    CARGO_ALMOST_FULL,
+    CARGO_ALMOST_FULL_COLOR,
+    CARGO_COLOR,
+    CARGO_FULL_COLOR,
     CHEVRON_OPACITY,
     CHEVRON_SIZE,
     MARKER_FAR,
@@ -92,3 +97,17 @@ def orbit_dots(center: Vec2, radius: float, view_center: Vec2,
             continue
         dots.append((x, y))
     return dots
+
+
+def cargo_color(fill: float) -> Rgb:
+    """ Of the cargo load bar: warns when almost full, then full """
+    if fill >= 1.:
+        return CARGO_FULL_COLOR
+    if fill >= CARGO_ALMOST_FULL:
+        return CARGO_ALMOST_FULL_COLOR
+    return CARGO_COLOR
+
+
+def pulse(time: float, period: float) -> float:
+    """ Smoothly from 0 to 1 and back, every period """
+    return .5 - .5 * math.cos(2 * math.pi * time / period)
