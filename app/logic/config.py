@@ -2,6 +2,8 @@
 the interface and the physics. Sizes are in pixels, speeds in px/s. Each
 part of the game has its own in its package. """
 
+# Textures
+IMAGES = 'assets/images'
 PLANETS = [f'planet{i}' for i in range(1, 8)]
 MOON = 'moon'
 SUN_DISC = .7                 # part of the sun texture that is not glow
