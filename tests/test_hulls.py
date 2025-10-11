@@ -1,10 +1,15 @@
+from pathlib import Path
 
+from app.logic.config import IMAGES
 from app.logic.ship.config import MIN_SPEED
 from app.logic.ship.hulls import HULLS
 from app.logic.ship.lasers import BEST
 from app.logic.ship.parts import PARTS
 from app.logic.ship.shipyard import (
     Design,
+    bounds,
+    options,
+    pieces,
     ship_stats,
     transfer,
 )
@@ -36,6 +41,21 @@ def test_only_side_parts_are_drawn_flipped() -> None:
         for slot_id, slot in hull.slots.items():
             assert slot.mirrored == (slot_id.startswith('right'))
             assert not slot.mirrored or slot.kind == 'side'
+
+
+def test_every_part_fits_every_hull_and_is_drawn() -> None:
+    for hull_id in HULLS:
+        bare = Design(hull_id)
+        for slot_id in HULLS[hull_id].slots:
+            for part_id in options(bare, slot_id)[1:]:
+                assert part_id is not None
+                design = Design(hull_id, {slot_id: part_id})
+                left, bottom, length, width = bounds(
+                    [rect for _, rect in pieces(design)]
+                )
+                assert left == -length / 2 and bottom == -width / 2
+                for image, _ in pieces(design):
+                    assert Path(f'{IMAGES}/ships/{image}.png').is_file()
 
 
 def test_parts_move_onto_the_slots_of_their_kind() -> None:

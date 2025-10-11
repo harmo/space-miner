@@ -1,7 +1,9 @@
 from itertools import product
+from pathlib import Path
 
 import pytest
 
+from app.logic.config import IMAGES
 from app.logic.ship.hulls import HULLS
 from app.logic.ship.parts import PARTS, effects
 from app.logic.ship.shipyard import (
@@ -87,6 +89,12 @@ def every_design() -> list[Design]:
         })
         for parts in product(*choices)
     ]
+
+
+def test_every_piece_has_an_image() -> None:
+    for design in every_design():
+        for image, _ in pieces(design):
+            assert Path(f'{IMAGES}/ships/{image}.png').is_file()
 
 
 def test_every_design_can_fly_and_mine() -> None:
