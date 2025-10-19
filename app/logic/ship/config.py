@@ -21,6 +21,7 @@ LANDING_RANGE = 250.          # and can be used
 LANDING_DURATION = 3.         # seconds
 LANDED_SPEED = 20.            # slower relative to the Earth is landed
 LANDED_GAP = 2.               # and its legs closer to the ground than this
+GROUND_DEPTH = .04            # ground is looked for this deep in the image
 GROUND_SAFETY = 3             # degrees of ground beyond the ship sides
 
 MINING_DISTANCE = 120.        # the locked ship holds this far from it
