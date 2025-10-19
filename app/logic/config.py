@@ -29,3 +29,27 @@ CHEVRON_OPACITY = (.35, .7)   # likewise, discreet
 # shorter side is below this many dp
 MOBILE_PLATFORMS = ('android', 'ios')
 COMPACT_SCREEN = 520.
+
+# Physics
+COLLISION_SHIP = 1
+COLLISION_PLANET = 2          # the sun and the planets
+COLLISION_ORBITER = 3         # the moon and the asteroids
+COLLISION_CANISTER = 4        # only touches the ship
+
+PHYSICS_COMPONENT_ORDER = [
+    'position',
+    'rotate',
+    'rotate_renderer',
+    'cymunk_physics',
+]
+
+# KivEnt systems declared in the kv file, in update order: physics moves the
+# bodies, then the camera follows the ship, then everything is drawn
+SYSTEMS = [
+    'cymunk_physics',
+    'position',
+    'rotate',
+    'camera1',
+    'stars_renderer',
+    'rotate_renderer',
+]

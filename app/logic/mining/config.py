@@ -5,6 +5,7 @@ ORE_DENSITY = .25             # an asteroid holds ORE_DENSITY * radius² ore
 
 # Ore lost in a crash floats away in canisters
 CANISTER_UNITS = 10.          # ore per canister at most
+CANISTER_SIZE = (22., 11.)
 CANISTER_SPEED = (40., 120.)  # thrown away from what the ship hit
 CANISTER_SPREAD = 70.         # degrees around that direction
 CANISTER_SPIN = 120.          # degrees/s
