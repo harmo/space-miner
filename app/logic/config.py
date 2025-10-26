@@ -12,6 +12,9 @@ SUN_DISC = .7                 # part of the sun texture that is not glow
 WORLD_SIZE = 72000.
 STAR_TILE = 12000.            # the star field repeats on a smaller tile
 
+STAR_COUNT = 6000             # per star tile
+STAR_SIZE = (2., 5.)
+STAR_WRAP_BATCH = 600         # stars checked for wrapping on each frame
 
 EXPLOSION_DURATION = 1.2      # seconds
 
