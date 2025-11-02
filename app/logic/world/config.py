@@ -40,10 +40,12 @@ ASTEROID_RADIUS = (4., 10.)
 ASTEROID_MASS = 5.
 ASTEROID_SPIN = 60.           # degrees/s
 
+ORBIT_PULL = 2.               # how fast a bumped orbiter returns to its orbit
 
 # Belts mined below this part of their asteroids grow back, until full
 REGROW_THRESHOLD = .4
 REGROW_TIME = 300.            # seconds for a whole belt
+REGROW_AWAY = 3000.           # from the ship, out of its sight
 
 # Swarms of rich asteroids, passing between the orbits of the planets
 SWARM_EVERY = (300., 540.)    # seconds between them
