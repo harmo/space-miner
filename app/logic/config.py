@@ -18,6 +18,8 @@ STAR_COUNT = 6000             # per star tile
 STAR_SIZE = (2., 5.)
 STAR_WRAP_BATCH = 600         # stars checked for wrapping on each frame
 
+DEBRIS_FRAGMENTS = 10         # when an asteroid is mined out
+DEBRIS_SPEED = (20., 80.)
 EXPLOSION_DURATION = 1.2      # seconds
 
 # Interface, drawn in screen pixels
