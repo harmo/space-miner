@@ -15,6 +15,7 @@ LEG_DEPLOY_TIME = .6          # seconds to unfold or fold them
 
 # Crashes: touching anything is fatal, except landing softly on the Earth
 LANDING_MAX_SPEED = 120.      # relative to the Earth
+RESPAWN_DELAY = 2.5           # seconds
 
 # Landing, distances from the surface of the Earth
 SHORTCUT_RANGE = 600.         # the shortcut shows up, faded
@@ -22,6 +23,7 @@ LANDING_RANGE = 250.          # and can be used
 LANDING_DURATION = 3.         # seconds
 LANDED_SPEED = 20.            # slower relative to the Earth is landed
 LANDED_GAP = 2.               # and its legs closer to the ground than this
+START_DIRECTION = -90.        # the ship starts on the ground closest to it
 GROUND_DEPTH = .04            # ground is looked for this deep in the image
 GROUND_SAFETY = 3             # degrees of ground beyond the ship sides
 

@@ -18,6 +18,9 @@ STAR_COUNT = 6000             # per star tile
 STAR_SIZE = (2., 5.)
 STAR_WRAP_BATCH = 600         # stars checked for wrapping on each frame
 
+# Explosions
+EXPLOSION_FRAGMENTS = 32
+EXPLOSION_SPEED = (60., 260.)
 DEBRIS_FRAGMENTS = 10         # when an asteroid is mined out
 DEBRIS_SPEED = (20., 80.)
 EXPLOSION_DURATION = 1.2      # seconds
@@ -32,6 +35,7 @@ MARKER_NEAR = 1500.           # distances of the shortest and longest markers
 MARKER_FAR = 30000.
 CHEVRON_SIZE = (9., 16.)      # from the edge of its reach to close
 CHEVRON_OPACITY = (.35, .7)   # likewise, discreet
+SHIP_COLOR = (.85, .64, .25)
 # Compact interface on phones: on mobile platforms, or on any screen whose
 # shorter side is below this many dp
 MOBILE_PLATFORMS = ('android', 'ios')
