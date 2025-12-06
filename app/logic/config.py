@@ -30,11 +30,18 @@ CARGO_COLOR = (.36, .71, .9)  # bar of the load, from empty to full
 CARGO_ALMOST_FULL = .9
 CARGO_ALMOST_FULL_COLOR = (1., .62, .3)
 CARGO_FULL_COLOR = (1., .35, .3)
+MARKER_MARGIN = 6.            # from the screen edge
+MARKER_THICKNESS = 3.
 MARKER_LENGTH = (12., 120.)   # from far away to close
 MARKER_NEAR = 1500.           # distances of the shortest and longest markers
 MARKER_FAR = 30000.
+MARKER_OPACITY = .7
+ORBIT_DOT_SIZE = 1.
+ORBIT_OPACITY = .18
 CHEVRON_SIZE = (9., 16.)      # from the edge of its reach to close
 CHEVRON_OPACITY = (.35, .7)   # likewise, discreet
+CHEVRON_WIDTH = 1.             # of their outline, hollow inside
+CHEVRON_MARGIN = 22.          # from the screen edge, inside the bars
 SHIP_COLOR = (.85, .64, .25)
 # Compact interface on phones: on mobile platforms, or on any screen whose
 # shorter side is below this many dp
