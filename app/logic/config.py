@@ -36,8 +36,16 @@ MARKER_LENGTH = (12., 120.)   # from far away to close
 MARKER_NEAR = 1500.           # distances of the shortest and longest markers
 MARKER_FAR = 30000.
 MARKER_OPACITY = .7
+ORBIT_DOT_SPACING = 14.       # orbits of the planets, dotted
 ORBIT_DOT_SIZE = 1.
 ORBIT_OPACITY = .18
+ORBIT_PLANET_GAP = 30.        # no dots this close to the planet surface
+HOME_COLOR = (.23, .49, .76)  # the Earth
+PLANET_COLOR = (.85, .85, .9)  # the other planets
+SWARM_COLOR = (1., .4, .85)   # rich asteroids passing by
+SUN_COLOR = (1., .82, .25)
+# Towards what the scanner finds, out of the screen
+SCAN_ARROWS = 10              # at most, the closest
 CHEVRON_SIZE = (9., 16.)      # from the edge of its reach to close
 CHEVRON_OPACITY = (.35, .7)   # likewise, discreet
 CHEVRON_WIDTH = 1.             # of their outline, hollow inside
