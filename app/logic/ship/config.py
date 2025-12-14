@@ -41,4 +41,7 @@ PICKUP_RANGE = 70.            # and picks it up from this close
 PICKUP_FRAGMENTS = 8
 PICKUP_SPEED = (10., 40.)
 
+# Exhaust trails, how much of them shows
+TRAIL_HOLDING = .3            # while holding in front of what it works on
+TRAIL_LANDING = .8
 TRAIL_MAX = 800               # sparks at most
