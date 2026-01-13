@@ -22,6 +22,7 @@ RESPAWN_DELAY = 2.5           # seconds
 # Landing, distances from the surface of the Earth
 SHORTCUT_RANGE = 600.         # the shortcut shows up, faded
 LANDING_RANGE = 250.          # and can be used
+SHORTCUT_PULSE = 1.6          # seconds, the shortcut glows when usable
 LANDING_DURATION = 3.         # seconds
 LANDED_SPEED = 20.            # slower relative to the Earth is landed
 LANDED_GAP = 2.               # and its legs closer to the ground than this
