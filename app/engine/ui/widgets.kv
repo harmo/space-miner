@@ -1,0 +1,42 @@
+# Style shared by the panels and buttons of the interface
+#:import HOME_COLOR app.logic.config.HOME_COLOR
+#:import MONEY_COLOR app.logic.config.MONEY_COLOR
+#:import MET_COLOR app.logic.config.MET_COLOR
+#:import SWARM_COLOR app.logic.config.SWARM_COLOR
+# Background of the panels and buttons
+#:set PANEL (.04, .06, .1, .85)
+# The row of buttons at the bottom, in dp: five of them, Scanner last
+#:set ROW_BUTTON 140
+#:set ROW_GAP 10
+#:set ROW_BOTTOM 24
+
+<PanelButton>:
+    bold: True
+    background_normal: ''
+    background_down: ''
+    background_disabled_normal: ''
+    background_color: 0, 0, 0, 0
+    color: 1, 1, 1, 1
+    disabled_color: 1, 1, 1, .7
+    canvas.before:
+        Color:
+            rgba: (*HOME_COLOR, .6) if self.state == 'down' else PANEL
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(self.corner)]
+        Color:
+            rgba: (*HOME_COLOR, self.glow)
+        Line:
+            rounded_rectangle: (*self.pos, *self.size, dp(self.corner))
+            width: dp(1.5)
+
+<PanelTitle@Label>:
+    bold: True
+    font_size: '12sp'
+    color: 1, 1, 1, .5
+    size_hint_y: None
+    height: dp(22)
+    text_size: self.size
+    halign: 'left'
+    valign: 'middle'
