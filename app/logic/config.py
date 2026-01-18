@@ -81,3 +81,4 @@ SYSTEMS = [
     'stars_renderer',
     'rotate_renderer',
 ]
+MAX_FRAME_TIME = 1 / 20       # avoids physics jumps after a freeze

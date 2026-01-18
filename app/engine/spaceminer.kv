@@ -1,0 +1,200 @@
+# Shown on the home page
+#:set HELP 'Maintenir pour piloter   ·   Toucher un astéroïde pour le miner'
+
+Game:
+
+<Game>:
+    gameworld: gameworld
+
+    GameWorld:
+        id: gameworld
+        gamescreenmanager: gamescreenmanager
+        size_of_gameworld: 100 * 1024
+        zones: {'general': 20000}
+
+        PositionSystem2D:
+            system_id: 'position'
+            gameworld: gameworld
+            zones: ['general']
+
+        RotateSystem2D:
+            system_id: 'rotate'
+            gameworld: gameworld
+            zones: ['general']
+
+        RotateRenderer:
+            system_id: 'rotate_renderer'
+            gameworld: gameworld
+            zones: ['general']
+            shader_source: 'assets/shaders/positionrotateshader.glsl'
+            gameview: 'camera1'
+            updateable: True
+            # At least one batch per texture, each holding a few hundred
+            # sprites at most
+            max_batches: 128
+            size_of_batches: 32
+
+        # Declared after rotate_renderer so the stars are drawn behind it
+        RotateRenderer:
+            system_id: 'stars_renderer'
+            # Defaults to 'rotate_renderer', the components must be read here
+            system_names: ['stars_renderer', 'position', 'rotate']
+            gameworld: gameworld
+            zones: ['general']
+            shader_source: 'assets/shaders/positionrotateshader.glsl'
+            gameview: 'camera1'
+            updateable: True
+
+        CymunkPhysics:
+            gameworld: root.gameworld
+            zones: ['general']
+
+        GameView:
+            system_id: 'camera1'
+            gameworld: gameworld
+            size: root.size
+            window_size: root.size
+            pos: root.pos
+            do_scroll: False
+            do_scroll_lock: False
+            camera_speed_multiplier: 5
+
+    GameScreenManager:
+        id: gamescreenmanager
+        size: root.size
+        pos: root.pos
+        gameworld: gameworld
+
+    # Interface of the game, hidden on the home page
+    Layer:
+        id: hud
+        size: root.size
+        pos: root.pos
+        shown: root.playing
+
+        # On phones, opens the cargo panel below it
+        PanelButton:
+            id: cargo_button
+            bold: False
+            font_size: '15sp'
+            corner: 10
+            glow: .25
+            size: dp(110), dp(38)
+            pos: root.x + dp(16), root.top - self.height - dp(16)
+            opacity: 1 if root.compact else 0
+            disabled: not root.compact
+            disabled_color: 1, 1, 1, 1
+            on_release: root.toggle_cargo()
+
+        CargoPanel:
+            id: cargo
+            x: root.x + dp(16)
+            # Below the cargo button on phones: its height and a gap. Set
+            # from the height, which changes with the rows.
+            y:
+                root.top - dp(16) - (dp(38 + 8) if root.compact else 0) \
+                - self.height
+            opacity: 1 if not root.compact or root.cargo_open else 0
+
+        Label:
+            id: message_label
+            size: self.texture_size
+            pos: root.center_x - self.width / 2, root.y + 96
+            font_size: '16sp'
+            color: 1, .55, .5, .9
+
+        # What happens in the solar system, at the top
+        Label:
+            id: news_label
+            size: self.texture_size
+            # From the size, which changes with the text
+            x: root.center_x - self.width / 2
+            y: root.top - dp(22) - self.height
+            font_size: '16sp'
+            bold: True
+            color: (*SWARM_COLOR, 1)
+
+        # Landing shortcut, shown near the Earth
+        PanelButton:
+            id: land_button
+            text: 'Atterrir'
+            font_size: '17sp'
+            glow: root.land_glow
+            size: max(dp(170), self.texture_size[0] + dp(36)), dp(48)
+            pos: root.center_x - self.width / 2, root.y + dp(24)
+            opacity: 0
+            disabled: True
+            on_release: root.player.land()
+
+    # Home page, over the game which runs behind it, or is paused
+    Layer:
+        id: home
+        size: root.size
+        pos: root.pos
+        shown: not root.playing
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, .6
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: None, None
+            width: dp(460)
+            height: self.minimum_height
+            # Tighter on phones, held sideways
+            spacing: dp(8) if root.compact else dp(14)
+            center_x: root.center_x
+            # From the height, which is known once the rows are in
+            y: root.y + root.height * .55 - self.height / 2
+            Label:
+                text: 'SPACE MINER'
+                bold: True
+                font_size: '44sp' if root.compact else '64sp'
+                size_hint_y: None
+                height: self.texture_size[1]
+            Label:
+                text: 'Minage dans le système solaire'
+                font_size: '18sp'
+                color: 1, 1, 1, .6
+                size_hint_y: None
+                height: self.texture_size[1]
+            Widget:
+                size_hint_y: None
+                height: dp(8) if root.compact else dp(26)
+            PanelButton:
+                text: 'Reprendre' if root.paused else 'Jouer'
+                font_size: '20sp'
+                glow: .9
+                size_hint: None, None
+                size: dp(220), dp(54)
+                pos_hint: {'center_x': .5}
+                on_release: root.resume() if root.paused else root.play()
+            # Phones close apps from the system
+            PanelButton:
+                text: 'Quitter'
+                font_size: '17sp'
+                size_hint: None, None
+                size: dp(220), dp(48) if not root.mobile else 0
+                pos_hint: {'center_x': .5}
+                opacity: 0 if root.mobile else 1
+                disabled: root.mobile
+                on_release: app.stop()
+            Widget:
+                size_hint_y: None
+                height: dp(4) if root.compact else dp(18)
+            Label:
+                text: HELP
+                font_size: '14sp'
+                color: 1, 1, 1, .5
+                size_hint_y: None
+                height: self.texture_size[1]
+
+<GameScreenManager>:
+    MainScreen:
+        id: main_screen
+
+<MainScreen@GameScreen>:
+    name: 'main'

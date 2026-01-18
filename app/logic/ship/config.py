@@ -30,6 +30,8 @@ START_DIRECTION = -90.        # the ship starts on the ground closest to it
 GROUND_DEPTH = .04            # ground is looked for this deep in the image
 GROUND_SAFETY = 3             # degrees of ground beyond the ship sides
 
+# Work: mining and picking canisters up
+PICK_RADIUS = 40.             # click tolerance around asteroids, canisters
 MINING_DISTANCE = 120.        # the locked ship holds this far from it
 HOLD_GAIN = 1.5               # how fast the ship reaches its holding spot
 # How fast the thrusters match the velocity needed to hold: 4 * HOLD_GAIN
