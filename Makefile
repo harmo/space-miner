@@ -2,7 +2,10 @@
 
 .DEFAULT_GOAL := run
 
-.PHONY: help install run check assets
+# Phone held sideways, 20:9
+PHONE_WINDOW := 960x432
+
+.PHONY: help install run mobile check assets
 
 help:  ## List the targets
 	@grep -E '^[a-z]+:.*## ' $(MAKEFILE_LIST) \
@@ -13,6 +16,10 @@ install:  ## Install the game and its development tools
 
 run:  ## Play on a computer, fullscreen
 	uv run main.py
+
+mobile:  ## Play the phone interface, in a phone sized window
+	SPACE_MINER_PLATFORM=android SPACE_MINER_WINDOW=$(PHONE_WINDOW) \
+		uv run main.py
 
 check:  ## Lint, type-check and test
 	uv run ruff check
