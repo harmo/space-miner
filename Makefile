@@ -5,7 +5,7 @@
 # Phone held sideways, 20:9
 PHONE_WINDOW := 960x432
 
-.PHONY: help install run mobile check assets
+.PHONY: help install run mobile check scenarios assets
 
 help:  ## List the targets
 	@grep -E '^[a-z]+:.*## ' $(MAKEFILE_LIST) \
@@ -25,6 +25,9 @@ check:  ## Lint, type-check and test
 	uv run ruff check
 	uv run mypy
 	uv run pytest -q
+
+scenarios:  ## Play scripted scenarios in windows, PHONE=1 as on phones
+	uv run python -m tests.scenarios.run $(if $(PHONE),--phone)
 
 assets:  ## Recolor the asteroids, draw the ships
 	uv run python -m tools.recolor
