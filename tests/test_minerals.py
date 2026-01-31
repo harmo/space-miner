@@ -57,3 +57,10 @@ def test_glowing_minerals_have_bigger_images() -> None:
     glowing = [name for name, m in MINERALS.items() if m.glow]
     assert glowing
     assert all(display_scale(name) == GLOW_SCALE for name in glowing)
+
+
+def test_better_lasers_mine_faster() -> None:
+    gold = MINERALS['gold']
+    rates = [mining_rate(gold, level, LASER_RATE) for level in (1, 2, 3, 4)]
+    assert rates == sorted(rates)
+    assert rates[-1] >= 4 * rates[0]

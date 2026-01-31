@@ -17,11 +17,11 @@ class Laser:
 
 LASERS = (
     Laser(1., (1., .35, .3), 1.5),
-    Laser(1.5, (1., .62, .25), 2.2, halo=True),
-    Laser(2., (1., .88, .4), 3., halo=True, core=True),
-    Laser(2.5, (.78, .55, 1.), 4., halo=True, core=True),
+    Laser(2., (1., .62, .25), 2.2, halo=True),
+    Laser(3.5, (1., .88, .4), 3., halo=True, core=True),
+    Laser(5., (.78, .55, 1.), 4., halo=True, core=True),
     # Beyond what any mineral needs: only faster
-    Laser(3., (.6, .95, 1.), 5., halo=True, core=True),
+    Laser(7., (.6, .95, 1.), 5., halo=True, core=True),
 )
 BEST = len(LASERS)
 
