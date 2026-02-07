@@ -42,6 +42,13 @@ class Miner:
         self.stats = stats                  # of the ship, refitted or not
         self.deposits = Deposits()
         self.ore: dict[str, float] = {}     # in the cargo, by mineral
+        system.on_remove.append(self.gone)
+
+    def gone(self, asteroid: Celestial) -> None:
+        """ Mined out, or left with its swarm """
+        self.deposits.forget(asteroid)
+        if self.lock is not None and self.lock.target is asteroid:
+            self.release()
 
     @property
     def laser(self) -> int:

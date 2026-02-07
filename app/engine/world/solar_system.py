@@ -3,6 +3,7 @@ mined out grow back, and swarms of rich asteroids pass by, see
 events.py. """
 
 import math
+from collections.abc import Callable
 from random import Random
 
 from ...logic.config import (
@@ -41,6 +42,7 @@ class SolarSystem:
         self.belts: list[list[Celestial]] = [[] for _ in plan.belts]
         belt_of = {belt.parent: index for index, belt in enumerate(plan.belts)}
         # Told when an asteroid goes, mined out or leaving with its swarm
+        self.on_remove: list[Callable[[Celestial], None]] = []
 
         self.sun = self.create_sun(center)
         for index, planet_plan in enumerate(plan.planets):
@@ -91,6 +93,8 @@ class SolarSystem:
             if celestial in belt:
                 belt.remove(celestial)
         self.gameworld.remove_entity(celestial.entity_id)
+        for listener in self.on_remove:
+            listener(celestial)
 
     def create_sun(self, pos: Vec2) -> Celestial:
         entity_id = create_round_entity(
