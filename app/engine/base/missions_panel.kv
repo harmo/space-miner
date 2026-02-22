@@ -1,0 +1,206 @@
+# The missions, see missions_panel.py
+
+# Offers on the left, accepted missions on the right
+<MissionsPanel>:
+    orientation: 'vertical'
+    size_hint: None, None
+    size: dp(680), self.minimum_height
+    padding: dp(18), dp(14), dp(18), dp(16)
+    spacing: dp(12)
+    canvas.before:
+        Color:
+            rgba: PANEL
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(12)]
+        Color:
+            rgba: (*HOME_COLOR, .5)
+        Line:
+            rounded_rectangle: self.x, self.y, self.width, self.height, dp(12)
+            width: dp(1.2)
+    BoxLayout:
+        size_hint_y: None
+        height: self.minimum_height
+        spacing: dp(20)
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+            pos_hint: {'top': 1}
+            spacing: dp(6)
+            PanelTitle:
+                text: 'MISSIONS PROPOSÉES'
+            # Up to the tier of the reputation
+            BoxLayout:
+                id: levels
+                size_hint_y: None
+                height: dp(28)
+                spacing: dp(4)
+                Label:
+                    text: 'Niveau'
+                    font_size: '12sp'
+                    color: 1, 1, 1, .6
+                    size_hint_x: None
+                    width: dp(52)
+                    text_size: self.size
+                    halign: 'left'
+                    valign: 'middle'
+            # Up to four missions, then they scroll
+            ScrollView:
+                size_hint_y: None
+                height: min(offers.height, dp(4 * 64 + 3 * 6))
+                do_scroll_x: False
+                bar_width: dp(3)
+                BoxLayout:
+                    id: offers
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(6)
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+            pos_hint: {'top': 1}
+            spacing: dp(6)
+            PanelTitle:
+                text: f'EN COURS  {root.accepted}'
+            # Up to four missions, then they scroll
+            ScrollView:
+                size_hint_y: None
+                height: min(active.height, dp(4 * 64 + 3 * 6))
+                do_scroll_x: False
+                bar_width: dp(3)
+                BoxLayout:
+                    id: active
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(6)
+            Label:
+                id: none
+                text: 'Aucune mission en cours'
+                font_size: '13sp'
+                color: 1, 1, 1, .4
+                size_hint_y: None
+                height: dp(30) if self.opacity else 0
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+            Label:
+                text: root.reputation
+                font_size: '12sp'
+                color: (*MONEY_COLOR, .8)
+                size_hint_y: None
+                height: dp(18)
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+                shorten: True
+            Label:
+                text: "Livrées depuis l'entrepôt, puis la soute"
+                font_size: '12sp'
+                color: 1, 1, 1, .4
+                size_hint_y: None
+                height: dp(18)
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+    BoxLayout:
+        size_hint_y: None
+        height: dp(40)
+        spacing: dp(20)
+        Label:
+            text: f'Crédits  {root.money}'
+            font_size: '15sp'
+            bold: True
+            color: (*MONEY_COLOR, 1)
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+        PanelButton:
+            text: 'Fermer'
+            font_size: '15sp'
+            on_release: root.dispatch('on_close')
+
+# Who asks for what and for how much, and what can be done about it
+<MissionCard>:
+    size_hint_y: None
+    height: dp(64)
+    padding: dp(10), dp(6)
+    spacing: dp(8)
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, .05
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(8)]
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            Label:
+                text: root.client
+                font_size: '14sp'
+                bold: True
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+                shorten: True
+            Label:
+                text: f'niv. {root.mission.level}'
+                font_size: '11sp'
+                color: 1, 1, 1, .45
+                size_hint_x: None
+                width: self.texture_size[0] + dp(8)
+            Label:
+                text: root.reward
+                font_size: '14sp'
+                bold: True
+                color: (*MONEY_COLOR, 1)
+                size_hint_x: None
+                width: self.texture_size[0]
+        Label:
+            text: root.wanted
+            font_size: '13sp'
+            color: 1, 1, 1, .7
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+            shorten: True
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: None
+        width: dp(92)
+        spacing: dp(4)
+        PanelButton:
+            text: root.action
+            bold: False
+            font_size: '13sp'
+            corner: 8
+            glow: .8 if root.can_act else .2
+            disabled: not root.can_act
+            on_release: root.panel.act(root)
+        PanelButton:
+            text: 'Abandonner'
+            bold: False
+            font_size: '11sp'
+            corner: 8
+            glow: .2
+            color: 1, 1, 1, .6
+            opacity: 1 if root.accepted else 0
+            disabled: not root.accepted
+            on_release: root.panel.abandon(root)
+
+# A level of missions: the one chosen glows, those out of reach are dim
+<LevelButton>:
+    text: str(self.level)
+    font_size: '13sp'
+    bold: self.chosen
+    corner: 6
+    glow: .9 if self.chosen else .25
+    color: (1, 1, 1, 1) if self.chosen else (1, 1, 1, .7)
+    disabled_color: 1, 1, 1, .25
+    disabled: not self.reached
+    on_release: self.panel.choose(self.level)
