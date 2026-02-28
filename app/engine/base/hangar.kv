@@ -1,0 +1,228 @@
+# The hangar, see hangar.py and hangar_rows.py
+
+# The ship and its stats, its slots, then the parts fitting the slot
+# picked
+<HangarPanel>:
+    size_hint: None, None
+    size: dp(780), self.minimum_height
+    padding: dp(18), dp(14), dp(18), dp(16)
+    spacing: dp(16)
+    canvas.before:
+        Color:
+            rgba: PANEL
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(12)]
+        Color:
+            rgba: (*HOME_COLOR, .5)
+        Line:
+            rounded_rectangle: self.x, self.y, self.width, self.height, dp(12)
+            width: dp(1.2)
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: None, None
+        width: dp(200)
+        height: self.minimum_height
+        pos_hint: {'top': 1}
+        spacing: dp(6)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(22)
+            PanelTitle:
+                text: 'HANGAR'
+            Label:
+                text: root.hull
+                font_size: '14sp'
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+        Image:
+            texture: root.preview
+            size_hint_y: None
+            height: dp(80)
+            fit_mode: 'contain'
+            # Faded while showing a part that isn't fitted
+            opacity: .75 if root.fitting else 1
+        BoxLayout:
+            id: stats
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+        Label:
+            text: root.message
+            font_size: '12sp'
+            color: 1, .55, .5, .9
+            size_hint_y: None
+            height: dp(18) if root.message else 0
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+        BoxLayout:
+            size_hint_y: None
+            height: dp(26)
+            Label:
+                text: 'Crédits'
+                font_size: '14sp'
+                color: 1, 1, 1, .6
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+            Label:
+                text: root.money
+                font_size: '14sp'
+                bold: True
+                color: (*MONEY_COLOR, 1)
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+        PanelButton:
+            text: 'Fermer'
+            font_size: '15sp'
+            size_hint_y: None
+            height: dp(40)
+            on_release: root.dispatch('on_close')
+    # The hull, then its slots: up to six, then they scroll
+    ScrollView:
+        size_hint: None, None
+        width: dp(140)
+        height: min(slots.height, dp(6 * 48 + 5 * 6))
+        pos_hint: {'top': 1}
+        do_scroll_x: False
+        bar_width: dp(3)
+        BoxLayout:
+            id: slots
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+            spacing: dp(6)
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_y: None
+        height: self.minimum_height
+        pos_hint: {'top': 1}
+        spacing: dp(4)
+        PanelTitle:
+            text: root.slot_name
+        ScrollView:
+            size_hint_y: None
+            # Up to six parts, then they scroll
+            height: min(parts.height, dp(6 * 50 + 5 * 4))
+            do_scroll_x: False
+            bar_width: dp(3)
+            BoxLayout:
+                id: parts
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(4)
+        Label:
+            text: root.teaser
+            font_size: '12sp'
+            color: (*MONEY_COLOR, .8)
+            size_hint_y: None
+            height: dp(18) if root.teaser else 0
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+            shorten: True
+
+# A slot, and the part fitted on it
+<SlotButton>:
+    size_hint_y: None
+    height: dp(48)
+    PanelButton:
+        markup: True
+        halign: 'center'
+        text:
+            f'{root.name}\n' \
+            f'[size=11sp][color=#ffffff99]{root.part}[/color][/size]'
+        bold: False
+        font_size: '14sp'
+        corner: 8
+        glow: .9 if root.selected else .25
+        on_release: root.panel.pick_slot(root.slot)
+
+# What a part does and costs, and what can be done with it
+<PartRow>:
+    size_hint_y: None
+    height: dp(50)
+    padding: dp(8), dp(4)
+    spacing: dp(6)
+    canvas.before:
+        Color:
+            rgba: (*HOME_COLOR, .25) if root.selected else (1, 1, 1, .05)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(8)]
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: root.name
+            font_size: '14sp'
+            bold: True
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+            shorten: True
+        Label:
+            text: root.detail
+            font_size: '11sp'
+            color: 1, 1, 1, .55
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+            shorten: True
+        Label:
+            text: root.cost
+            markup: True
+            font_size: '11sp'
+            color: 1, 1, 1, .7
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+            shorten: True
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: None
+        width: dp(92)
+        spacing: dp(3)
+        PanelButton:
+            text: root.action_text
+            bold: False
+            font_size: '13sp'
+            corner: 8
+            glow: .9 if root.action == 'fitted' else .7 if root.can_act else .2
+            disabled: not root.can_act
+            on_release: root.act()
+        PanelButton:
+            text: root.resale
+            bold: False
+            font_size: '10sp'
+            corner: 8
+            glow: .2
+            color: 1, 1, 1, .6
+            opacity: 1 if root.resale else 0
+            disabled: not root.resale
+            on_release: root.panel.sell(root.part)
+
+<StatRow>:
+    size_hint_y: None
+    height: dp(22)
+    Label:
+        text: root.name
+        font_size: '14sp'
+        color: 1, 1, 1, .6
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
+    Label:
+        text: root.value
+        font_size: '14sp'
+        color:
+            (*MET_COLOR, 1) if root.change == 'up' else \
+            (1, .55, .5, 1) if root.change == 'down' else (1, 1, 1, 1)
+        text_size: self.size
+        halign: 'right'
+        valign: 'middle'
