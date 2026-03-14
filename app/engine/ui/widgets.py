@@ -17,6 +17,11 @@ class PanelButton(Button):
     glow = NumericProperty(.3)        # opacity of the outline
     corner = NumericProperty(12)      # radius of the corners, in dp
 
+    def on_touch_down(self, touch: MotionEvent) -> bool:
+        """ Disabled, it lets touches through to what lies below, as hidden
+        buttons are """
+        return not self.disabled and bool(super().on_touch_down(touch))
+
 
 class Layer(Widget):
     """ Widgets shown or hidden together. Hidden, the layer is invisible and
