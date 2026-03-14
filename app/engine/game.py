@@ -90,6 +90,7 @@ class Game(Widget):
             ground_edge('earth'),
         )
         setup_collisions(self.gameworld, self.player.on_contact)
+        self.ids.base.setup(self.player, self.rng)
         # Over the game world, under the widgets of the interface
         self.overlay = Overlay(self.gameworld.canvas.after, self.camera)
         self.stars.wrap_all(self.player.anchor)
@@ -113,6 +114,7 @@ class Game(Widget):
         heading = pointer_heading(self.camera, self.pointer)
         self.player.update(dt, heading)
         self.looks.update(self.player, heading, dt)
+        self.ids.base.update(dt)
         self.system.update(dt, self.player.anchor)
         shift = recenter(self.player, self.camera, self.system, self.stars)
         self.looks.shift(shift)
@@ -127,7 +129,9 @@ class Game(Widget):
 
     def update_cargo(self) -> None:
         miner = self.player.miner
-        load = show_cargo(self.ids.cargo, miner, miner.mining)
+        load = show_cargo(
+            self.ids.cargo, miner, miner.mining or self.ids.base.depot.mineral
+        )
         self.compact = is_compact(
             PLATFORM, Window.width / dp(1), Window.height / dp(1)
         )
@@ -169,7 +173,7 @@ class Game(Widget):
     def on_touch_down(self, touch: MotionEvent) -> bool:
         """ Thrusting towards the pointer while pressed, unless something
         is open over the game, or on the home page """
-        if self.playing and steers(self, touch):
+        if self.playing and not self.ids.base.panel and steers(self, touch):
             self.pointer = touch.pos
             self.pointer_uid = touch.uid
         return bool(super().on_touch_down(touch))
