@@ -4,9 +4,11 @@ from app.logic.base.config import RESALE
 from app.logic.base.shop import (
     Inventory,
     buy,
+    buy_hull,
     can_buy,
     missing_materials,
     refit,
+    rehull,
     resale_price,
     sell,
 )
@@ -111,3 +113,37 @@ def test_cargo_must_hold_the_ore_on_board() -> None:
     assert refit(pods, 'left', None, inventory, load) is None
     assert inventory.count('cargo_pod') == 0
     assert refit(pods, 'left', None, inventory, HULLS['scout'].capacity)
+
+
+def test_buying_a_hull() -> None:
+    hauler = HULLS['hauler']
+    wallet, inventory = Wallet(hauler.price), Inventory()
+    stock = {name: float(units) for name, units in hauler.materials}
+    assert buy_hull('hauler', wallet, stock, inventory)
+    assert inventory.hulls == {'scout', 'hauler'}
+    assert wallet.credits == 0 and stock == {}
+    wallet.earn(hauler.price)
+    assert not buy_hull('hauler', wallet, stock, inventory)
+
+
+def test_moving_onto_a_hull_of_the_hangar() -> None:
+    inventory = Inventory()
+    design = Design(parts={'nose': 'laser', 'left': 'fins'})
+    assert rehull(design, 'cruiser', inventory) is None
+    inventory.hulls.add('cruiser')
+    cruiser = rehull(design, 'cruiser', inventory)
+    assert cruiser is not None and cruiser.hull == 'cruiser'
+    assert sorted(cruiser.parts.values()) == ['fins', 'laser']
+    back = rehull(Design('cruiser', {
+        'nose_left': 'laser', 'nose_right': 'heavy_laser',
+    }), 'scout', inventory)
+    assert back == Design(parts={'nose': 'laser'})
+    assert inventory.spares == {'heavy_laser': 1}
+
+
+def test_moving_needs_room_for_the_cargo() -> None:
+    inventory = Inventory()
+    inventory.hulls.add('hauler')
+    load = HULLS['hauler'].capacity
+    hauler = Design('hauler')
+    assert rehull(hauler, 'scout', inventory, load) is None
