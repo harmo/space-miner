@@ -35,6 +35,7 @@ from .ui.land_button import show_shortcut
 from .ui.overlay import Overlay
 from .ui.pointer import pointer_heading
 from .ui.scene import draw_scene
+from .ui.tracker import show_needs
 from .world.solar_system import SolarSystem
 from .world.starfield import StarField
 from .world.wrapping import recenter, wrap_space
@@ -136,6 +137,7 @@ class Game(Widget):
             PLATFORM, Window.width / dp(1), Window.height / dp(1)
         )
         self.ids.cargo_button.text = f'Soute  {load}'
+        show_needs(self.ids.tracker, self.ids.base, self.player)
 
     def play(self) -> None:
         """ Leave the home page """

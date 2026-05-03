@@ -96,6 +96,15 @@ Game:
                 - self.height
             opacity: 1 if not root.compact or root.cargo_open else 0
 
+        MissionTracker:
+            id: tracker
+            x: root.x + dp(16)
+            # From the height, which changes with the rows
+            y: root.ids.cargo.y - dp(10) - self.height
+            opacity:
+                1 if self.shown and root.ids.cargo.opacity \
+                and not root.ids.base.panel else 0
+
         Label:
             id: message_label
             size: self.texture_size

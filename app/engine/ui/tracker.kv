@@ -1,0 +1,77 @@
+# What the missions need, see tracker.py
+
+# Ore wanted by the missions under way
+<MissionTracker>:
+    orientation: 'vertical'
+    size_hint: None, None
+    width: dp(200)
+    height: self.minimum_height
+    padding: dp(14), dp(10), dp(14), dp(12)
+    spacing: dp(2)
+    canvas.before:
+        Color:
+            rgba: PANEL
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(10)]
+        Color:
+            rgba: (*MONEY_COLOR, .25)
+        Line:
+            rounded_rectangle: self.x, self.y, self.width, self.height, dp(10)
+            width: 1
+    Label:
+        text: 'MISSIONS'
+        bold: True
+        font_size: '12sp'
+        color: 1, 1, 1, .5
+        size_hint_y: None
+        height: dp(22)
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
+    BoxLayout:
+        id: rows
+        orientation: 'vertical'
+        size_hint_y: None
+        height: self.minimum_height
+
+# Green once there is enough, with the laser it takes below when the
+# ship's one is too weak
+<NeedRow>:
+    size_hint_y: None
+    height: dp(40) if root.laser else dp(26)
+    spacing: dp(10)
+    Image:
+        source: root.icon
+        size_hint_x: None
+        width: dp(18)
+        fit_mode: 'contain'
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: root.name
+            font_size: '15sp'
+            color: (*MET_COLOR, 1) if root.met else (1, 1, 1, .85)
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+            shorten: True
+        Label:
+            text: f'laser {root.laser} requis' if root.laser else ''
+            font_size: '11sp'
+            color: 1, .55, .5, .9
+            size_hint_y: None
+            height: dp(14) if root.laser else 0
+            text_size: self.size
+            halign: 'left'
+            valign: 'top'
+    Label:
+        text: root.progress
+        font_size: '15sp'
+        bold: root.met
+        color: (*MET_COLOR, 1) if root.met else (1, 1, 1, 1)
+        size_hint_x: None
+        width: dp(48)
+        text_size: self.size
+        halign: 'right'
