@@ -1,5 +1,7 @@
 from random import Random
 
+import pytest
+
 from app.logic.base.config import (
     MISSION_OFFERS,
     MISSIONS_ACTIVE,
@@ -8,7 +10,9 @@ from app.logic.base.config import (
 from app.logic.base.missions import (
     Board,
     Mission,
+    Need,
     make_mission,
+    needs,
 )
 from app.logic.base.wallet import Wallet
 
@@ -105,3 +109,29 @@ def test_abandon() -> None:
     board.accept(mission)
     board.abandon(mission)
     assert board.active == [] and board.wallet.credits == 0
+
+
+def test_needs_add_up_the_missions() -> None:
+    first = Mission('A', {'gold': 4, 'iron': 10}, 100)
+    second = Mission('B', {'iron': 5}, 100)
+    cargo, stock = {'iron': 3.5}, {'iron': 6., 'gold': 4.}
+    assert needs([first, second], cargo, stock) == [
+        Need('iron', 9, 15), Need('gold', 4, 4),
+    ]
+    assert [need.met for need in needs([first], cargo, stock)] == [
+        False, True,
+    ]
+    assert needs([], cargo, stock) == []
+
+
+def test_validating_from_the_depot_then_the_cargo() -> None:
+    board = Board(Random(8), Wallet())
+    board.offers[0] = MISSION
+    board.accept(MISSION)
+    depot, cargo = {'iron': 4.5}, {'iron': 6., 'gold': 2.5}
+    assert MISSION.missing(depot) == {'iron': 6, 'gold': 2}
+    assert MISSION.can_validate(depot, cargo)
+    board.validate(MISSION, depot, cargo)
+    assert depot == {}
+    assert cargo == pytest.approx({'iron': .5, 'gold': .5})
+    assert board.wallet.credits == MISSION.reward
