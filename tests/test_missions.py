@@ -15,6 +15,7 @@ from app.logic.base.missions import (
     needs,
 )
 from app.logic.base.wallet import Wallet
+from app.logic.mining.minerals import MINERALS
 
 
 def test_missions_want_a_few_rare_minerals() -> None:
@@ -135,3 +136,52 @@ def test_validating_from_the_depot_then_the_cargo() -> None:
     assert depot == {}
     assert cargo == pytest.approx({'iron': .5, 'gold': .5})
     assert board.wallet.credits == MISSION.reward
+
+
+def board_at(validated: int) -> Board:
+    board = Board(Random(9), Wallet())
+    board.validated = validated
+    return board
+
+
+def validate_one(board: Board) -> None:
+    mission = Mission('Test', {'iron': 2}, 10)
+    board.offers[0] = mission
+    board.accept(mission)
+    board.validate(mission, {'iron': 2.})
+
+
+def test_levels_go_up_to_the_reputation() -> None:
+    board = board_at(TIER_MISSIONS[2])          # third tier
+    board.choose_level(5)
+    assert board.level == 3
+    assert all(mission.level == 3 for mission in board.offers)
+    board.choose_level(1)
+    assert all(mission.level == 1 for mission in board.offers)
+    assert len(board.offers) == MISSION_OFFERS[2]
+
+
+def test_at_the_top_missions_stay_at_the_top() -> None:
+    board = board_at(TIER_MISSIONS[1] - 1)
+    validate_one(board)                        # reaches the second tier
+    assert board.level == 2
+    assert all(mission.level == 2 for mission in board.offers[1:])
+
+
+def test_a_lower_level_chosen_stays() -> None:
+    board = board_at(TIER_MISSIONS[2] - 1)
+    board.choose_level(1)
+    validate_one(board)
+    assert board.level == 1
+
+
+def test_higher_levels_want_rarer_minerals() -> None:
+    def rare_share(level: int) -> float:
+        rng = Random(10)
+        wanted = [
+            name for _ in range(1000)
+            for name in make_mission(rng, level).wanted
+        ]
+        rare = [name for name in wanted if MINERALS[name].laser >= 3]
+        return len(rare) / len(wanted)
+    assert rare_share(5) > 2 * rare_share(1)
