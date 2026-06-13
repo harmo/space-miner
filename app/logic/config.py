@@ -82,3 +82,5 @@ SYSTEMS = [
     'rotate_renderer',
 ]
 MAX_FRAME_TIME = 1 / 20       # avoids physics jumps after a freeze
+
+AUTOSAVE_PERIOD = 5.          # seconds between checks for changes to save

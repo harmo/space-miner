@@ -163,6 +163,9 @@ Game:
             center_x: root.center_x
             # From the height, which is known once the rows are in
             y: root.y + root.height * .55 - self.height / 2
+            # Behind the settings
+            opacity: 0 if root.settings_open else 1
+            disabled: root.settings_open
             Label:
                 text: 'SPACE MINER'
                 bold: True
@@ -186,6 +189,13 @@ Game:
                 size: dp(220), dp(54)
                 pos_hint: {'center_x': .5}
                 on_release: root.resume() if root.paused else root.play()
+            PanelButton:
+                text: 'Réglages'
+                font_size: '17sp'
+                size_hint: None, None
+                size: dp(220), dp(48)
+                pos_hint: {'center_x': .5}
+                on_release: root.open_settings()
             # Phones close apps from the system
             PanelButton:
                 text: 'Quitter'
@@ -205,6 +215,19 @@ Game:
                 color: 1, 1, 1, .5
                 size_hint_y: None
                 height: self.texture_size[1]
+
+        Layer:
+            size: root.size
+            pos: root.pos
+            shown: root.settings_open
+            PreferencesPanel:
+                id: settings
+                mobile: root.mobile
+                # From the height, which is known once the rows are in
+                x: root.center_x - self.width / 2
+                y: root.center_y - self.height / 2
+                on_close: root.settings_open = False
+                on_new_game: root.new_game()
 
 <GameScreenManager>:
     MainScreen:

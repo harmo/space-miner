@@ -5,13 +5,15 @@ import sys
 from kivy.config import Config
 from kivy.utils import platform
 
+from app.engine.storage import read_preferences
 from app.logic.config import MOBILE_PLATFORMS
 
 # Must be set before the window is created (kivent_core creates it on import)
 # SPACE_MINER_WINDOW=WIDTHxHEIGHT opens a window of that size instead
 window = os.environ.get('SPACE_MINER_WINDOW')
 if not window and platform not in MOBILE_PLATFORMS:
-    window = '1280x720'
+    if not read_preferences().fullscreen:
+        window = '1280x720'
 if window:
     width, height = window.split('x')
     Config.set('graphics', 'fullscreen', '0')

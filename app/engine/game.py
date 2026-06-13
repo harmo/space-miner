@@ -16,18 +16,20 @@ from kivy.uix.widget import Widget
 from kivy.utils import platform
 
 from ..logic.config import (
+    AUTOSAVE_PERIOD,
     MAX_FRAME_TIME,
     MOBILE_PLATFORMS,
     SYSTEMS,
     WORLD_SIZE,
 )
 from ..logic.hud import is_compact
-from ..logic.preferences import Preferences
 from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
 from .entities import setup_collisions, setup_state, step_systems
+from .keeper import Keeper
 from .ship.looks import ShipLooks
 from .ship.player import Player
+from .storage import read_preferences, read_save
 from .textures import ground_edge, load_textures
 from .ui.cargo_panel import show_cargo
 from .ui.controls import escape, steers
@@ -57,6 +59,7 @@ class Game(Widget):
     # The home page shows until the game is played, and when it is paused
     playing = BooleanProperty(False)
     paused = BooleanProperty(False)
+    settings_open = BooleanProperty(False)   # over the home page
     mobile = BooleanProperty(PLATFORM in MOBILE_PLATFORMS)
 
     stars: StarField
@@ -70,7 +73,8 @@ class Game(Widget):
         self.pointer: Vec2 | None = None
         self.pointer_uid: int | None = None
         self.looks = ShipLooks(self.rng)  # its trail and legs
-        self.preferences = Preferences()
+        self.preferences = read_preferences()
+        self.keeper: Keeper | None = None   # once the game is set up
         load_textures()
         Window.bind(on_keyboard=self.on_keyboard)
         self.gameworld.init_gameworld(SYSTEMS, callback=self.initialize)
@@ -78,8 +82,10 @@ class Game(Widget):
     def initialize(self) -> None:
         setup_state(self.gameworld)
         self.stars = StarField(self.gameworld)
-        # Scenarios pick their solar system with SPACE_MINER_SEED
-        seed = int(
+        save = read_save()
+        # The same solar system comes back with the saved game. Scenarios
+        # pick theirs with SPACE_MINER_SEED.
+        seed = save.seed if save else int(
             os.environ.get('SPACE_MINER_SEED') or self.rng.randrange(2 ** 31)
         )
         self.system = SolarSystem(
@@ -92,6 +98,10 @@ class Game(Widget):
         )
         setup_collisions(self.gameworld, self.player.on_contact)
         self.ids.base.setup(self.player, self.rng)
+        self.keeper = Keeper(seed, self.player, self.ids.base)
+        if save is not None:
+            self.keeper.restore(save)
+        Clock.schedule_interval(lambda dt: self.save(), AUTOSAVE_PERIOD)
         # Over the game world, under the widgets of the interface
         self.overlay = Overlay(self.gameworld.canvas.after, self.camera)
         self.stars.wrap_all(self.player.anchor)
@@ -149,6 +159,20 @@ class Game(Widget):
         self.paused = True
         self.pointer = None
         self.draw_overlay()             # once more, without the markers
+        self.save()
+
+    def save(self) -> None:
+        if self.keeper is not None:
+            self.keeper.save()
+
+    def open_settings(self) -> None:
+        self.ids.settings.show(self.preferences)
+        self.settings_open = True
+
+    def new_game(self) -> None:
+        if self.keeper is not None:
+            self.keeper.new_game()
+        self.settings_open = False
 
     def resume(self) -> None:
         self.paused = False

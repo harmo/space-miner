@@ -16,7 +16,9 @@ def escape(game: 'Game') -> bool:
     """ Closes what is open over the game, or else pauses or resumes it.
     On the home page before playing, does nothing: Kivy leaves the game. """
     base = game.ids.base
-    if base.panel:
+    if game.settings_open:
+        game.settings_open = False
+    elif base.panel:
         base.close()
     elif game.playing:
         game.pause()

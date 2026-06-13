@@ -1,0 +1,103 @@
+# The settings, see preferences_panel.py
+
+# Settings, over the home page
+<PreferencesPanel>:
+    orientation: 'vertical'
+    size_hint: None, None
+    size: dp(420), self.minimum_height
+    padding: dp(20), dp(14), dp(20), dp(16)
+    spacing: dp(8)
+    canvas.before:
+        Color:
+            rgba: PANEL
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(12)]
+        Color:
+            rgba: (*HOME_COLOR, .5)
+        Line:
+            rounded_rectangle: self.x, self.y, self.width, self.height, dp(12)
+            width: dp(1.2)
+    PanelTitle:
+        text: 'RÉGLAGES'
+    SettingRow:
+        label: 'Orbites des planètes'
+        on: root.orbits
+        panel: root
+        name: 'orbits'
+    SettingRow:
+        label: "Repères au bord de l'écran"
+        on: root.markers
+        panel: root
+        name: 'markers'
+    # Phones are always full screen
+    SettingRow:
+        label: 'Plein écran'
+        on: root.fullscreen
+        height: 0 if root.mobile else dp(40)
+        opacity: 0 if root.mobile else 1
+        disabled: root.mobile
+        panel: root
+        name: 'fullscreen'
+    Widget:
+        size_hint_y: None
+        height: dp(10)
+    Label:
+        text:
+            'Les crédits, les pièces, le minerai et les missions seront ' \
+            'perdus' if root.confirming else ''
+        font_size: '13sp'
+        color: 1, .55, .5, 1
+        size_hint_y: None
+        height: dp(36) if root.confirming else 0
+        text_size: self.width, None
+        halign: 'center'
+    BoxLayout:
+        size_hint_y: None
+        height: dp(42)
+        spacing: dp(10) if root.confirming else 0
+        PanelButton:
+            text: 'Tout effacer' if root.confirming else 'Nouvelle partie'
+            font_size: '15sp'
+            color: (1, .55, .5, 1) if root.confirming else (1, 1, 1, 1)
+            glow: .9 if root.confirming else .3
+            on_release: root.new_game()
+        PanelButton:
+            text: 'Annuler'
+            font_size: '15sp'
+            size_hint_x: 1 if root.confirming else 0
+            width: 0
+            opacity: 1 if root.confirming else 0
+            disabled: not root.confirming
+            on_release: root.confirming = False
+    PanelButton:
+        text: 'Fermer'
+        font_size: '15sp'
+        size_hint_y: None
+        height: dp(42)
+        on_release: root.dispatch('on_close')
+
+<SettingRow@BoxLayout>:
+    label: ''
+    on: False
+    size_hint_y: None
+    height: dp(40)
+    spacing: dp(10)
+    panel: None
+    name: ''
+    Label:
+        text: root.label
+        font_size: '15sp'
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
+    PanelButton:
+        text: 'Oui' if root.on else 'Non'
+        font_size: '14sp'
+        corner: 8
+        glow: .8 if root.on else .2
+        color: (1, 1, 1, 1) if root.on else (1, 1, 1, .5)
+        size_hint_x: None
+        width: dp(80)
+        on_release: root.panel.toggle(root.name)
