@@ -32,3 +32,12 @@ def found(asteroids: Sequence[Celestial], pos: Vec2, reach: float,
         asteroid for asteroid in within(asteroids, pos, reach)
         if mineral_of(asteroid) in looked_for
     ][:count]
+
+
+def counts(asteroids: Sequence[Celestial], pos: Vec2,
+           reach: float) -> dict[str, int]:
+    """ Asteroids within reach, by mineral """
+    counted = dict.fromkeys(MINERALS, 0)
+    for asteroid in within(asteroids, pos, reach):
+        counted[mineral_of(asteroid)] += 1
+    return counted

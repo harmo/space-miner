@@ -2,7 +2,7 @@ import pytest
 
 from app.logic.config import CHEVRON_OPACITY, CHEVRON_SIZE
 from app.logic.hud import chevron_look
-from app.logic.ship.scanner import LOOKED_FOR, found, within
+from app.logic.ship.scanner import LOOKED_FOR, counts, found, within
 from app.logic.world.space import Celestial
 
 
@@ -28,6 +28,13 @@ def test_finds_only_the_minerals_looked_for() -> None:
     assert [rock.entity_id for rock in gold] == [3, 1]
     assert len(found(ASTEROIDS, (0., 0.), 5000., {'gold'}, 1)) == 1
     assert found(ASTEROIDS, (0., 0.), 5000., set(), 10) == []
+
+
+def test_counts_by_mineral() -> None:
+    counted = counts(ASTEROIDS, (0., 0.), 1500.)
+    assert counted['gold'] == 1 and counted['iron'] == 1
+    assert counted['rock'] == 1
+    assert counted['ruby'] == 0
 
 
 def test_rock_is_not_looked_for_unless_asked() -> None:
