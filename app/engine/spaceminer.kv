@@ -5,6 +5,8 @@ Game:
 
 <Game>:
     gameworld: gameworld
+    # Taken off the ship, the scanner can't stay open
+    on_scanning: setattr(scanner, 'open', False) if not args[1] else None
 
     GameWorld:
         id: gameworld
@@ -86,6 +88,21 @@ Game:
             disabled_color: 1, 1, 1, 1
             on_release: root.toggle_cargo()
 
+        # The scanner, used in flight too: last of the row of buttons at
+        # the bottom, the landing shortcut in its middle
+        PanelButton:
+            id: scanner_button
+            text: 'Scanner'
+            font_size: '17sp'
+            glow: .9 if scanner.open else .6
+            size: dp(ROW_BUTTON), dp(48)
+            x: root.center_x + dp(ROW_BUTTON + ROW_GAP) * 1.5 - self.width / 2
+            y: root.y + dp(ROW_BOTTOM)
+            # Once one is fitted, under the panels of the base
+            opacity: 1 if root.scanning and not base.panel else 0
+            disabled: not root.scanning or bool(base.panel)
+            on_release: scanner.toggle_open()
+
         CargoPanel:
             id: cargo
             x: root.x + dp(16)
@@ -139,6 +156,21 @@ Game:
             id: base
             size: root.size
             pos: root.pos
+            # One panel at a time
+            on_panel: setattr(scanner, 'open', False) if args[1] else None
+            # The scanner button ends the row, when there is one
+            full_row: root.scanning
+
+        # Over the base, whose depot stays in view
+        Layer:
+            size: root.size
+            pos: root.pos
+            shown: scanner.open
+            ScannerPanel:
+                id: scanner
+                # From the height, which is known once the rows are in
+                x: root.center_x - self.width / 2
+                y: root.center_y - self.height / 2
 
     # Home page, over the game which runs behind it, or is paused
     Layer:

@@ -15,9 +15,11 @@ if TYPE_CHECKING:
 def escape(game: 'Game') -> bool:
     """ Closes what is open over the game, or else pauses or resumes it.
     On the home page before playing, does nothing: Kivy leaves the game. """
-    base = game.ids.base
+    base, scanner = game.ids.base, game.ids.scanner
     if game.settings_open:
         game.settings_open = False
+    elif scanner.open:
+        scanner.open = False
     elif base.panel:
         base.close()
     elif game.playing:
@@ -35,7 +37,8 @@ def steers(game: 'Game', touch: MotionEvent) -> bool:
     Nothing on the buttons, nor while landing. """
     ids, player = game.ids, game.player
     buttons = [
-        ids.land_button, ids.cargo_button, *ids.base.buttons,
+        ids.land_button, ids.cargo_button, ids.scanner_button,
+        *ids.base.buttons,
     ]
     ship = player.ship
     if on_any(buttons, touch.pos) or ship is None or player.landing:

@@ -60,6 +60,7 @@ class Game(Widget):
     playing = BooleanProperty(False)
     paused = BooleanProperty(False)
     settings_open = BooleanProperty(False)   # over the home page
+    scanning = BooleanProperty(False)        # the ship has a scanner
     mobile = BooleanProperty(PLATFORM in MOBILE_PLATFORMS)
 
     stars: StarField
@@ -98,6 +99,7 @@ class Game(Widget):
         )
         setup_collisions(self.gameworld, self.player.on_contact)
         self.ids.base.setup(self.player, self.rng)
+        self.ids.scanner.setup(self.player, self.system, self.ids.base)
         self.keeper = Keeper(seed, self.player, self.ids.base)
         if save is not None:
             self.keeper.restore(save)
@@ -126,6 +128,7 @@ class Game(Widget):
         self.player.update(dt, heading)
         self.looks.update(self.player, heading, dt)
         self.ids.base.update(dt)
+        self.scanning = self.player.stats.scan > 0
         self.system.update(dt, self.player.anchor)
         shift = recenter(self.player, self.camera, self.system, self.stars)
         self.looks.shift(shift)
@@ -199,7 +202,8 @@ class Game(Widget):
     def on_touch_down(self, touch: MotionEvent) -> bool:
         """ Thrusting towards the pointer while pressed, unless something
         is open over the game, or on the home page """
-        if self.playing and not self.ids.base.panel and steers(self, touch):
+        overlaid = self.ids.base.panel or self.ids.scanner.open
+        if self.playing and not overlaid and steers(self, touch):
             self.pointer = touch.pos
             self.pointer_uid = touch.uid
         return bool(super().on_touch_down(touch))
