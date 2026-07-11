@@ -2,7 +2,8 @@
 color maps, and the shading that makes a disc look round. Images are
 SIZE pixels across, with the disc of the planet in their middle. """
 
-from collections.abc import Callable
+import math
+from collections.abc import Callable, Sequence
 from random import Random
 
 from PIL import Image, ImageFilter
@@ -29,6 +30,15 @@ def noise(rng: Random, cells: int) -> Image.Image:
     smooth = small.resize((SIZE, SIZE), Image.Resampling.BICUBIC)
     # Rounds off the corners of the cells
     return smooth.filter(ImageFilter.GaussianBlur(SIZE / cells / 3))
+
+
+def winds(rng: Random, across: int, down: int) -> Image.Image:
+    """ Smooth random values drawn out along the rows, as winds blow on
+    gas giants: `across` cells along them, `down` across them """
+    small = Image.new('L', (across, down))
+    small.putdata([rng.randrange(256) for _ in range(across * down)])
+    smooth = small.resize((SIZE, SIZE), Image.Resampling.BICUBIC)
+    return smooth.filter(ImageFilter.GaussianBlur(SIZE / down / 3))
 
 
 def octaves(rng: Random, *cells: int) -> Image.Image:
@@ -60,6 +70,28 @@ def latitude() -> Image.Image:
     """ Distance to the equator, 255 at the poles """
     gradient = Image.linear_gradient('L').resize((SIZE, SIZE))
     return gradient.point(lut(lambda v: abs(2 * v - 1)))
+
+
+def color_map(values: Image.Image, stops: Sequence[Color],
+              cycles: float = 1.) -> Image.Image:
+    """ Each value to a color between the stops, going through them
+    `cycles` times, back and forth, smoothly where it turns back """
+    def color(v: float) -> tuple[float, float, float]:
+        t = (1 - math.cos(math.pi * v * cycles)) / 2
+        position = t * (len(stops) - 1)
+        index = min(int(position), len(stops) - 2)
+        part = position - index
+        low, high = stops[index], stops[index + 1]
+        return (
+            low[0] + (high[0] - low[0]) * part,
+            low[1] + (high[1] - low[1]) * part,
+            low[2] + (high[2] - low[2]) * part,
+        )
+    channels = []
+    for channel in range(3):
+        table = [round(color(v / 255)[channel]) for v in range(256)]
+        channels.append(values.point(table))
+    return Image.merge('RGB', channels)
 
 
 def shade(image: Image.Image, radius: float, air: Color,
