@@ -9,6 +9,14 @@ MOON = 'moon'
 SUN_DISC = .7                 # part of the sun texture that is not glow
 # Images of planets bigger than the planet itself, for their rings
 PLANET_IMAGE_SCALE = {'planet6': 1.6}
+# On the map, by texture
+PLANET_COLORS = {
+    'earth': (.23, .49, .76), 'planet1': (.85, .7, .5),
+    'planet2': (.75, .4, .25), 'planet3': (.5, .8, .82),
+    'planet4': (.6, .5, .82), 'planet5': (.88, .68, .64),
+    'planet6': (.9, .82, .6), 'planet7': (.3, .42, .78),
+}
+RINGED = {'planet6'}
 
 # Space repeats itself every WORLD_SIZE, the solar system fits in it
 WORLD_SIZE = 72000.

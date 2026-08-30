@@ -43,6 +43,7 @@ from .world.starfield import StarField
 from .world.wrapping import recenter, wrap_space
 
 ESCAPE = 27                   # also the back button on Android
+MAP_KEY = 109                 # M
 
 # Overrides the platform, to try the phone interface on a computer
 PLATFORM = os.environ.get('SPACE_MINER_PLATFORM', platform)
@@ -61,6 +62,7 @@ class Game(Widget):
     paused = BooleanProperty(False)
     settings_open = BooleanProperty(False)   # over the home page
     scanning = BooleanProperty(False)        # the ship has a scanner
+    map_open = BooleanProperty(False)        # the game standing still
     mobile = BooleanProperty(PLATFORM in MOBILE_PLATFORMS)
 
     stars: StarField
@@ -121,7 +123,7 @@ class Game(Widget):
     # Game loop
 
     def update(self, dt: float) -> None:
-        if self.paused:
+        if self.paused or self.map_open:
             return                  # everything stays as it was drawn
         dt = min(dt, MAX_FRAME_TIME)
         heading = pointer_heading(self.camera, self.pointer)
@@ -183,8 +185,20 @@ class Game(Widget):
 
     def on_keyboard(self, window: Any, key: int, *args: Any) -> bool:
         """ Escape, or back on Android, closes what is open, pauses and
-        resumes """
+        resumes. M opens the map. """
+        if key == MAP_KEY and self.playing:
+            self.toggle_map()
+            return True
         return key == ESCAPE and escape(self)
+
+    def toggle_map(self) -> None:
+        """ The game stands still behind it, closing what was open """
+        self.map_open = not self.map_open
+        if self.map_open:
+            self.ids.base.close()
+            self.ids.scanner.open = False
+            self.pointer = None
+            self.ids.map.show(self.system, self.player)
 
     def toggle_cargo(self) -> None:
         self.cargo_open = not self.cargo_open
@@ -203,7 +217,9 @@ class Game(Widget):
         """ Thrusting towards the pointer while pressed, unless something
         is open over the game, or on the home page """
         overlaid = self.ids.base.panel or self.ids.scanner.open
-        if self.playing and not overlaid and steers(self, touch):
+        if self.playing and not overlaid and not self.map_open and (
+            steers(self, touch)
+        ):
             self.pointer = touch.pos
             self.pointer_uid = touch.uid
         return bool(super().on_touch_down(touch))

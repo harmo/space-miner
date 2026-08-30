@@ -88,8 +88,8 @@ Game:
             disabled_color: 1, 1, 1, 1
             on_release: root.toggle_cargo()
 
-        # The scanner, used in flight too: last of the row of buttons at
-        # the bottom, the landing shortcut in its middle
+        # The scanner and the map, used in flight too: last of the row of
+        # buttons at the bottom, the landing shortcut in its middle
         PanelButton:
             id: scanner_button
             text: 'Scanner'
@@ -102,6 +102,21 @@ Game:
             opacity: 1 if root.scanning and not base.panel else 0
             disabled: not root.scanning or bool(base.panel)
             on_release: scanner.toggle_open()
+
+        PanelButton:
+            id: map_button
+            text: 'Carte'
+            font_size: '17sp'
+            glow: .6
+            size: dp(ROW_BUTTON), dp(48)
+            x:
+                root.center_x - self.width / 2 \
+                + dp(ROW_BUTTON + ROW_GAP) * (2.5 if root.scanning else 2)
+            y: root.y + dp(ROW_BOTTOM)
+            # Under the panels of the base
+            opacity: 0 if base.panel else 1
+            disabled: bool(base.panel)
+            on_release: root.toggle_map()
 
         CargoPanel:
             id: cargo
@@ -160,6 +175,65 @@ Game:
             on_panel: setattr(scanner, 'open', False) if args[1] else None
             # The scanner button ends the row, when there is one
             full_row: root.scanning
+
+        # Over everything, the game standing still behind
+        Layer:
+            size: root.size
+            pos: root.pos
+            shown: root.map_open
+            canvas.before:
+                Color:
+                    rgba: .02, .03, .06, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            MapView:
+                id: map
+                size: root.size
+                pos: root.pos
+            Label:
+                text: 'CARTE'
+                bold: True
+                font_size: '14sp'
+                color: 1, 1, 1, .6
+                size: self.texture_size
+                x: root.x + dp(20)
+                y: root.top - dp(20) - self.height
+            Label:
+                text: 'Le jeu est figé tant que la carte est ouverte'
+                font_size: '12sp'
+                color: 1, 1, 1, .4
+                size: self.texture_size
+                x: root.x + dp(20)
+                y: root.top - dp(40) - self.height
+            # Zoomed in on the ship, or the whole system
+            BoxLayout:
+                size_hint: None, None
+                size: dp(160), dp(42)
+                x: root.x + dp(16)
+                y: root.y + dp(16)
+                spacing: dp(8)
+                PanelButton:
+                    text: '-'
+                    font_size: '20sp'
+                    disabled: map.zoom == 1
+                    on_release: map.zoom_by(False)
+                Label:
+                    text: f'×{map.zoom:g}'
+                    font_size: '15sp'
+                    color: 1, 1, 1, .7
+                PanelButton:
+                    text: '+'
+                    font_size: '20sp'
+                    disabled: map.zoom == 8
+                    on_release: map.zoom_by(True)
+            PanelButton:
+                text: 'Fermer'
+                font_size: '15sp'
+                size: dp(120), dp(42)
+                right: root.right - dp(16)
+                y: root.y + dp(16)
+                on_release: root.toggle_map()
 
         # Over the base, whose depot stays in view
         Layer:

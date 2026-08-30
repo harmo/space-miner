@@ -165,7 +165,7 @@ class Scenario:
             due, started = self.game.time + delay, time.monotonic()
 
             def run_step(dt: float) -> None:
-                still = self.game.paused
+                still = self.game.paused or self.game.map_open
                 waited = time.monotonic() - started
                 if self.game.time < due and not (still and waited >= delay):
                     return
