@@ -1,3 +1,4 @@
+import math
 from itertools import pairwise
 from random import Random
 
@@ -144,3 +145,15 @@ def test_system_fits_in_the_repeated_world(plan: SystemPlan) -> None:
     last = plan.planets[-1]
     system_radius = last.planet.orbit_radius + last.extent
     assert WORLD_SIZE / 2 - system_radius > OUT_OF_SIGHT
+
+
+def test_the_moon_shows_the_earth_always_the_same_face(
+        plan: SystemPlan) -> None:
+    [moon] = plan.planets[plan.earth].satellites
+    assert moon.locked
+    # Facing the Earth at first
+    assert moon.rotation == pytest.approx(moon.orbit_angle + math.pi)
+    # Then turning as fast as it goes round
+    assert math.radians(moon.spin) == pytest.approx(
+        moon.speed / moon.orbit_radius
+    )
