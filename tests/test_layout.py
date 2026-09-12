@@ -17,12 +17,16 @@ from app.logic.world.config import (
     EARTH_RADIUS,
     GRAVITY,
     MOON_ORBIT,
+    SUN_BELT_ASTEROIDS,
+    SUN_BELT_WIDTH,
     SUN_RADIUS,
 )
 from app.logic.world.layout import (
     OrbiterPlan,
     SystemPlan,
+    orbital_speed,
     plan_system,
+    sun_belt_orbit,
 )
 
 # Moving the solar system to its copy must happen out of sight: farther
@@ -105,6 +109,26 @@ def test_belts_mix_minerals(plan: SystemPlan) -> None:
         for asteroid in p.satellites
     ]
     assert len({asteroid.mineral for asteroid in asteroids}) >= 4
+
+
+def test_sparse_belt_around_the_sun(plan: SystemPlan) -> None:
+    assert len(plan.sun_belt) == SUN_BELT_ASTEROIDS
+    middle = sun_belt_orbit(plan.orbits)
+    for asteroid in plan.sun_belt:
+        check_asteroid(asteroid)
+        assert abs(asteroid.orbit_radius - middle) <= SUN_BELT_WIDTH / 2
+        # Same way as the planets, at about their speed
+        assert asteroid.speed == pytest.approx(
+            orbital_speed(asteroid.orbit_radius), rel=.15
+        )
+
+
+def test_sun_belt_is_between_the_fourth_and_fifth(plan: SystemPlan) -> None:
+    fourth, fifth = plan.planets[3], plan.planets[4]
+    belt_inner = min(a.orbit_radius - a.radius for a in plan.sun_belt)
+    belt_outer = max(a.orbit_radius + a.radius for a in plan.sun_belt)
+    assert belt_inner > fourth.planet.orbit_radius + fourth.extent
+    assert belt_outer < fifth.planet.orbit_radius - fifth.extent
 
 
 def test_planets_never_overlap(plan: SystemPlan) -> None:
