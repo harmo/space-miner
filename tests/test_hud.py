@@ -7,6 +7,7 @@ from app.logic.config import (
     CARGO_ALMOST_FULL_COLOR,
     CARGO_COLOR,
     CARGO_FULL_COLOR,
+    HEAT_RANGE,
     MARKER_FAR,
     MARKER_LENGTH,
     MARKER_NEAR,
@@ -14,13 +15,15 @@ from app.logic.config import (
 from app.logic.hud import (
     cargo_color,
     edge_point,
+    heat_at,
     is_compact,
     is_on_screen,
     marker_length,
     orbit_dots,
     pulse,
+    sun_heat,
 )
-from app.logic.world.space import Vec2
+from app.logic.world.space import Celestial, Vec2
 
 HALF_SIZE = (960., 540.)
 
@@ -67,6 +70,28 @@ def test_target_on_screen() -> None:
     assert is_on_screen((1000., 0.), 100., HALF_SIZE)   # partly visible
     assert not is_on_screen((1100., 0.), 100., HALF_SIZE)
     assert not is_on_screen((0., -700.), 100., HALF_SIZE)
+
+
+def test_no_heat_far_from_the_sun() -> None:
+    assert sun_heat(HEAT_RANGE) == 0.
+    assert sun_heat(HEAT_RANGE * 3) == 0.
+
+
+def test_full_heat_on_the_sun() -> None:
+    assert sun_heat(0.) == 1.
+
+
+def test_heat_from_the_sun_surface() -> None:
+    sun = Celestial(0, 1000., pos=(500., 0.))
+    assert heat_at((1500., 0.), sun) == 1.
+    assert heat_at((1500. + HEAT_RANGE, 0.), sun) == 0.
+
+
+def test_heat_grows_faster_and_faster_closer() -> None:
+    heats = [sun_heat(d) for d in range(int(HEAT_RANGE), -1, -250)]
+    assert heats == sorted(heats)
+    steps = [after - before for before, after in pairwise(heats)]
+    assert steps == sorted(steps)
 
 
 # Orbits
@@ -131,6 +156,7 @@ def test_compact_interface_on_small_screens() -> None:
     assert not is_compact('win', 1024., 768.)    # small laptop
 
 
+
 # Cargo
 
 def test_cargo_bar_warns_when_almost_full_then_full() -> None:
@@ -138,6 +164,7 @@ def test_cargo_bar_warns_when_almost_full_then_full() -> None:
     assert cargo_color(.5) == CARGO_COLOR
     assert cargo_color(.95) == CARGO_ALMOST_FULL_COLOR
     assert cargo_color(1.) == CARGO_FULL_COLOR
+
 
 
 def test_pulse_goes_smoothly_back_and_forth() -> None:

@@ -13,12 +13,13 @@ from .config import (
     CHEVRON_OPACITY,
     CHEVRON_SIZE,
     COMPACT_SCREEN,
+    HEAT_RANGE,
     MARKER_FAR,
     MARKER_LENGTH,
     MARKER_NEAR,
     MOBILE_PLATFORMS,
 )
-from .world.space import Vec2
+from .world.space import Round, Vec2
 
 
 def is_on_screen(offset: Vec2, radius: float, half_size: Vec2) -> bool:
@@ -58,6 +59,18 @@ def chevron_look(distance: float, reach: float) -> tuple[float, float]:
         smallest + (biggest - smallest) * closeness,
         faint + (bright - faint) * closeness,
     )
+
+
+def sun_heat(distance: float) -> float:
+    """ From 0 out of HEAT_RANGE from the sun surface, to 1 on it: slowly
+    at first, then faster and faster """
+    closeness = min(1., max(0., 1. - distance / HEAT_RANGE))
+    return closeness ** 2
+
+
+def heat_at(pos: Vec2, sun: Round) -> float:
+    """ How much the sky is reddened at `pos`, see sun_heat """
+    return sun_heat(math.dist(pos, sun.pos) - sun.radius)
 
 
 def orbit_dots(center: Vec2, radius: float, view_center: Vec2,

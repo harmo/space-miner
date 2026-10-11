@@ -22,7 +22,7 @@ from ..logic.config import (
     SYSTEMS,
     WORLD_SIZE,
 )
-from ..logic.hud import is_compact
+from ..logic.hud import heat_at, is_compact
 from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
 from .entities import setup_collisions, setup_state, step_systems
@@ -38,6 +38,7 @@ from .ui.overlay import Overlay
 from .ui.pointer import pointer_heading
 from .ui.scene import draw_scene
 from .ui.tracker import show_needs
+from .world.sky import Sky
 from .world.solar_system import SolarSystem
 from .world.starfield import StarField
 from .world.wrapping import recenter, wrap_space
@@ -65,6 +66,7 @@ class Game(Widget):
     map_open = BooleanProperty(False)        # the game standing still
     mobile = BooleanProperty(PLATFORM in MOBILE_PLATFORMS)
 
+    sky: Sky
     stars: StarField
     system: SolarSystem
     player: Player
@@ -84,6 +86,7 @@ class Game(Widget):
 
     def initialize(self) -> None:
         setup_state(self.gameworld)
+        self.sky = Sky(self.canvas.before)
         self.stars = StarField(self.gameworld)
         save = read_save()
         # The same solar system comes back with the saved game. Scenarios
@@ -124,6 +127,7 @@ class Game(Widget):
 
     def update(self, dt: float) -> None:
         if self.paused or self.map_open:
+            self.draw_sky()         # filling the window if it changes
             return                  # everything stays as it was drawn
         dt = min(dt, MAX_FRAME_TIME)
         heading = pointer_heading(self.camera, self.pointer)
@@ -134,6 +138,7 @@ class Game(Widget):
         self.system.update(dt, self.player.anchor)
         shift = recenter(self.player, self.camera, self.system, self.stars)
         self.looks.shift(shift)
+        self.sky.shift(shift)
         wrap_space(self.player, self.system, self.stars)
         step_systems(self.gameworld, dt)
         self.draw_overlay()
@@ -142,6 +147,13 @@ class Game(Widget):
             self.ids.land_button, self.player.shortcut, self.time
         )
         self.update_cargo()
+        self.draw_sky()
+
+    def draw_sky(self) -> None:
+        self.sky.draw(
+            self.pos, self.size, self.camera,
+            heat_at(self.player.anchor, self.system.sun),
+        )
 
     def update_cargo(self) -> None:
         miner = self.player.miner

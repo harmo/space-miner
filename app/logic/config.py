@@ -25,6 +25,9 @@ STAR_TILE = 12000.            # the star field repeats on a smaller tile
 STAR_COUNT = 6000             # per star tile
 STAR_SIZE = (2., 5.)
 STAR_WRAP_BATCH = 600         # stars checked for wrapping on each frame
+# The far sky behind them: images in IMAGES/sky, how fast each one slides
+# compared with the stars, and the size of its pixels in dp
+SKY_LAYERS = (('nebula', .03, 2.), ('far_stars', .1, 1.))
 
 # Explosions
 EXPLOSION_FRAGMENTS = 32
@@ -61,6 +64,9 @@ CHEVRON_OPACITY = (.35, .7)   # likewise, discreet
 CHEVRON_WIDTH = 1.             # of their outline, hollow inside
 CHEVRON_MARGIN = 22.          # from the screen edge, inside the bars
 SHIP_COLOR = (.85, .64, .25)
+# The sky reddens closer and closer to the sun
+HEAT_RANGE = 5000.            # from the sun surface, where it starts
+HEAT_COLOR = (.55, .08, .02)  # at the surface
 # Compact interface on phones: on mobile platforms, or on any screen whose
 # shorter side is below this many dp
 MOBILE_PLATFORMS = ('android', 'ios')
