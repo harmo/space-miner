@@ -17,14 +17,15 @@ SKY_DIR = Path(__file__).parent.parent / 'assets' / 'images' / 'sky'
 SIZE = 1024                   # a power of two, so the image can repeat
 SEED = 11
 
-SPACE = (3, 4, 10)
+SPACE = (2, 3, 6)
+# Dark and muted, so as not to draw the eye from the game
 GASES: tuple[tuple[Color, float], ...] = (    # and how much they show
-    ((96, 30, 104), .55),     # glowing hydrogen and oxygen
-    ((22, 74, 104), .5),
-    ((34, 38, 112), .45),
-    ((122, 40, 36), .3),
+    ((16, 46, 60), .5),       # glowing oxygen, seen from very far
+    ((26, 32, 56), .5),
+    ((54, 38, 28), .4),       # dust lit by the stars
+    ((62, 26, 36), .2),       # a little glowing hydrogen
 )
-STARLIGHT = (150, 136, 118)   # of the stars too far to be seen apart
+STARLIGHT = (120, 112, 100)   # of the stars too far to be seen apart
 DUST = (2, 2, 4)
 BAND_WIDTH = .16              # of the galaxy, for the image
 # Stars from the hottest to the coolest, and how often
@@ -112,9 +113,9 @@ def draw_nebula(rng: Random) -> Image.Image:
         clouds = ImageChops.multiply(clouds, near_band)
         wisps = ImageChops.multiply(ridges(rng, 4, 9, 20), clouds)
         sky.alpha_composite(layer(color, faded(clouds, amount)))
-        sky.alpha_composite(layer(color, faded(wisps, amount * 2)))
+        sky.alpha_composite(layer(color, faded(wisps, amount * 1.5)))
     glow = ImageChops.multiply(galaxy, tiled_octaves(rng, 5, 12, 30))
-    sky.alpha_composite(layer(STARLIGHT, faded(glow, .5)))
+    sky.alpha_composite(layer(STARLIGHT, faded(glow, .3)))
     # Lanes of dust darken the middle of the band
     lanes = ImageChops.multiply(
         galaxy.point(lut(lambda v: v ** 3)), ridges(rng, 3, 7, 16)
