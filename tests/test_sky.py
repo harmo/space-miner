@@ -26,3 +26,10 @@ def test_stays_on_the_first_tile() -> None:
     coords = tile_coords((1e9, -1e9), .1, SIZE, TILE)
     assert 0 <= coords[0] < 1 and 0 <= coords[1] < 1
 
+
+def test_on_whole_pixels() -> None:
+    """ Not to make the smallest stars flicker """
+    for travel in (0., 3.3, 7.77, 1234.5678):
+        coords = tile_coords((travel, travel), .1, SIZE, TILE)
+        assert coords[0] * TILE == pytest.approx(round(coords[0] * TILE))
+        assert coords[1] * TILE == pytest.approx(round(coords[1] * TILE))

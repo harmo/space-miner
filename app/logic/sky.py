@@ -11,9 +11,11 @@ def tile_coords(travel: Vec2, depth: float, size: Vec2,
     """ Texture coordinates of a screen of `size` pixels over an image
     repeated every `tile` pixels, slid `depth` times as far as the ship
     has travelled, in pixels too. Counterclockwise from the bottom left
-    corner. """
-    left = (travel[0] * depth - size[0] / 2) / tile % 1.
-    bottom = (travel[1] * depth - size[1] / 2) / tile % 1.
+    corner.
+    On whole pixels: sliding by fractions of pixels, the smallest stars
+    would flicker as they straddle two pixels or fill one. """
+    left = round(travel[0] * depth - size[0] / 2) / tile % 1.
+    bottom = round(travel[1] * depth - size[1] / 2) / tile % 1.
     right = left + size[0] / tile
     top = bottom + size[1] / tile
     return left, bottom, right, bottom, right, top, left, top
