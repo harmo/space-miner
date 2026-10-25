@@ -9,6 +9,11 @@ check = scenario.check
 remembered: dict[str, Any] = {}
 
 
+def view() -> Any:
+    """ The map itself, in its page """
+    return scenario.game.ids.map.ids.view
+
+
 @scenario.step(1.)
 def takes_off() -> None:
     remembered['touch'] = scenario.hold_towards(scenario.away_from_earth())
@@ -35,17 +40,17 @@ def stands_still() -> None:
     check(game.time == remembered['time'], 'the game stands still')
     check(scenario.player.ship.position == remembered['ship'],
           'and the ship with it')
-    check(len(game.ids.map.canvas.children) > 20, 'the map is drawn')
+    check(len(view().canvas.children) > 20, 'the map is drawn')
     scenario.screenshot('map')
     for _ in range(2):
-        scenario.press(scenario.button(game.ids.map.parent, '+'))
+        scenario.press(scenario.button(game.ids.map, '+'))
 
 
 @scenario.step(.3)
 def zooms_in() -> None:
     game = scenario.game
-    check(game.ids.map.zoom == 4, f'zoomed in: {game.ids.map.zoom}')
-    x, y = game.ids.map.chart.place(scenario.player.ship.position)
+    check(view().zoom == 4, f'zoomed in: {view().zoom}')
+    x, y = view().chart.place(scenario.player.ship.position)
     check(abs(x - game.center_x) < 1 and abs(y - game.center_y) < 1,
           'on the ship')
     scenario.screenshot('zoomed')
@@ -63,7 +68,7 @@ def escape_closes_it() -> None:
 @scenario.step(.3)
 def m_opens_it() -> None:
     check(scenario.game.map_open, 'M opens the map')
-    scenario.press(scenario.button(scenario.game.ids.map.parent, 'Fermer'))
+    scenario.press(scenario.button(scenario.game.ids.map, 'Fermer'))
 
 
 @scenario.step(.3)

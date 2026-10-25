@@ -1,0 +1,56 @@
+# The map over the game, see map_page.py
+
+<MapPage>:
+    canvas.before:
+        Color:
+            rgba: .02, .03, .06, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    MapView:
+        id: view
+        size: root.size
+        pos: root.pos
+    Label:
+        text: 'CARTE'
+        bold: True
+        font_size: '14sp'
+        color: 1, 1, 1, .6
+        size: self.texture_size
+        x: root.x + dp(20)
+        y: root.top - dp(20) - self.height
+    Label:
+        text: 'Le jeu est figé tant que la carte est ouverte'
+        font_size: '12sp'
+        color: 1, 1, 1, .4
+        size: self.texture_size
+        x: root.x + dp(20)
+        y: root.top - dp(40) - self.height
+    # Zoomed in on the ship, or the whole system
+    BoxLayout:
+        size_hint: None, None
+        size: dp(160), dp(42)
+        x: root.x + dp(16)
+        y: root.y + dp(16)
+        spacing: dp(8)
+        PanelButton:
+            text: '-'
+            font_size: '20sp'
+            disabled: view.zoom == 1
+            on_release: view.zoom_by(False)
+        Label:
+            text: f'×{view.zoom:g}'
+            font_size: '15sp'
+            color: 1, 1, 1, .7
+        PanelButton:
+            text: '+'
+            font_size: '20sp'
+            disabled: view.zoom == 8
+            on_release: view.zoom_by(True)
+    PanelButton:
+        text: 'Fermer'
+        font_size: '15sp'
+        size: dp(120), dp(42)
+        right: root.right - dp(16)
+        y: root.y + dp(16)
+        on_release: root.dispatch('on_close')

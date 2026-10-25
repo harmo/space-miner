@@ -6,7 +6,7 @@ from kivy.app import App
 from .base.earth_base import EarthBase  # noqa: F401
 from .game import Game
 from .ui.cargo_panel import CargoPanel  # noqa: F401
-from .ui.map_view import MapView  # noqa: F401
+from .ui.map_page import MapPage  # noqa: F401
 from .ui.preferences_panel import PreferencesPanel  # noqa: F401
 from .ui.scanner_panel import ScannerPanel  # noqa: F401
 from .ui.tracker import MissionTracker  # noqa: F401

@@ -177,63 +177,12 @@ Game:
             full_row: root.scanning
 
         # Over everything, the game standing still behind
-        Layer:
+        MapPage:
+            id: map
             size: root.size
             pos: root.pos
             shown: root.map_open
-            canvas.before:
-                Color:
-                    rgba: .02, .03, .06, 1
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-            MapView:
-                id: map
-                size: root.size
-                pos: root.pos
-            Label:
-                text: 'CARTE'
-                bold: True
-                font_size: '14sp'
-                color: 1, 1, 1, .6
-                size: self.texture_size
-                x: root.x + dp(20)
-                y: root.top - dp(20) - self.height
-            Label:
-                text: 'Le jeu est figé tant que la carte est ouverte'
-                font_size: '12sp'
-                color: 1, 1, 1, .4
-                size: self.texture_size
-                x: root.x + dp(20)
-                y: root.top - dp(40) - self.height
-            # Zoomed in on the ship, or the whole system
-            BoxLayout:
-                size_hint: None, None
-                size: dp(160), dp(42)
-                x: root.x + dp(16)
-                y: root.y + dp(16)
-                spacing: dp(8)
-                PanelButton:
-                    text: '-'
-                    font_size: '20sp'
-                    disabled: map.zoom == 1
-                    on_release: map.zoom_by(False)
-                Label:
-                    text: f'×{map.zoom:g}'
-                    font_size: '15sp'
-                    color: 1, 1, 1, .7
-                PanelButton:
-                    text: '+'
-                    font_size: '20sp'
-                    disabled: map.zoom == 8
-                    on_release: map.zoom_by(True)
-            PanelButton:
-                text: 'Fermer'
-                font_size: '15sp'
-                size: dp(120), dp(42)
-                right: root.right - dp(16)
-                y: root.y + dp(16)
-                on_release: root.toggle_map()
+            on_close: root.toggle_map()
 
         # Over the base, whose depot stays in view
         Layer:
