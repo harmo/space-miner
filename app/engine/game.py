@@ -31,13 +31,11 @@ from .ship.looks import ShipLooks
 from .ship.player import Player
 from .storage import read_preferences, read_save
 from .textures import ground_edge, load_textures
-from .ui.cargo_panel import show_cargo
 from .ui.controls import escape, steers
-from .ui.land_button import show_shortcut
+from .ui.hud import show_hud
 from .ui.overlay import Overlay
 from .ui.pointer import pointer_heading
 from .ui.scene import draw_scene
-from .ui.tracker import show_needs
 from .world.sky import Sky
 from .world.solar_system import SolarSystem
 from .world.starfield import StarField
@@ -143,10 +141,10 @@ class Game(Widget):
         step_systems(self.gameworld, dt)
         self.draw_overlay()
         self.time += dt
-        self.land_glow = show_shortcut(
-            self.ids.land_button, self.player.shortcut, self.time
+        self.compact = is_compact(
+            PLATFORM, Window.width / dp(1), Window.height / dp(1)
         )
-        self.update_cargo()
+        show_hud(self)
         self.draw_sky()
 
     def draw_sky(self) -> None:
@@ -154,17 +152,6 @@ class Game(Widget):
             self.pos, self.size, self.camera,
             heat_at(self.player.anchor, self.system.sun),
         )
-
-    def update_cargo(self) -> None:
-        miner = self.player.miner
-        load = show_cargo(
-            self.ids.cargo, miner, miner.mining or self.ids.base.depot.mineral
-        )
-        self.compact = is_compact(
-            PLATFORM, Window.width / dp(1), Window.height / dp(1)
-        )
-        self.ids.cargo_button.text = f'Soute  {load}'
-        show_needs(self.ids.tracker, self.ids.base, self.player)
 
     def play(self) -> None:
         """ Leave the home page """
@@ -220,8 +207,6 @@ class Game(Widget):
             self.overlay, self.size, self.system, self.player, self.looks,
             self.playing, self.preferences,
         )
-        self.ids.message_label.text = self.player.miner.message
-        self.ids.news_label.text = self.system.events.headline
 
     # Input
 
