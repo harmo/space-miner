@@ -104,12 +104,19 @@ def trades() -> None:
 def hears_the_base() -> None:
     check(loops()['unloading'] == 'unloading', f'ore unloads: {loops()}')
     check('sale' in played, f'the rock is sold: {played}')
-    scenario.game.preferences.sound = False
+    scenario.game.preferences.sounds = 0.
 
 
 @scenario.step(.5)
 def falls_silent() -> None:
-    check(audio.muted, 'the sounds are off')
+    check(audio.volume == 0, 'the sounds are off')
+    check(set(loops().values()) == {'ambient', None},
+          f'all is quiet but space: {loops()}')
+    scenario.game.preferences.ambience = 0.
+
+
+@scenario.step(.5)
+def space_falls_silent() -> None:
     check(set(loops().values()) == {None}, f'all is quiet: {loops()}')
     check(not scenario.game.soundtrack.ambient.playing, 'space too')
 

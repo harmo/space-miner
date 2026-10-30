@@ -1,11 +1,11 @@
 """ Settings, from the home page: what is shown, the full screen, the
-sounds, and a new game, which takes a confirmation. Styled in
-preferences_panel.kv. """
+volumes of the sounds and of the ambience, and a new game, which takes a
+confirmation. Styled in preferences_panel.kv. """
 
 from typing import Any
 
 from kivy.core.window import Window
-from kivy.properties import BooleanProperty
+from kivy.properties import BooleanProperty, NumericProperty
 from kivy.uix.boxlayout import BoxLayout
 
 from ...logic.preferences import Preferences
@@ -26,7 +26,8 @@ class PreferencesPanel(BoxLayout):
     orbits = BooleanProperty(True)
     markers = BooleanProperty(True)
     fullscreen = BooleanProperty(True)
-    sound = BooleanProperty(True)
+    sounds = NumericProperty(1.)
+    ambience = NumericProperty(1.)
     confirming = BooleanProperty(False)     # a new game, once asked
     mobile = BooleanProperty(False)         # always full screen
 
@@ -47,7 +48,8 @@ class PreferencesPanel(BoxLayout):
         self.orbits = preferences.orbits
         self.markers = preferences.markers
         self.fullscreen = preferences.fullscreen
-        self.sound = preferences.sound
+        self.sounds = preferences.sounds
+        self.ambience = preferences.ambience
         self.confirming = False
 
     def toggle(self, name: str) -> None:
@@ -58,6 +60,13 @@ class PreferencesPanel(BoxLayout):
         if name == 'fullscreen':
             apply_fullscreen(value)
         write_preferences(self.preferences)
+
+    def adjust(self, name: str, volume: float) -> None:
+        """ A volume of the preferences, heard and saved at once """
+        if getattr(self.preferences, name) != volume:
+            setattr(self.preferences, name, volume)
+            setattr(self, name, volume)
+            write_preferences(self.preferences)
 
     def new_game(self) -> None:
         if self.confirming:

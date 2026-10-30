@@ -40,11 +40,16 @@
         disabled: root.mobile
         panel: root
         name: 'fullscreen'
-    SettingRow:
+    VolumeRow:
         label: 'Sons'
-        on: root.sound
+        volume: root.sounds
         panel: root
-        name: 'sound'
+        name: 'sounds'
+    VolumeRow:
+        label: 'Ambiance'
+        volume: root.ambience
+        panel: root
+        name: 'ambience'
     Widget:
         size_hint_y: None
         height: dp(10)
@@ -106,3 +111,37 @@
         size_hint_x: None
         width: dp(80)
         on_release: root.panel.toggle(root.name)
+
+# A volume, from silent to full, by steps of a tenth
+<VolumeRow@BoxLayout>:
+    label: ''
+    volume: 1.
+    size_hint_y: None
+    height: dp(40)
+    spacing: dp(10)
+    panel: None
+    name: ''
+    Label:
+        text: root.label
+        font_size: '15sp'
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
+    Slider:
+        min: 0
+        max: 1
+        step: .1
+        value: root.volume
+        value_track: True
+        value_track_color: (*HOME_COLOR, 1)
+        size_hint_x: None
+        width: dp(150)
+        # Set at first by the panel, not there yet
+        on_value:
+            root.panel and root.panel.adjust(root.name, round(self.value, 1))
+    Label:
+        text: f'{round(root.volume * 100)} %' if root.volume else 'Coupé'
+        font_size: '14sp'
+        color: (1, 1, 1, 1) if root.volume else (1, 1, 1, .5)
+        size_hint_x: None
+        width: dp(60)

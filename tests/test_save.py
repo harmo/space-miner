@@ -63,12 +63,23 @@ def test_what_is_not_a_saved_game_is_refused(text: str) -> None:
 
 
 def test_preferences() -> None:
-    preferences = Preferences(orbits=False, fullscreen=False, sound=False)
+    preferences = Preferences(
+        orbits=False, fullscreen=False, sounds=.4, ambience=0.,
+    )
     assert load_preferences(dump_preferences(preferences)) == preferences
     assert load_preferences('{"orbits": "no", "unknown": 1}') == (
         Preferences()
     )
     assert load_preferences('garbage') == Preferences()
+
+
+def test_volumes_are_numbers_between_silent_and_full() -> None:
+    assert load_preferences(
+        '{"sounds": 1.5, "ambience": -2, "orbits": 1}'
+    ) == Preferences(sounds=1., ambience=0.)
+    assert load_preferences('{"sounds": true, "ambience": "loud"}') == (
+        Preferences()
+    )
 
 
 def test_older_saves_own_the_first_hull_and_the_ship_s() -> None:

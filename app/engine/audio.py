@@ -1,5 +1,4 @@
-""" Sounds played from their files, once or looping. Muted, nothing plays,
-and loops stop. """
+""" Sounds played from their files, once or looping """
 
 from pathlib import Path
 
@@ -16,7 +15,7 @@ class Audio:
         self.sounds: dict[str, Sound | None] = {}
         self.mixer: Mixer | None = None     # loops seamlessly, once open
         self.reserved = 0                   # channels given to loops
-        self.muted = False
+        self.volume = 1.                    # of the sounds played once
 
     def open(self) -> None:
         """ Loads every sound. Kivy opens the audio device with the first
@@ -41,8 +40,9 @@ class Audio:
         return self.sounds[name]
 
     def play(self, name: str) -> None:
-        sound = None if self.muted else self.sound(name)
+        sound = self.sound(name) if self.volume > 0 else None
         if sound is not None:
+            sound.volume = self.volume
             sound.play()
 
     def reserve(self) -> int | None:
@@ -65,8 +65,6 @@ class Loop:
     def play(self, name: str | None, volume: float = 1.) -> None:
         """ Goes on with the same sound, switches to another one, or stops
         with none """
-        if self.audio.muted:
-            name = None
         if name != self.name:
             self.stop()
             self.name = name

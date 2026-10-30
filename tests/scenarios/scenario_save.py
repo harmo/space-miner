@@ -95,8 +95,15 @@ def changes_a_setting() -> None:
     check(scenario.game.settings_open, 'the settings open')
     row = next(w for w in panel.walk() if getattr(w, 'name', '') == 'orbits')
     scenario.press(scenario.button(row, 'Oui'))
+    ambience = next(
+        w for w in panel.walk() if getattr(w, 'name', '') == 'ambience'
+    )
+    next(w for w in ambience.walk() if hasattr(w, 'step')).value = .3
+    scenario.screenshot('settings')
     preferences = json.loads((DATA / 'preferences.json').read_text())
     check(preferences['orbits'] is False, 'the setting is saved')
+    check(preferences['ambience'] == .3, 'so is the volume')
+    check(scenario.game.preferences.ambience == .3, 'heard at once')
     scenario.press(scenario.button(panel, 'Nouvelle partie'))
 
 
