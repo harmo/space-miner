@@ -151,8 +151,10 @@ class Game(Widget):
         heading = pointer_heading(self.camera, self.pointer)
         self.player.update(dt, heading)
         self.looks.update(self.player, heading, dt)
-        self.ids.base.update(dt)
+        # Outposts first: those refuelling a ship landed there save it from
+        # being stranded
         self.ids.outpost.update(dt)
+        self.ids.base.update(dt)
         self.scanning = self.player.stats.scan > 0
         self.system.update(dt, self.player.anchor)
         shift = recenter(self.player, self.camera, self.system, self.stars)

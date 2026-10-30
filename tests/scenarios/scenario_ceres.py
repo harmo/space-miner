@@ -1,5 +1,6 @@
 """ Cérès: a big asteroid in the middle of the belt around the sun, where
-the ship lands on a small pad. Built up to its refinery, it crushes the
+the ship lands on a small pad. Landed there out of fuel before anything
+is built, it calls for help. Built up to its refinery, it crushes the
 rock of its depot there, with no missions. """
 
 import math
@@ -30,6 +31,11 @@ def flies_to_ceres() -> None:
     belt = sun_belt_orbit(system.orbits)
     check(abs(distance - belt) < 1, f'in the belt around the sun: {distance}')
     check(outpost.body in system.attractors, 'pulling the ship')
+    above_the_pad()
+
+
+def above_the_pad() -> None:
+    outpost = ceres()
     x, y = outpost.pos
     direction = outpost.direction
     scenario.put_ship(
@@ -43,6 +49,35 @@ def lands_there() -> None:
     scenario.screenshot('site')
     shortcut = scenario.player.shortcut
     check(shortcut == 'ready', f'the landing shortcut is ready: {shortcut}')
+    scenario.player.land()
+
+
+@scenario.step(LANDING_DURATION + .5)
+def runs_dry_there() -> None:
+    check(view().docked, 'landed on the bare site')
+    scenario.player.tank.level = 0.
+    scenario.player.miner.ore['iron'] = 5.
+    scenario.base.wallet.credits = 1000
+
+
+@scenario.step(.3)
+def calls_for_help() -> None:
+    button = scenario.game.ids.distress_button
+    check(scenario.base.stranded and button.opacity == 1,
+          'stranded there, help can be called')
+    scenario.press(button)
+
+
+@scenario.step(.5)
+def is_towed_home() -> None:
+    check(scenario.base.docked, 'back on the Earth')
+    check(scenario.player.miner.ore == {'iron': 5.}, 'with its cargo')
+    scenario.player.miner.ore.clear()
+    above_the_pad()
+
+
+@scenario.step(.3)
+def lands_there_again() -> None:
     scenario.player.land()
 
 
