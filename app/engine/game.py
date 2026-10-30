@@ -82,7 +82,11 @@ class Game(Widget):
         self.keeper: Keeper | None = None   # once the game is set up
         load_textures()
         Window.bind(on_keyboard=self.on_keyboard)
-        self.gameworld.init_gameworld(SYSTEMS, callback=self.initialize)
+        # Once the kv file attached the systems to the game world, on the
+        # next frame: earlier, KivEnt would wait a whole second for them
+        Clock.schedule_once(lambda dt: self.gameworld.init_gameworld(
+            SYSTEMS, callback=self.initialize,
+        ))
 
     def initialize(self) -> None:
         setup_state(self.gameworld)
