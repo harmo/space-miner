@@ -7,9 +7,10 @@ landing and its crash, then the base: ore unloaded, trade, missions
 validated and buttons clicked, the solar system: swarms arriving, and the
 ambience of space, drones and radio calls, see ambience.py.
 
-    uv run python -m tools.compose_sounds [sounds] [ambience]
+    uv run python -m tools.compose_sounds [sounds] [fuel] [ambience]
 
-Both without any, one of them with its name.
+All of them without any, those named otherwise. The sounds of the fuel are
+in fuel_sounds.py.
 
 ffmpeg encodes them, with libvorbis.
 """
@@ -22,6 +23,7 @@ from pathlib import Path
 from random import Random
 
 from .ambience import DRONES, calls, play
+from .fuel_sounds import FUEL_EVENTS
 from .synth import (
     Samples,
     crackle,
@@ -48,6 +50,7 @@ from .synth import (
 SOUNDS_DIR = Path(__file__).parent.parent / 'assets' / 'sounds'
 SEED = 5
 AMBIENCE_SEED = 8
+FUEL_SEED = 13
 
 # Loudness, in decibels, from the laser, which sounds right in the game:
 # the other loops stay below it, as do sounds of events at their loudest
@@ -646,6 +649,13 @@ def compose_drone(number: int) -> None:
     save(SOUNDS_DIR / f'drone_{number}.ogg', level(sound, AMBIENT_DB))
 
 
+def compose_fuel() -> None:
+    """ With random numbers of their own, not to change the other sounds """
+    rng = Random(FUEL_SEED)
+    for name, (seconds, compose) in FUEL_EVENTS.items():
+        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose))
+
+
 def compose_ambience() -> None:
     """ The drones side by side, as they take long """
     with ProcessPoolExecutor() as pool:
@@ -657,10 +667,12 @@ def compose_ambience() -> None:
 
 
 if __name__ == '__main__':
-    # Only the ambience with "ambience", the rest with "sounds"
-    wanted = sys.argv[1:] or ['sounds', 'ambience']
+    # All of them, or the groups named
+    wanted = sys.argv[1:] or ['sounds', 'fuel', 'ambience']
     SOUNDS_DIR.mkdir(parents=True, exist_ok=True)
     if 'sounds' in wanted:
         main()
+    if 'fuel' in wanted:
+        compose_fuel()
     if 'ambience' in wanted:
         compose_ambience()
