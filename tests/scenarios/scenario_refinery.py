@@ -33,6 +33,8 @@ def bit_by_bit() -> None:
     check(ROCK - 3 * CRUSH_RATE < rock < ROCK - CRUSH_RATE,
           f'crushed a bit at a time: {rock:.1f} left')
     check(base.crushing, 'the refinery works')
+    machine = scenario.game.soundtrack.unloading
+    check(machine.name == 'crushing' and machine.playing, 'heard')
     button = scenario.button(market(), 'Concassage…')
     check(button.disabled, 'once')
     scenario.screenshot('crushing')
@@ -45,6 +47,7 @@ def until_none_is_left() -> None:
     check('rock' not in stock, f'the rock is crushed: {stock}')
     check(sum(stock.values()) > 0, f'into other ore: {stock}')
     check(not base.crushing, 'the refinery stops')
+    check(scenario.game.soundtrack.unloading.name is None, 'falling silent')
     button = scenario.button(market(), 'Concasser la roche')
     check(button.disabled, 'with no rock left')
 

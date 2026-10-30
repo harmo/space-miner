@@ -5,10 +5,12 @@ next. Sounds are named after their files in SOUNDS. """
 from dataclasses import dataclass
 
 from .ship.fuel import Gauge
+from .ship.heat import Warmth
 from .ship.hulls import HULLS
 from .ship.lasers import BEST
 from .ship.parts import PARTS
 from .ship.shipyard import Design
+from .world.flares import Phase
 
 # Rear parts with a sound of their own, the others sound as the hull
 ENGINES = (
@@ -47,7 +49,7 @@ def break_sound(mineral: str) -> str:
 
 def is_loop(name: str) -> bool:
     """ Played over and over, rather than once """
-    return name == 'unloading' or name.startswith(
+    return name in ('unloading', 'crushing') or name.startswith(
         ('engine_', 'laser_', 'drone_')
     )
 
@@ -72,6 +74,8 @@ class Moment:
     fuel: float = 0.          # in the tank
     gauge: Gauge = 'full'
     stranded: bool = False    # out of fuel away from the Earth
+    warmth: Warmth = 'cool'   # of the hull
+    flare: Phase = 'quiet'    # of the sun
 
 
 def heard(before: Moment, now: Moment) -> list[str]:
@@ -95,6 +99,8 @@ def heard(before: Moment, now: Moment) -> list[str]:
                 sounds.append('low_fuel')
             elif now.gauge == 'empty':
                 sounds.append('fuel_out')
+        if now.warmth == 'overheating' != before.warmth:
+            sounds.append('overheat')
     refuelled = now.parked and now.fuel >= before.fuel + REFUEL_HEARD
     if refuelled:
         sounds.append('refuel')
@@ -108,4 +114,9 @@ def heard(before: Moment, now: Moment) -> list[str]:
         sounds.append('purchase')
     if now.swarm and not before.swarm:
         sounds.append('swarm')
+    if now.flare != before.flare:
+        if now.flare == 'warning':
+            sounds.append('flare_warning')
+        elif now.flare == 'blazing':
+            sounds.append('flare')
     return sounds

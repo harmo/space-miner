@@ -55,6 +55,8 @@ class Soundtrack:
             fuel=player.tank.level,
             gauge=player.tank.gauge,
             stranded=player.stranded,
+            warmth=player.hull.warmth,
+            flare=game.system.events.flares.clock.phase,
         )
         running = playing and sounds > 0
         if running and self.moment is not None:

@@ -13,6 +13,7 @@ from .harness import Scenario
 scenario = Scenario('flares')
 check = scenario.check
 remembered: dict[str, Any] = {}
+played = scenario.record_sounds()
 SOON = .01                    # seconds left in the current phase
 
 
@@ -34,6 +35,7 @@ def is_quiet() -> None:
 def warns() -> None:
     check(headline().startswith('Éruption solaire dans'),
           f'the flare is told: {headline()!r}')
+    check(played[-1:] == ['flare_warning'], f'and heard: {played}')
     flares().clock.left = SOON
 
 
@@ -49,6 +51,7 @@ def blazes() -> None:
 @scenario.step(.5)
 def heats_much_more() -> None:
     check(headline() == 'Éruption solaire !', f'as told: {headline()!r}')
+    check('flare' in played, f'heard blazing: {played}')
     check(flares().surge > 3., f'the heat surges: {flares().surge:.1f}')
     check(flares().wave is not None, 'in waves')
     heat = scenario.player.hull.heat

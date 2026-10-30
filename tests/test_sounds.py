@@ -31,7 +31,8 @@ FLYING = Moment(
 EVENTS = (
     'explosion', 'gear_out', 'gear_in', 'touchdown', 'cargo_full',
     'mission', 'sale', 'purchase', 'swarm', 'pickup', 'click', 'unloading',
-    'low_fuel', 'fuel_out', 'refuel', 'tow',
+    'low_fuel', 'fuel_out', 'refuel', 'tow', 'overheat', 'flare_warning',
+    'flare', 'crushing',
 )
 
 
@@ -48,8 +49,8 @@ def test_every_sound_has_its_file() -> None:
 
 def test_loops_are_told_apart() -> None:
     loops = [
-        'unloading', HULL_ENGINE, 'engine_fusion_engine', laser_sound(3),
-        *DRONES,
+        'unloading', 'crushing', HULL_ENGINE, 'engine_fusion_engine',
+        laser_sound(3), *DRONES,
     ]
     assert all(is_loop(name) for name in loops)
     assert not any(is_loop(name) for name in EVENTS if name not in loops)
@@ -157,3 +158,19 @@ def test_towing_is_heard_rather_than_what_it_costs() -> None:
     assert heard(dry, back) == ['tow']
     filled = replace(back, fuel=100., gauge='full')
     assert heard(dry, filled) == ['tow', 'refuel']
+
+
+def test_overheating_is_heard_once() -> None:
+    hot = replace(FLYING, warmth='hot')
+    overheating = replace(FLYING, warmth='overheating')
+    assert heard(hot, overheating) == ['overheat']
+    assert heard(overheating, overheating) == []
+    assert heard(replace(overheating, ship=None), overheating) == []
+
+
+def test_a_flare_is_heard_told_then_blazing() -> None:
+    warning = replace(FLYING, flare='warning')
+    blazing = replace(FLYING, flare='blazing')
+    assert heard(FLYING, warning) == ['flare_warning']
+    assert heard(warning, blazing) == ['flare']
+    assert heard(blazing, replace(FLYING, flare='ejecta')) == []

@@ -12,6 +12,7 @@ from .harness import Scenario
 
 scenario = Scenario('heat')
 check = scenario.check
+played = scenario.record_sounds()
 DISTANCE = 1000.              # from the sun surface, inside the first orbit
 
 
@@ -43,6 +44,7 @@ def heats_up() -> None:
 def overheats() -> None:
     message = scenario.game.ids.message_label.text
     check(message == 'Surchauffe !', f'overheating is told: {message!r}')
+    check('overheat' in played, f'and heard: {played}')
     scenario.screenshot('overheating')
     scenario.player.hull.heat = .999
 
