@@ -36,6 +36,7 @@ class Save:
     mission_level: int = 1              # of the missions offered
     # What the scanner looks for
     looked_for: list[str] = field(default_factory=lambda: list(LOOKED_FOR))
+    fuel: float | None = None           # in the tank, None when full
 
 
 def ores(data: Any) -> dict[str, float]:
@@ -88,6 +89,11 @@ def hulls_of(data: Any, design: Design) -> list[str]:
     return [hull for hull in HULLS if hull in owned]
 
 
+def fuel_of(data: Any) -> float | None:
+    """ Older saves have none: a full tank """
+    return None if data is None else max(0., float(data))
+
+
 def dump(save: Save) -> str:
     return json.dumps({
         'version': VERSION,
@@ -104,6 +110,7 @@ def dump(save: Save) -> str:
         'active': [mission_data(mission) for mission in save.active],
         'looked_for': save.looked_for,
         'mission_level': save.mission_level,
+        'fuel': save.fuel,
     }, ensure_ascii=False, indent=1, sort_keys=True)
 
 
@@ -134,6 +141,7 @@ def load(text: str) -> Save:
                 name for name in MINERALS
                 if name in data.get('looked_for', LOOKED_FOR)
             ],
+            fuel=fuel_of(data.get('fuel')),
         )
     except SaveError:
         raise

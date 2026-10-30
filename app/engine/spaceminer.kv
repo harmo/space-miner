@@ -125,6 +125,12 @@ Game:
                 - self.height
             opacity: 1 if not root.compact or root.cargo_open else 0
 
+        FuelGauge:
+            id: fuel
+            # From the size, set once its rows are laid out
+            x: root.right - dp(16) - self.width
+            y: root.top - dp(16) - self.height
+
         MissionTracker:
             id: tracker
             x: root.x + dp(16)

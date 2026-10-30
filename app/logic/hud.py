@@ -1,6 +1,7 @@
 """ What the interface shows, computed without Kivy: markers pointing to
 places out of the screen, dotted orbits, the heat of the sun, the cargo
-bar, the glow of the shortcut, and when to be compact as on phones """
+bar, the fuel gauge, the glow of the shortcut, and when to be compact as on
+phones """
 
 import math
 
@@ -13,12 +14,14 @@ from .config import (
     CHEVRON_OPACITY,
     CHEVRON_SIZE,
     COMPACT_SCREEN,
+    FUEL_COLOR,
     HEAT_RANGE,
     MARKER_FAR,
     MARKER_LENGTH,
     MARKER_NEAR,
     MOBILE_PLATFORMS,
 )
+from .ship.fuel import Gauge
 from .world.space import Round, Vec2
 
 
@@ -129,6 +132,22 @@ def cargo_color(fill: float) -> Rgb:
     if fill >= CARGO_ALMOST_FULL:
         return CARGO_ALMOST_FULL_COLOR
     return CARGO_COLOR
+
+
+def fuel_color(gauge: Gauge) -> Rgb:
+    """ Of the fuel gauge: warns when low, then when almost empty """
+    if gauge in ('critical', 'empty'):
+        return CARGO_FULL_COLOR
+    return CARGO_ALMOST_FULL_COLOR if gauge == 'low' else FUEL_COLOR
+
+
+def fuel_message(gauge: Gauge, docked: bool) -> str:
+    """ Out in space: the base fills the tank of docked ships """
+    if docked:
+        return ''
+    if gauge == 'empty':
+        return 'Panne sèche'
+    return 'Carburant bas' if gauge == 'critical' else ''
 
 
 def pulse(time: float, period: float) -> float:

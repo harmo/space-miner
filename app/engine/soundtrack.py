@@ -63,7 +63,7 @@ class Soundtrack:
             for loop in (self.engine, self.laser, self.unloading):
                 loop.stop()
             return
-        thrust = game.looks.exhaust.thrust(player, heading)
+        thrust = player.thrust(heading)
         self.volume = toward(self.volume, thrust, dt)
         self.engine.play(
             engine_sound(player.design) if player.ship else None,

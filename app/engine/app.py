@@ -6,6 +6,7 @@ from kivy.app import App
 from .base.earth_base import EarthBase  # noqa: F401
 from .game import Game
 from .ui.cargo_panel import CargoPanel  # noqa: F401
+from .ui.fuel_gauge import FuelGauge  # noqa: F401
 from .ui.home_page import HomePage  # noqa: F401
 from .ui.map_page import MapPage  # noqa: F401
 from .ui.preferences_panel import PreferencesPanel  # noqa: F401

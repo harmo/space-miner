@@ -1,0 +1,58 @@
+# The fuel gauge, see fuel_gauge.py
+
+<FuelGauge>:
+    orientation: 'vertical'
+    size_hint: None, None
+    width: dp(160)
+    height: self.minimum_height
+    padding: dp(14), dp(10), dp(14), dp(12)
+    spacing: dp(2)
+    canvas.before:
+        Color:
+            rgba: PANEL
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(10)]
+        Color:
+            rgba: 1, 1, 1, .1
+        Line:
+            rounded_rectangle: self.x, self.y, self.width, self.height, dp(10)
+            width: 1
+    BoxLayout:
+        size_hint_y: None
+        height: dp(22)
+        Label:
+            text: 'CARBURANT'
+            bold: True
+            font_size: '12sp'
+            color: 1, 1, 1, .5
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+        Label:
+            text: root.amount
+            font_size: '12sp'
+            size_hint_x: None
+            width: dp(48)
+            color: (*root.color, 1)
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+    # Fuel left in the tank
+    Widget:
+        size_hint_y: None
+        height: dp(12)
+        canvas:
+            Color:
+                rgba: 1, 1, 1, .12
+            RoundedRectangle:
+                pos: self.x, self.y + dp(3)
+                size: self.width, dp(5)
+                radius: [dp(2.5)]
+            Color:
+                rgba: (*root.color, .9)
+            RoundedRectangle:
+                pos: self.x, self.y + dp(3)
+                size: self.width * root.fill, dp(5)
+                radius: [dp(2.5)]

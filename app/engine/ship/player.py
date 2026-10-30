@@ -1,5 +1,6 @@
 """ The ship of the player through its lives: flying, crashing and coming
-back on the Earth. Its work, mining, is up to its miner. """
+back on the Earth. Its work, mining, is up to its miner. Both burn the
+fuel of its tank: out of it, the ship can neither thrust nor mine. """
 
 import math
 from random import Random
@@ -7,7 +8,13 @@ from typing import Any
 
 from ...logic.config import EXPLOSION_FRAGMENTS, EXPLOSION_SPEED, SHIP_COLOR
 from ...logic.mining.canisters import eject_cargo
-from ...logic.ship.config import RESPAWN_DELAY, START_DIRECTION
+from ...logic.ship.config import (
+    RESPAWN_DELAY,
+    START_DIRECTION,
+    TRAIL_HOLDING,
+    TRAIL_LANDING,
+)
+from ...logic.ship.fuel import Tank, burn_rate
 from ...logic.ship.landing import (
     Landing,
     Parking,
@@ -55,6 +62,7 @@ class Player:
         self.canisters = CanisterField(gameworld)  # cargo lost in crashes
         self.design = Design()
         self.stats = ship_stats(self.design)
+        self.tank = Tank(self.stats.tank)
         self.looked_for = set(LOOKED_FOR)   # by its scanner
         self.ground = self.ground_spots()   # where the ship fits
         self.miner = Miner(
@@ -126,6 +134,7 @@ class Player:
         self.miner.release()
         self.design, self.stats = design, ship_stats(design)
         self.miner.stats = self.stats
+        self.tank.resize(self.stats.tank)
         self.ground = self.ground_spots()
         self.spawn(direction)
 
@@ -143,6 +152,20 @@ class Player:
             closest_spot(approach, self.ground), self.stats.size[0],
         )
 
+    def thrust(self, heading: float | None) -> float:
+        """ From 0 to 1: full while flying towards `heading`, weaker while
+        holding in front of what the ship works on, or landing. Nothing
+        out of fuel, but landing goes on to the end. """
+        if self.ship is None or self.parking is not None:
+            return 0.
+        if self.landing is not None:
+            return TRAIL_LANDING
+        if self.tank.empty:
+            return 0.
+        if self.miner.busy:
+            return TRAIL_HOLDING
+        return 1. if heading is not None else 0.
+
     def update(self, dt: float, heading: float | None) -> None:
         if self.crash is not None:
             self.explode(self.crash)
@@ -151,6 +174,12 @@ class Player:
             if self.respawn_in <= 0:
                 self.spawn(math.radians(START_DIRECTION))
         if self.ship is not None:
+            self.tank.burn(burn_rate(
+                self.stats, self.thrust(heading), self.miner.firing,
+            ) * dt)
+            if self.tank.empty:
+                heading = None
+                self.miner.release()
             self.move_ship(self.ship, dt, heading)
             self.anchor = self.ship.position
 

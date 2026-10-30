@@ -25,6 +25,7 @@ SAVE = Save(
     active=[Mission('Institut Cassini', {'ruby': 2}, 900)],
     looked_for=['gold', 'ruby'],
     mission_level=3,
+    fuel=42.5,
 )
 
 
@@ -93,6 +94,12 @@ def test_older_saves_look_for_what_is_worth_it() -> None:
     data = json.loads(dump(SAVE))
     del data['looked_for']
     assert load(json.dumps(data)).looked_for == LOOKED_FOR
+
+
+def test_older_saves_have_a_full_tank() -> None:
+    data = json.loads(dump(SAVE))
+    del data['fuel']
+    assert load(json.dumps(data)).fuel is None
 
 
 def test_older_saves_have_missions_of_the_first_level() -> None:

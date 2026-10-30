@@ -7,6 +7,7 @@ from app.logic.config import (
     CARGO_ALMOST_FULL_COLOR,
     CARGO_COLOR,
     CARGO_FULL_COLOR,
+    FUEL_COLOR,
     HEAT_RANGE,
     MARKER_FAR,
     MARKER_LENGTH,
@@ -15,6 +16,8 @@ from app.logic.config import (
 from app.logic.hud import (
     cargo_color,
     edge_point,
+    fuel_color,
+    fuel_message,
     heat_at,
     is_compact,
     is_on_screen,
@@ -172,3 +175,16 @@ def test_pulse_goes_smoothly_back_and_forth() -> None:
     assert pulse(1., 2.) == pytest.approx(1.)
     assert pulse(2., 2.) == pytest.approx(0., abs=1e-12)
     assert all(0. <= pulse(t / 10, 2.) <= 1. for t in range(100))
+
+
+def test_the_fuel_gauge_warns_as_the_tank_empties() -> None:
+    assert fuel_color('full') == FUEL_COLOR
+    assert fuel_color('low') == CARGO_ALMOST_FULL_COLOR
+    assert fuel_color('critical') == fuel_color('empty') == CARGO_FULL_COLOR
+
+
+def test_fuel_is_told_about_out_in_space() -> None:
+    assert fuel_message('full', False) == fuel_message('low', False) == ''
+    assert fuel_message('critical', False) == 'Carburant bas'
+    assert fuel_message('empty', False) == 'Panne sèche'
+    assert fuel_message('empty', True) == ''

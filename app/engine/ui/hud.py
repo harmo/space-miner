@@ -1,9 +1,12 @@
 """ What the interface of the game shows, refreshed on each frame: the
-cargo, what the missions need, the landing shortcut and the messages """
+cargo, the fuel, what the missions need, the landing shortcut and the
+messages """
 
 from typing import TYPE_CHECKING
 
+from ...logic.hud import fuel_message
 from .cargo_panel import show_cargo
+from .fuel_gauge import show_fuel
 from .land_button import show_shortcut
 from .tracker import show_needs
 
@@ -18,5 +21,8 @@ def show_hud(game: 'Game') -> None:
     ids.cargo_button.text = f'Soute  {load}'
     show_needs(ids.tracker, ids.base, player)
     game.land_glow = show_shortcut(ids.land_button, player.shortcut, game.time)
-    ids.message_label.text = miner.message
+    show_fuel(ids.fuel, player.tank)
+    ids.message_label.text = miner.message or fuel_message(
+        player.tank.gauge, player.parking is not None,
+    )
     ids.news_label.text = game.system.events.headline

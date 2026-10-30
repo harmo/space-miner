@@ -36,6 +36,7 @@ class Keeper:
             looked_for=[
                 name for name in MINERALS if name in self.player.looked_for
             ],
+            fuel=round(self.player.tank.level, 2),
         )
 
     def restore(self, save: Save) -> None:
@@ -59,6 +60,9 @@ class Keeper:
                 board.offers[:] = save.offers
             board.top_up()
         self.player.restart(save.design)
+        tank = self.player.tank
+        if save.fuel is not None:
+            tank.level = min(save.fuel, tank.capacity)
         self.player.miner.ore.clear()
         self.player.miner.ore.update(save.cargo)
         self.player.looked_for = set(save.looked_for)
@@ -82,5 +86,6 @@ class Keeper:
         player.miner.ore.clear()
         self.base.reset()
         player.restart(Design())
+        player.tank.fill(player.tank.capacity)
         self.written = ''
         self.save()
