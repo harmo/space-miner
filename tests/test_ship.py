@@ -122,12 +122,12 @@ def test_ship_can_escape_the_sun_from_its_surface() -> None:
 # Crashes
 
 def test_touching_anything_but_the_earth_is_a_crash() -> None:
-    assert is_crash(0., on_earth=False)
+    assert is_crash(0., landable=False)
 
 
 def test_landing_on_the_earth() -> None:
-    assert not is_crash(LANDING_MAX_SPEED / 2, on_earth=True)
-    assert is_crash(LANDING_MAX_SPEED * 2, on_earth=True)
+    assert not is_crash(LANDING_MAX_SPEED / 2, landable=True)
+    assert is_crash(LANDING_MAX_SPEED * 2, landable=True)
 
 
 # Mining

@@ -96,7 +96,7 @@ def test_landing_touches_down_softly() -> None:
     pvx, pvy = planet.velocity
     relative_speed = math.hypot(vx - pvx, vy - pvy)
     assert relative_speed == pytest.approx(0., abs=1e-9)
-    assert not is_crash(relative_speed, on_earth=True)
+    assert not is_crash(relative_speed, landable=True)
 
 
 def test_landing_velocity_matches_its_motion() -> None:

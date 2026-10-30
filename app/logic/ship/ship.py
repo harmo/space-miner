@@ -42,10 +42,10 @@ class Body(Protocol):
     def velocity(self, value: Vec2) -> None: ...
 
 
-def is_crash(relative_speed: float, on_earth: bool) -> bool:
-    """ Touching anything destroys the ship, except landing softly on the
-    Earth """
-    return not on_earth or relative_speed > LANDING_MAX_SPEED
+def is_crash(relative_speed: float, landable: bool) -> bool:
+    """ Touching anything destroys the ship, except landing softly on a
+    body with ground, the Earth or an outpost """
+    return not landable or relative_speed > LANDING_MAX_SPEED
 
 
 class Ship:

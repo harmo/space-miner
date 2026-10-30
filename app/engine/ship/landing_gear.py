@@ -33,5 +33,5 @@ class LandingGear:
         angle = ship.body.angle
         overlay.legs(legs(
             ship.position, angle, ship.stats.size, self.unfolded,
-            player.system.earth,
+            player.ground_body,
         ), angle)

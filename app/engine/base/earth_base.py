@@ -102,7 +102,7 @@ class EarthBase(Widget):
         if self.player is None or self.board is None:
             return
         ore, stock = self.player.miner.ore, self.depot.stock
-        self.docked = self.player.docked
+        self.docked = self.player.docked_on(self.player.system.earth)
         if self.docked:
             fill(self.player.tank, self.wallet, ore, stock)
         self.stranded = self.player.stranded

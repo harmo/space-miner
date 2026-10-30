@@ -1,5 +1,5 @@
-""" Landing on the ground of the Earth, automatically through a
-shortcut shown nearby """
+""" Landing on the ground of a body, the Earth or an outpost, automatically
+through a shortcut shown nearby """
 
 import math
 from collections.abc import Sequence
@@ -40,15 +40,36 @@ def landed_on(planet: Celestial, direction: float, length: float) -> Vec2:
 
 
 @dataclass(frozen=True)
+class Ground:
+    """ A body ships can land on, and where: one sample per degree,
+    counterclockwise from the east, true over solid ground """
+    body: Celestial
+    edge: tuple[bool, ...]
+
+    def spots(self, width: float) -> list[float]:
+        """ Directions where a ship of `width` fits """
+        return ground_spots(self.edge, ground_margin(self.body, width))
+
+
+def nearest(grounds: Sequence[Ground], pos: Vec2) -> Ground:
+    """ Of the grounds, the closest to `pos` """
+    return min(
+        grounds, key=lambda ground: surface_distance(pos, ground.body)
+    )
+
+
+@dataclass(frozen=True)
 class Parking:
-    """ Where a landed ship stays on a planet, moving along with it, as
+    """ Where a landed ship stays on a body, moving along with it, as
     physics alone would let it slide: the pull of the sun drags it aside """
-    direction: float          # from the planet center
-    distance: float           # from the planet center
+    body: Celestial
+    direction: float          # from the body center
+    distance: float           # from the body center
     angle: float              # of the ship
 
-    def position(self, planet: Celestial) -> Vec2:
-        x, y = planet.pos
+    @property
+    def position(self) -> Vec2:
+        x, y = self.body.pos
         return (
             x + math.cos(self.direction) * self.distance,
             y + math.sin(self.direction) * self.distance,
@@ -58,14 +79,17 @@ class Parking:
 def parking_on(planet: Celestial, direction: float,
                length: float) -> Parking:
     """ Landed in `direction`, with the nose pointing the same way """
-    return Parking(direction, landed_distance(planet, length), direction)
+    return Parking(
+        planet, direction, landed_distance(planet, length), direction,
+    )
 
 
 def parking_at(planet: Celestial, pos: Vec2, angle: float) -> Parking:
     """ Landed where the ship is, as it is """
     x, y = planet.pos
     return Parking(
-        math.atan2(pos[1] - y, pos[0] - x), math.dist(pos, (x, y)), angle
+        planet, math.atan2(pos[1] - y, pos[0] - x), math.dist(pos, (x, y)),
+        angle,
     )
 
 

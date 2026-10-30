@@ -10,6 +10,7 @@ from app.logic.ship.config import (
     SHORTCUT_RANGE,
 )
 from app.logic.ship.landing import (
+    Ground,
     closest_spot,
     ground_gap,
     ground_margin,
@@ -17,6 +18,7 @@ from app.logic.ship.landing import (
     is_landed,
     landed_distance,
     landed_on,
+    nearest,
     over_ground,
     parking_at,
     parking_on,
@@ -136,17 +138,40 @@ def test_parked_ship_moves_along_with_its_planet() -> None:
     assert planet.orbit
     direction = math.radians(30)
     parking = parking_on(planet, direction, SHIP_LENGTH)
-    before = parking.position(planet)
+    before = parking.position
     assert before == pytest.approx(landed_on(planet, direction, SHIP_LENGTH))
     planet.orbit.advance(60.)
-    after = parking.position(planet)
+    after = parking.position
     assert after != pytest.approx(before)
     assert after == pytest.approx(landed_on(planet, direction, SHIP_LENGTH))
+
+
+def test_parked_ship_knows_what_it_is_parked_on() -> None:
+    planet = earth()
+    assert parking_on(planet, 0., SHIP_LENGTH).body is planet
 
 
 def test_parked_ship_keeps_how_it_landed() -> None:
     planet = earth()
     pos = around(planet, 200, 215.)          # lying on its side
     parking = parking_at(planet, pos, angle=1.)
-    assert parking.position(planet) == pytest.approx(pos)
+    assert parking.position == pytest.approx(pos)
     assert parking.angle == 1.
+
+
+# Grounds, of the bodies ships land on
+
+def test_a_ground_tells_where_ships_fit() -> None:
+    planet = Celestial(0, 200.)
+    edge = tuple(10 <= degree <= 30 for degree in range(360))
+    ground = Ground(planet, edge)
+    margin = ground_margin(planet, SHIP_WIDTH)
+    assert ground.spots(SHIP_WIDTH) == ground_spots(list(edge), margin)
+    assert ground.spots(SHIP_WIDTH)
+
+
+def test_the_nearest_ground_is_that_of_the_closest_surface() -> None:
+    small = Ground(Celestial(1, 50., pos=(0., 0.)), (True,) * 360)
+    big = Ground(Celestial(2, 400., pos=(1000., 0.)), (True,) * 360)
+    assert nearest([small, big], (480., 0.)) is big
+    assert nearest([small, big], (300., 0.)) is small

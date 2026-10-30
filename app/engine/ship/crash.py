@@ -1,5 +1,5 @@
-""" The ship touching something: a crash, unless it lands softly on the
-Earth """
+""" The ship touching something: a crash, unless it lands softly on a body
+with ground, the Earth or an outpost """
 
 import math
 from dataclasses import dataclass
@@ -17,8 +17,9 @@ class Crash:
 
 
 def crash_of(gameworld: GameWorld, ship: Ship, arbiter: Any,
-             earth_id: int) -> Crash | None:
-    """ From the contact the physics engine reports """
+             grounds: set[int]) -> Crash | None:
+    """ From the contact the physics engine reports, soft ones on the
+    `grounds` being landings """
     first, second = (shape.body.data for shape in arbiter.shapes)
     other = second if first == ship.entity_id else first
     body = get_body(gameworld, other)
@@ -26,7 +27,7 @@ def crash_of(gameworld: GameWorld, ship: Ship, arbiter: Any,
     relative_speed = math.hypot(
         ship.velocity[0] - velocity.x, ship.velocity[1] - velocity.y,
     )
-    if not is_crash(relative_speed, other == earth_id):
+    if not is_crash(relative_speed, other in grounds):
         return None
     x, y = ship.position
     return Crash(

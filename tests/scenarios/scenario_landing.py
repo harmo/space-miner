@@ -44,7 +44,7 @@ def takes_off() -> None:
     remembered['touch'].touch_up()
     check(not scenario.base.docked, 'thrusting takes off')
     check(scenario.game.looks.gear.unfolded == 0, 'the legs fold')
-    ground = scenario.player.ground
+    ground = scenario.player.spots(scenario.player.home)
     water = max(
         (math.radians(degrees) for degrees in range(360)),
         key=lambda d: min(abs(angle_diff(spot, d)) for spot in ground),
@@ -64,7 +64,7 @@ def not_above_the_water() -> None:
 @scenario.step(.2)
 def above_the_ground() -> None:
     check(scenario.player.landing is None, 'no landing in the water')
-    ground = scenario.player.ground
+    ground = scenario.player.spots(scenario.player.home)
     hover(ground[len(ground) // 2])
 
 

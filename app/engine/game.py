@@ -23,6 +23,7 @@ from ..logic.config import (
     WORLD_SIZE,
 )
 from ..logic.hud import heat_at, is_compact
+from ..logic.ship.landing import Ground
 from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
 from .entities import setup_collisions, setup_state, step_systems
@@ -104,7 +105,7 @@ class Game(Widget):
         )
         self.player = Player(
             self.gameworld, self.system, self.camera, self.rng,
-            ground_edge('earth'),
+            [Ground(self.system.earth, tuple(ground_edge('earth')))],
         )
         setup_collisions(self.gameworld, self.player.on_contact)
         self.soundtrack = Soundtrack(self.player, self.rng)
