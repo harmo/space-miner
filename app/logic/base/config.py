@@ -13,6 +13,13 @@ MISSION_BONUS = 1.5           # reward, times what the ore is worth
 RESALE = .5                   # parts sell back for this part of their price
 ORE_SALE = .5                 # ore sells for this part of what it is worth
 
+# Fuel, filled on landing: the ice of the depot first, then credits
+ICE_FUEL = 2.                 # units of fuel a unit of ice makes
+FUEL_PRICE = 2                # credits a unit
+# Towing a ship out of fuel back to the Earth
+TOW_BASE = 100                # credits
+TOW_RATE = .02                # credits a pixel away from the Earth
+
 # Reputation: missions validated to reach each tier of parts
 TIER_MISSIONS = (0, 3, 8, 15, 25)
 MISSION_GROWTH = .3           # bigger orders on each level, paying as much
