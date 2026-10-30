@@ -1,13 +1,16 @@
 """ Outposts: the site of the Frontier on the farthest planet, where the
 ship lands on its pad. Ore delivered from the cargo builds it stage after
 stage: its foundations fill the tank, its habitat keeps ore unloaded in a
-depot of its own, all of it saved. """
+depot of its own, all of it saved, and its trading post buys ore dearer
+than the Earth and gives missions of its own, making the same
+reputation. """
 
 import json
 import math
 import os
 from typing import Any
 
+from app.logic.base.market import ore_price
 from app.logic.ship.config import LANDING_DURATION
 
 from .harness import Scenario
@@ -88,7 +91,7 @@ def delivers_part_of_the_habitat() -> None:
     check(construction.delivered == {'rock': 10, 'iron': 10},
           f'but delivered: {construction.delivered}')
     scenario.player.miner.ore.update({'rock': 150., 'iron': 30., 'gold': 3.})
-    view().open()                       # showing the new cargo
+    view().open('site')                 # showing the new cargo
 
 
 @scenario.step(.2)
@@ -126,6 +129,74 @@ def is_saved() -> None:
         saved = json.load(file)['outposts']['frontier']
     check(saved['built'] == 2 and saved['stock'] == {'gold': 3.},
           f'saved as built: {saved}')
+    scenario.player.miner.ore.update(
+        {'rock': 200., 'iron': 60., 'copper': 30.}
+    )
+    view().open('site')
+
+
+@scenario.step(.2)
+def builds_the_trading_post() -> None:
+    scenario.press(scenario.button(view().ids.site, 'Livrer'))
+
+
+@scenario.step(.3)
+def trades() -> None:
+    check(frontier().construction.built == 3, 'the trading post is built')
+    scenario.press(scenario.button(view().ids.site, 'Fermer'))
+
+
+@scenario.step(.3)
+def opens_its_market() -> None:
+    check(view().trading, 'it has a market and missions')
+    remembered['credits'] = scenario.base.wallet.credits
+    scenario.press(view().ids.market_button)
+
+
+@scenario.step(.3)
+def sells_dearer_than_the_earth() -> None:
+    market = view().ids.market
+    price = market.price('gold')
+    check(price > ore_price('gold'), f'gold is dearer: {price}')
+    market.sell('gold')
+    paid = scenario.base.wallet.credits - remembered['credits']
+    check(paid == 3 * price, f'paid {paid}')
+    scenario.screenshot('market')
+    scenario.press(scenario.button(market, 'Fermer'))
+
+
+@scenario.step(.3)
+def opens_its_missions() -> None:
+    scenario.press(view().ids.missions_button)
+
+
+@scenario.step(.3)
+def takes_a_mission_of_its_own() -> None:
+    board = frontier().board
+    mission = board.offers[0]
+    check(mission.client in frontier().construction.site.trade.clients,
+          f'from a local client: {mission.client}')
+    check(mission not in scenario.base.board.offers, 'not of the Earth')
+    board.accept(mission)
+    frontier().post.depot.stock.update(
+        {name: float(units) for name, units in mission.wanted.items()}
+    )
+    remembered['mission'] = mission
+    view().ids.missions.refresh()
+    scenario.screenshot('missions')
+
+
+@scenario.step(.3)
+def validates_it_there() -> None:
+    mission = remembered['mission']
+    before = scenario.base.board.validated
+    card = next(
+        card for card in view().ids.missions.ids.active.children
+        if card.mission is mission
+    )
+    scenario.press(scenario.button(card, 'Valider'))
+    check(scenario.base.board.validated == before + 1,
+          'making the reputation of the Earth too')
 
 
 scenario.run()

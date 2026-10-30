@@ -15,6 +15,7 @@ from kivy.uix.boxlayout import BoxLayout
 from ...logic.base.crushing import Crusher
 from ...logic.base.market import ore_price, sell_ore
 from ...logic.base.missions import Board, needs
+from ...logic.base.outposts import Trade
 from ...logic.base.wallet import Wallet
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
@@ -45,6 +46,7 @@ class MarketPanel(BoxLayout):
     empty = BooleanProperty(True)
     rock = NumericProperty(0)           # units in the depot
     crushing = BooleanProperty(False)
+    refinery = BooleanProperty(True)    # at the base on the Earth only
 
     def __init__(self, **kwargs: Any) -> None:
         self.register_event_type('on_close')
@@ -53,6 +55,7 @@ class MarketPanel(BoxLayout):
         self.stock: dict[str, float] = {}   # of the depot
         self.board: Board | None = None
         self.crusher: Crusher | None = None
+        self.prices = Trade()               # those of the Earth
 
     def on_close(self) -> None:
         """ The close button was pressed """
@@ -72,14 +75,19 @@ class MarketPanel(BoxLayout):
                 panel=self, mineral=name, name=mineral.name,
                 icon=f'{IMAGES}/asteroids/minerals/{texture}.png',
                 units=str(units),
-                price=f'{credits_text(ore_price(name))} / u',
+                price=f'{credits_text(self.price(name))} / u',
                 wanted=f'missions : {wanted[name]}' if name in wanted else '',
                 batch=f'Vendre {min(BATCH, units)}',
                 can_batch=units > BATCH,
             ))
         self.empty = not rows.children
         self.rock = whole_units(self.stock.get('rock', 0.))
+        self.refinery = self.crusher is not None
         self.crushing = self.crusher is not None and self.crusher.crushing
+
+    def price(self, mineral: str) -> int:
+        """ Here, for a unit """
+        return ore_price(mineral, self.prices.factor(mineral))
 
     def crush(self) -> None:
         """ The rock of the depot, at the refinery """
@@ -92,7 +100,7 @@ class MarketPanel(BoxLayout):
         stock = self.stock
         sell_ore(
             stock, mineral, units or whole_units(stock.get(mineral, 0.)),
-            self.wallet,
+            self.wallet, self.prices.factor(mineral),
         )
         self.refresh()
 

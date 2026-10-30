@@ -7,8 +7,11 @@ from dataclasses import dataclass, replace
 from random import Random
 
 from ...logic.base.config import PAD_DIRECTION, PAD_WIDTH
+from ...logic.base.missions import Board
 from ...logic.base.outposts import SITES, Construction, Stage
 from ...logic.base.post import Post, Services
+from ...logic.base.reputation import Standing
+from ...logic.base.wallet import Wallet
 from ...logic.save import Progress
 from ...logic.ship.landing import Ground, Parking, pad
 from ...logic.world.space import Celestial, Vec2
@@ -22,6 +25,16 @@ class Outpost:
     direction: float          # of the pad, from the body center
     construction: Construction
     post: Post
+    rng: Random
+    board: Board | None = None          # its missions, once it can trade
+
+    def open_trade(self, wallet: Wallet, standing: Standing) -> None:
+        """ Its missions, paid into `wallet`, making the same reputation
+        as those of the Earth """
+        trade = self.construction.site.trade
+        self.board = Board(
+            self.rng, wallet, standing, trade.clients, trade.bonus,
+        )
 
     @property
     def name(self) -> str:
@@ -50,9 +63,14 @@ class Outpost:
 
     @property
     def progress(self) -> Progress:
-        """ Of its construction, with what its depot holds """
+        """ Of its construction, with what its depot holds, and its
+        missions """
+        board = self.board
         return replace(
             self.construction.progress, stock=dict(self.post.depot.stock),
+            offers=list(board.offers) if board else [],
+            active=list(board.active) if board else [],
+            mission_level=board.level if board else 1,
         )
 
     def deliver(self, cargo: dict[str, float]) -> Stage | None:
@@ -67,6 +85,12 @@ class Outpost:
         stock = self.post.depot.stock
         stock.clear()
         stock.update(progress.stock)
+        board = self.board
+        if board is not None:
+            board.level = max(1, min(progress.mission_level, board.tier))
+            board.active[:] = progress.active
+            board.offers[:] = progress.offers
+            board.top_up()
 
 
 def found(system: SolarSystem, rng: Random) -> list[Outpost]:
@@ -75,5 +99,12 @@ def found(system: SolarSystem, rng: Random) -> list[Outpost]:
     site = SITES['frontier']
     return [Outpost(
         'frontier', system.planets[-1], math.radians(PAD_DIRECTION),
-        Construction(site), Post(site.name, Services(), rng),
+        Construction(site), Post(site.name, Services(), rng), rng,
     )]
+
+
+def open_trades(outposts: list[Outpost], wallet: Wallet,
+                standing: Standing) -> None:
+    """ For a game, new or saved """
+    for outpost in outposts:
+        outpost.open_trade(wallet, standing)

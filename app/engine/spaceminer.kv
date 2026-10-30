@@ -209,6 +209,8 @@ Game:
             id: outpost
             size: root.size
             pos: root.pos
+            on_panel: setattr(scanner, 'open', False) if args[1] else None
+            full_row: root.scanning
 
         # Over everything, the game standing still behind
         MapPage:
