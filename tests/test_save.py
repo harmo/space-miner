@@ -63,7 +63,7 @@ def test_what_is_not_a_saved_game_is_refused(text: str) -> None:
 
 
 def test_preferences() -> None:
-    preferences = Preferences(orbits=False, fullscreen=False)
+    preferences = Preferences(orbits=False, fullscreen=False, sound=False)
     assert load_preferences(dump_preferences(preferences)) == preferences
     assert load_preferences('{"orbits": "no", "unknown": 1}') == (
         Preferences()

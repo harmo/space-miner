@@ -1,5 +1,6 @@
-""" Settings, from the home page: what is shown, the full screen, and a
-new game, which takes a confirmation. Styled in preferences_panel.kv. """
+""" Settings, from the home page: what is shown, the full screen, the
+sounds, and a new game, which takes a confirmation. Styled in
+preferences_panel.kv. """
 
 from typing import Any
 
@@ -25,6 +26,7 @@ class PreferencesPanel(BoxLayout):
     orbits = BooleanProperty(True)
     markers = BooleanProperty(True)
     fullscreen = BooleanProperty(True)
+    sound = BooleanProperty(True)
     confirming = BooleanProperty(False)     # a new game, once asked
     mobile = BooleanProperty(False)         # always full screen
 
@@ -45,6 +47,7 @@ class PreferencesPanel(BoxLayout):
         self.orbits = preferences.orbits
         self.markers = preferences.markers
         self.fullscreen = preferences.fullscreen
+        self.sound = preferences.sound
         self.confirming = False
 
     def toggle(self, name: str) -> None:

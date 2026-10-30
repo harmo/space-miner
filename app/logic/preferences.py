@@ -10,6 +10,7 @@ class Preferences:
     orbits: bool = True       # dotted orbits of the planets
     markers: bool = True      # towards the Earth and asteroids, on the edges
     fullscreen: bool = True   # on computers
+    sound: bool = True
 
 
 def dump_preferences(preferences: Preferences) -> str:
