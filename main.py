@@ -23,6 +23,11 @@ else:
     Config.set('graphics', 'fullscreen', 'auto')
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 
+# The audio device as well, or the game may hang opening it
+from app.engine.audio import audio  # noqa: E402
+
+audio.open()
+
 from app.engine.app import SpaceMinerApp  # noqa: E402
 
 if __name__ == '__main__':

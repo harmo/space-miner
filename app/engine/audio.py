@@ -1,6 +1,8 @@
 """ Sounds played from their files, once or looping. Muted, nothing plays,
 and loops stop. """
 
+from pathlib import Path
+
 from kivy.core.audio import Sound, SoundLoader
 
 from ..logic.config import SOUNDS
@@ -11,6 +13,12 @@ class Audio:
     def __init__(self) -> None:
         self.sounds: dict[str, Sound | None] = {}
         self.muted = False
+
+    def open(self) -> None:
+        """ Loads every sound, which opens the audio device: before the
+        window, as SDL may hang opening it afterwards, with PulseAudio """
+        for path in sorted(Path(SOUNDS).glob('*.ogg')):
+            self.sound(path.stem)
 
     def sound(self, name: str) -> Sound | None:
         """ Loaded on first use, None when it can't be """
