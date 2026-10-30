@@ -2,9 +2,12 @@
 closer, and the hull cools down all the time. Too hot, the ship blows up.
 Shields stop part of the heat. """
 
+import math
+from dataclasses import dataclass
 from typing import Literal
 
 from ..config import HEAT_RANGE
+from ..world.space import Vec2
 from .config import HEAT_COOLING, HEAT_GAIN, HOT, OVERHEATING
 
 Warmth = Literal['cool', 'hot', 'overheating']
@@ -22,6 +25,18 @@ def heating(distance: float, shield: float = 0.,
     """ A second, at `distance` from the sun surface, `shield` the part of
     the heat stopped, `surge` times more during flares """
     return HEAT_GAIN * sun_heat(distance) * surge * (1 - shield)
+
+
+@dataclass(frozen=True)
+class Sunlight:
+    """ What heats the hull """
+    pos: Vec2                 # of the sun
+    radius: float
+    surge: float = 1.         # times more during flares
+
+    def distance(self, pos: Vec2) -> float:
+        """ From the sun surface """
+        return math.dist(pos, self.pos) - self.radius
 
 
 class Hull:

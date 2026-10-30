@@ -2,7 +2,7 @@ import pytest
 
 from app.logic.config import HEAT_RANGE
 from app.logic.ship.config import HEAT_COOLING, HEAT_GAIN, HOT, OVERHEATING
-from app.logic.ship.heat import Hull, heating
+from app.logic.ship.heat import Hull, Sunlight, heating
 
 
 def test_the_sun_heats_more_and_more_closer() -> None:
@@ -36,3 +36,9 @@ def test_too_hot_the_hull_is_burnt() -> None:
     assert hull.burnt and hull.heat == 1.
     hull.cool()
     assert hull.heat == 0.
+
+
+def test_sunlight_tells_how_far_from_the_sun_surface() -> None:
+    sunlight = Sunlight((100., 0.), 50., surge=2.)
+    assert sunlight.distance((100., 300.)) == 250.
+    assert sunlight.surge == 2.

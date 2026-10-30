@@ -13,6 +13,7 @@ from ...logic.config import (
     SUN_DISC,
 )
 from ...logic.mining.minerals import display_scale
+from ...logic.ship.heat import Sunlight
 from ...logic.world.config import (
     ORBIT_PULL,
     SUN_GRAVITY,
@@ -76,6 +77,12 @@ class SolarSystem:
         asteroid = self.create_orbiter(plan, parent, COLLISION_ORBITER)
         self.asteroids.append(asteroid)
         return asteroid
+
+    @property
+    def sunlight(self) -> Sunlight:
+        """ Surging during flares """
+        sun = self.sun
+        return Sunlight(sun.pos, sun.radius, self.events.flares.surge)
 
     def update(self, dt: float, ship: Vec2) -> None:
         """ Out of the sight of the ship, where it is now """

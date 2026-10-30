@@ -1,7 +1,6 @@
 """ The ship of the player through its lives: flying, crashing and coming
-back on the Earth. Its work, mining, is up to its miner. Both burn the
-fuel of its tank: out of it, the ship can neither thrust nor mine. Its
-hull heats up close to the sun, and blows up too hot. """
+back on the Earth. Its work, mining, is up to its miner, its fuel and
+heat to its condition. """
 
 import math
 from random import Random
@@ -15,8 +14,8 @@ from ...logic.ship.config import (
     TRAIL_HOLDING,
     TRAIL_LANDING,
 )
-from ...logic.ship.fuel import Tank, burn_rate
-from ...logic.ship.heat import Hull, heating
+from ...logic.ship.fuel import Tank
+from ...logic.ship.heat import Hull
 from ...logic.ship.landing import (
     Landing,
     Parking,
@@ -40,6 +39,7 @@ from ...logic.world.space import Vec2
 from ..entities import GameWorld, create_ship_entity, get_body, move_body
 from ..world.canister_field import CanisterField
 from ..world.solar_system import SolarSystem
+from .condition import Condition
 from .crash import Crash, crash_of
 from .miner import Miner
 from .ship_textures import ship_texture
@@ -66,8 +66,7 @@ class Player:
         self.canisters = CanisterField(gameworld)  # cargo lost in crashes
         self.design = Design()
         self.stats = ship_stats(self.design)
-        self.tank = Tank(self.stats.tank)
-        self.hull = Hull()
+        self.condition = Condition(self.stats)
         self.looked_for = set(LOOKED_FOR)   # by its scanner
         self.ground = self.ground_spots()   # where the ship fits
         self.miner = Miner(
@@ -94,7 +93,7 @@ class Player:
         body = get_body(self.gameworld, entity_id)
         self.ship = Ship(entity_id, body, self.stats)
         self.spawned += 1
-        self.hull.cool()
+        self.condition.hull.cool()
         self.parking = parking_on(earth, direction, length)
         self.anchor = pos
         self.camera.look_at(pos)
@@ -149,7 +148,7 @@ class Player:
         self.miner.release()
         self.design, self.stats = design, ship_stats(design)
         self.miner.stats = self.stats
-        self.tank.resize(self.stats.tank)
+        self.condition.refit(self.stats)
         self.ground = self.ground_spots()
         self.spawn(direction)
 
@@ -166,6 +165,14 @@ class Player:
             earth, (x, y), self.ship.body.angle,
             closest_spot(approach, self.ground), self.stats.size[0],
         )
+
+    @property
+    def tank(self) -> Tank:
+        return self.condition.tank
+
+    @property
+    def hull(self) -> Hull:
+        return self.condition.hull
 
     def thrust(self, heading: float | None) -> float:
         """ From 0 to 1: full while flying towards `heading`, weaker while
@@ -189,15 +196,17 @@ class Player:
             if self.respawn_in <= 0:
                 self.spawn(math.radians(START_DIRECTION))
         if self.ship is not None:
-            self.tank.burn(burn_rate(
-                self.stats, self.thrust(heading), self.miner.firing,
-            ) * dt)
+            self.condition.burn(
+                dt, self.stats, self.thrust(heading), self.miner.firing,
+            )
             if self.tank.empty:
                 heading = None
                 self.miner.release()
             self.move_ship(self.ship, dt, heading)
             self.anchor = self.ship.position
-            self.heat_up(self.ship, dt)
+            self.crash = self.condition.heat_up(
+                dt, self.stats, self.ship, self.system.sunlight,
+            ) or self.crash
 
         self.canisters.update(
             dt, self.system.asteroids, self.system.attractors
@@ -238,20 +247,6 @@ class Player:
             self.landing = None
             self.parking = parking_on(
                 self.system.earth, landing.end_direction, self.stats.size[0]
-            )
-
-    def heat_up(self, ship: Ship, dt: float) -> None:
-        """ By the sun, blowing up too hot """
-        sun = self.system.sun
-        x, y = ship.position
-        distance = math.dist(ship.position, sun.pos) - sun.radius
-        surge = self.system.events.flares.surge
-        self.hull.update(dt, heating(
-            distance, shield=self.stats.shield, surge=surge,
-        ))
-        if self.hull.burnt:
-            self.crash = Crash(
-                ship.velocity, math.atan2(y - sun.pos[1], x - sun.pos[0]),
             )
 
     def on_contact(self, space: Any, arbiter: Any) -> bool:
