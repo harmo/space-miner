@@ -1,10 +1,12 @@
 """ Compose the sounds of the game, into assets/sounds/, at their loudness:
 those of the ship, see ship_sounds.py, of asteroids breaking up, see
 mineral_sounds.py, of what happens, see event_sounds.py, of the fuel, see
-fuel_sounds.py, of the sun, see sun_sounds.py, and the ambience of space,
-drones and radio calls, see ambience.py.
+fuel_sounds.py, of the sun, see sun_sounds.py, of the outposts, see
+outpost_sounds.py, and the ambience of space, drones and radio calls, see
+ambience.py.
 
-    uv run python -m tools.compose_sounds [sounds] [fuel] [sun] [ambience]
+    uv run python -m tools.compose_sounds [sounds] [fuel] [sun] [outposts]
+        [ambience]
 
 All of them without any, those named otherwise. Each group has random
 numbers of its own, so that changing one leaves the others as they were.
@@ -29,6 +31,7 @@ from .event_sounds import (
 )
 from .fuel_sounds import FUEL_EVENTS
 from .mineral_sounds import BREAKING, BREAKS
+from .outpost_sounds import OUTPOST_EVENTS
 from .ship_sounds import BEAMS, ENGINE_LOOP, ENGINES, laser
 from .sun_sounds import SUN_EVENTS
 from .synth import Samples, faded, length, level, save
@@ -38,6 +41,7 @@ SEED = 5
 AMBIENCE_SEED = 8
 FUEL_SEED = 13
 SUN_SEED = 21
+OUTPOST_SEED = 34
 
 # Loudness, in decibels, from the laser, which sounds right in the game:
 # the other loops stay below it, as do sounds of events at their loudest
@@ -104,6 +108,13 @@ def compose_sun() -> None:
     save(SOUNDS_DIR / 'crushing.ogg', level(crushing(rng), LOOP_DB))
 
 
+def compose_outposts() -> None:
+    """ With random numbers of their own """
+    rng = Random(OUTPOST_SEED)
+    for name, (seconds, compose) in OUTPOST_EVENTS.items():
+        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose))
+
+
 def compose_ambience() -> None:
     """ The drones side by side, as they take long """
     with ProcessPoolExecutor() as pool:
@@ -116,7 +127,7 @@ def compose_ambience() -> None:
 
 if __name__ == '__main__':
     # All of them, or the groups named
-    wanted = sys.argv[1:] or ['sounds', 'fuel', 'sun', 'ambience']
+    wanted = sys.argv[1:] or ['sounds', 'fuel', 'sun', 'outposts', 'ambience']
     SOUNDS_DIR.mkdir(parents=True, exist_ok=True)
     if 'sounds' in wanted:
         main()
@@ -124,5 +135,7 @@ if __name__ == '__main__':
         compose_fuel()
     if 'sun' in wanted:
         compose_sun()
+    if 'outposts' in wanted:
+        compose_outposts()
     if 'ambience' in wanted:
         compose_ambience()
