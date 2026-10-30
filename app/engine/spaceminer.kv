@@ -127,9 +127,12 @@ Game:
 
         FuelGauge:
             id: fuel
-            # From the size, set once its rows are laid out
+            # From the size, set once its rows are laid out. Landed, below
+            # the depot and the credits of the base.
             x: root.right - dp(16) - self.width
-            y: root.top - dp(16) - self.height
+            y:
+                (base.ids.money_label.y - dp(10) if base.docked \
+                else root.top - dp(16)) - self.height
 
         MissionTracker:
             id: tracker
