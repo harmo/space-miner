@@ -29,6 +29,8 @@ from .missions_panel import credits_text
 Action = Literal['fitted', 'fit', 'buy', 'remove']
 MONEY = '#ffd166'
 LACKING = '#ff8c80'
+# Stats, better the lower they are
+LOWER_BETTER = {'Conso. en vol', 'Conso. au tir'}
 
 
 class SlotButton(BoxLayout):
@@ -70,7 +72,7 @@ class PartRow(BoxLayout):
 class StatRow(BoxLayout):
     name = StringProperty('')
     value = StringProperty('')
-    change = StringProperty('')         # "up", "down" or none
+    change = StringProperty('')         # "better", "worse" or none
 
 
 def cost_text(item: Buyable, panel: Any) -> str:
@@ -161,6 +163,9 @@ def stat_values(stats: ShipStats) -> list[tuple[str, float, str]]:
         ('Laser', level, f'{level} · ×{laser(level).power:g}'),
         ('Scanner', stats.scan,
          f'{stats.scan:,.0f}'.replace(',', ' ') if stats.scan else 'aucun'),
+        ('Réservoir', stats.tank, f'{stats.tank:.0f}'),
+        ('Conso. en vol', stats.burn, f'{stats.burn:.1f} /s'),
+        ('Conso. au tir', laser(level).burn, f'{laser(level).burn:.1f} /s'),
     ]
 
 
@@ -175,6 +180,7 @@ def stat_rows(current: ShipStats, compared: ShipStats) -> list[StatRow]:
         else:
             rows.append(StatRow(
                 name=name, value=f'{text}  »  {then_text}',
-                change='up' if then > now else 'down',
+                change='better' if (then < now) == (name in LOWER_BETTER)
+                else 'worse',
             ))
     return rows

@@ -96,8 +96,12 @@ def picks_the_quantum_laser() -> None:
 @scenario.step(.3)
 def shows_the_change() -> None:
     stats = {row.name: row for row in hangar().ids.stats.children}
-    check(stats['Laser'].change == 'up', 'a better laser shows up')
-    check(stats['Vitesse'].change == 'down', 'a slower ship shows down')
+    check(stats['Laser'].change == 'better', 'a better laser shows so')
+    check(stats['Vitesse'].change == 'worse', 'a slower ship shows so')
+    check(stats['Conso. au tir'].change == 'worse',
+          'and burning more fuel, for a stronger laser')
+    check(stats['Réservoir'].change == '', 'in the same tank')
+    scenario.screenshot('stats')
     check(not rows()['quantum_laser'].can_act,
           'the quantum laser lacks ore')
     scenario.press(slot('left').children[0])

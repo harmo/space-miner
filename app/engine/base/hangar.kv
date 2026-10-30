@@ -221,8 +221,8 @@
         text: root.value
         font_size: '14sp'
         color:
-            (*MET_COLOR, 1) if root.change == 'up' else \
-            (1, .55, .5, 1) if root.change == 'down' else (1, 1, 1, 1)
+            (*MET_COLOR, 1) if root.change == 'better' else \
+            (1, .55, .5, 1) if root.change == 'worse' else (1, 1, 1, 1)
         text_size: self.size
         halign: 'right'
         valign: 'middle'
