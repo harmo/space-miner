@@ -1,6 +1,6 @@
 """ Draw the planets other than the Earth, each in its own character: gas
 giants in bands, a rocky world, an ice giant, a cloudy one, a ringed one,
-and the Moon.
+the Moon, and Cérès, a dwarf world in the belt around the sun.
 Shaded towards their edge like the Earth, see draw_earth.py.
 
     uv run python -m tools.draw_planets
@@ -13,9 +13,10 @@ from random import Random
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
+from app.logic.base.config import PAD_DIRECTION
 from app.logic.config import PLANET_IMAGE_SCALE
 
-from .masks import disc_mask
+from .masks import dented_mask, disc_mask
 from .paint import (
     SIZE,
     Color,
@@ -170,8 +171,23 @@ def draw_body(rng: Random, style: Style) -> Image.Image:
     if style.caps:
         caps(rng, body)
     shade(body, radius, style.air, style.glow)
-    body.putalpha(disc_mask((SIZE, SIZE), (0, 0, SIZE, SIZE), 1))
+    if style.dents:
+        # Round where outposts are built, their pad on top
+        mask = dented_mask(rng, SIZE, style.dents, PAD_DIRECTION, 40)
+        edged(body, mask)
+        body.putalpha(mask)
+    else:
+        body.putalpha(disc_mask((SIZE, SIZE), (0, 0, SIZE, SIZE), 1))
     return body
+
+
+def edged(body: Image.Image, mask: Image.Image) -> None:
+    """ Darker towards the edge of `mask`, wherever it lies, for the body to
+    look round where it was dented """
+    inside = mask.filter(ImageFilter.GaussianBlur(SIZE * .04))
+    body.alpha_composite(layer((0, 0, 0), ImageChops.multiply(
+        mask, inside.point(lut(lambda v: .6 * (1 - v) ** 1.5)),
+    )))
 
 
 def draw_planet(rng: Random, name: str, style: Style) -> Image.Image:

@@ -7,7 +7,7 @@ from kivent_core.managers.resource_managers import texture_manager
 from kivy.core.image import Image as CoreImage
 from kivy.graphics.texture import Texture
 
-from ..logic.config import IMAGES, MOON, PLANETS, STATION, SUN_DISC
+from ..logic.config import CERES, IMAGES, MOON, PLANETS, STATION, SUN_DISC
 from ..logic.mining.canisters import canister_texture
 from ..logic.mining.minerals import ASTEROID_SHAPES, MINERALS, asteroid_texture
 from ..logic.ship.config import GROUND_DEPTH
@@ -61,7 +61,8 @@ def load_image(source: str) -> None:
 def load_textures() -> None:
     for name in ['earth', *PLANETS]:
         load_image(f'{IMAGES}/planets/{name}.png')
-    load_image(f'{IMAGES}/planets/{MOON}.png')
+    for name in (MOON, CERES):
+        load_image(f'{IMAGES}/planets/{name}.png')
     for mineral in MINERALS:
         for shape in ASTEROID_SHAPES:
             name = asteroid_texture(mineral, shape)

@@ -7,6 +7,7 @@ IMAGES = 'assets/images'
 SOUNDS = 'assets/sounds'
 PLANETS = [f'planet{i}' for i in range(1, 8)]
 MOON = 'moon'
+CERES = 'ceres'               # painted as the planets, in the sun belt
 STATION = 'station'           # unseen, stations are drawn over the game
 SUN_DISC = .7                 # part of the sun texture that is not glow
 # Images of planets bigger than the planet itself, for their rings

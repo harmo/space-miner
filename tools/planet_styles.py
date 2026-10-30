@@ -35,6 +35,7 @@ class Style:
     seas: float = .6          # how much the plains of rocky worlds show
     sea: Color | None = None  # their color, the darkest stop without it
     shadow: Color = (40, 20, 15)  # in the craters
+    dents: float = 0.         # of its edge, as an asteroid's, none if round
 
 
 STYLES = {
@@ -81,5 +82,12 @@ STYLES = {
         colors('#8e9094', '#a6a8ab', '#bdbfc2', '#cfd1d3'),
         hex_color('#ffffff'), rocky=True, craters=26, glow=0.,
         seas=.9, sea=hex_color('#62646a'), shadow=(25, 25, 30),
+    ),
+    # Cérès, in the belt around the sun: a dwarf world of dusty rock, brown
+    # and ochre, battered by craters, no air
+    'ceres': Style(
+        colors('#6f645a', '#857868', '#9b8b76', '#b09f86'),
+        hex_color('#ffffff'), rocky=True, craters=34, glow=0.,
+        seas=.7, sea=hex_color('#584e46'), shadow=(30, 24, 20), dents=.12,
     ),
 }

@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from random import Random
 
-from ..config import MOON, PLANETS, STATION
+from ..config import CERES, MOON, PLANETS, STATION
 from ..mining.minerals import ASTEROID_SHAPES, MINERALS, asteroid_texture
 from .config import (
     ASTEROID_MASS,
@@ -171,7 +171,7 @@ def plan_ceres(orbits: tuple[float, ...],
     stays where it is. """
     distance = sun_belt_orbit(orbits)
     return OrbiterPlan(
-        asteroid_texture('rock', 3), CERES_RADIUS, PLANET_MASS, distance,
+        CERES, CERES_RADIUS, PLANET_MASS, distance,
         speed=orbital_speed(distance), orbit_angle=earth_angle + math.pi,
         gravity=CERES_GRAVITY,
     )

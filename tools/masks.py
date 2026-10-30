@@ -1,7 +1,8 @@
-""" Masks of the drawings: their round silhouette, the holes they enclose,
-and their outline """
+""" Masks of the drawings: their round silhouette, or dented as an
+asteroid's, the holes they enclose, and their outline """
 
 import math
+from random import Random
 
 from PIL import Image, ImageDraw
 
@@ -23,6 +24,36 @@ def disc_mask(size: tuple[int, int], box: tuple[int, int, int, int],
         fill=255,
     )
     return big.resize(size, Image.Resampling.LANCZOS)
+
+
+def dented_mask(rng: Random, size: int, depth: float, kept: float,
+                kept_half: float) -> Image.Image:
+    """ A disc filling a square image, its edge dented inwards by up to
+    `depth` of its radius, unevenly, as an asteroid's: never beyond the
+    disc, and kept round `kept_half` degrees on both sides of the angle
+    `kept`, counterclockwise from the east """
+    phases = [(k, rng.uniform(0, 2 * math.pi), rng.uniform(.4, 1.))
+              for k in range(2, 7)]
+
+    def wobble(angle: float) -> float:
+        return sum(w * math.sin(k * angle + p) for k, p, w in phases)
+
+    angles = [2 * math.pi * i / 720 for i in range(720)]
+    raw = [wobble(angle) for angle in angles]
+    low, high = min(raw), max(raw)
+    radius = size / 2 * SUPERSAMPLING
+    points = []
+    for angle, value in zip(angles, raw, strict=True):
+        away = abs(math.degrees(math.remainder(angle - math.radians(kept),
+                                               2 * math.pi)))
+        dented = min(1., max(0., (away - kept_half) / 20))
+        dent = depth * dented * (value - low) / (high - low)
+        r = radius * (1 - dent)
+        points.append((radius + r * math.cos(angle),
+                       radius - r * math.sin(angle)))
+    big = Image.new('L', (size * SUPERSAMPLING, size * SUPERSAMPLING))
+    ImageDraw.Draw(big).polygon(points, fill=255)
+    return big.resize((size, size), Image.Resampling.LANCZOS)
 
 
 def holes_mask(alpha: Image.Image) -> Image.Image:
