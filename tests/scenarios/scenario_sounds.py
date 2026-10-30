@@ -129,7 +129,9 @@ def hears_the_next_drone_alone() -> None:
     current, upcoming = remembered['drones']
     ambience = scenario.game.soundtrack.ambience
     check(loops()['drones'] == {upcoming}, f'once faded: {loops()}')
-    check(not loaded(current), 'the previous drone is freed')
+    # Unless drawn to come next
+    check(not loaded(current) or current == ambience.upcoming,
+          'the previous drone is freed')
     check(loaded(ambience.upcoming), 'and another one decoded aside')
     ambience.call_in = 0.
 
