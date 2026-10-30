@@ -36,6 +36,16 @@ class Progress:
         return bool(self.built or self.delivered or self.stock)
 
 
+@dataclass(frozen=True)
+class Landed:
+    """ Where the ship was landed: it comes back there """
+    place: str                          # 'earth', or the key of an outpost
+    direction: float                    # from the center of its body
+
+
+EARTH = 'earth'
+
+
 @dataclass
 class Save:
     seed: int                           # of the solar system
@@ -55,6 +65,8 @@ class Save:
     fuel: float | None = None           # in the tank, None when full
     # By site, those not started left out
     outposts: dict[str, Progress] = field(default_factory=dict)
+    # Saved in flight, the ship comes back on the Earth, its cargo lost
+    landed: Landed | None = None
 
 
 def ores(data: Any) -> dict[str, float]:
@@ -131,6 +143,13 @@ def outposts_of(data: Any) -> dict[str, Progress]:
     }
 
 
+def landed_of(data: Any) -> Landed | None:
+    """ Older saves have none: on the Earth """
+    if data is None:
+        return None
+    return Landed(str(data['place']), float(data['direction']))
+
+
 def dump(save: Save) -> str:
     return json.dumps({
         'version': VERSION,
@@ -158,6 +177,10 @@ def dump(save: Save) -> str:
             }
             for site, progress in save.outposts.items()
         },
+        'landed': {
+            'place': save.landed.place,
+            'direction': save.landed.direction,
+        } if save.landed else None,
     }, ensure_ascii=False, indent=1, sort_keys=True)
 
 
@@ -190,6 +213,7 @@ def load(text: str) -> Save:
             ],
             fuel=fuel_of(data.get('fuel')),
             outposts=outposts_of(data.get('outposts', {})),
+            landed=landed_of(data.get('landed')),
         )
     except SaveError:
         raise

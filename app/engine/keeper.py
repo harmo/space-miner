@@ -2,8 +2,9 @@
 it back in them """
 
 from ..logic.mining.minerals import MINERALS
-from ..logic.save import Progress, Save, dump
+from ..logic.save import EARTH, Landed, Progress, Save, dump
 from ..logic.ship.hulls import HULLS
+from ..logic.ship.landing import Ground
 from ..logic.ship.shipyard import Design
 from .base.earth_base import EarthBase
 from .base.outposts import Outpost, open_trades
@@ -23,6 +24,7 @@ class Keeper:
 
     def snapshot(self) -> Save:
         base, board = self.base, self.base.board
+        landed = self.landed
         return Save(
             seed=self.seed,
             credits=base.wallet.credits,
@@ -30,7 +32,8 @@ class Keeper:
             hulls=[hull for hull in HULLS if hull in base.inventory.hulls],
             spares=dict(base.inventory.spares),
             stock=dict(base.depot.stock),
-            cargo=dict(self.player.miner.ore),
+            # Lost when leaving in flight
+            cargo=dict(self.player.miner.ore) if landed else {},
             validated=board.validated if board else 0,
             seen_tier=base.seen_tier,
             mission_level=board.level if board else 1,
@@ -44,10 +47,36 @@ class Keeper:
                 outpost.key: outpost.progress for outpost in self.outposts
                 if outpost.progress.started
             },
+            landed=landed,
         )
 
+    @property
+    def landed(self) -> Landed | None:
+        """ Where the ship is parked, None in flight """
+        player = self.player
+        parking = player.parking
+        if player.ship is None or player.landing or parking is None:
+            return None
+        if parking.body is player.home.body:
+            return Landed(EARTH, parking.direction)
+        place = next((
+            outpost.key for outpost in self.outposts
+            if outpost.body is parking.body
+        ), None)
+        return Landed(place, parking.direction) if place else None
+
+    def ground(self, landed: Landed | None) -> Ground | None:
+        """ Of the place the ship comes back to, home if unknown """
+        if landed is None or landed.place == EARTH:
+            return None
+        return next((
+            outpost.ground for outpost in self.outposts
+            if outpost.key == landed.place
+        ), None)
+
     def restore(self, save: Save) -> None:
-        """ The ship comes back landed on the Earth """
+        """ The ship comes back where it was landed, or on the Earth, the
+        outposts being restored first, for their pads """
         base, board = self.base, self.base.board
         base.wallet.credits = save.credits
         base.inventory.spares.clear()
@@ -66,12 +95,18 @@ class Keeper:
             if save.offers:
                 board.offers[:] = save.offers
             board.top_up()
-        self.player.restart(save.design)
+        for outpost in self.outposts:
+            outpost.restore(save.outposts.get(outpost.key, Progress()))
+        landed = save.landed
+        if landed is None:
+            self.player.restart(save.design)
+        else:
+            self.player.restart(
+                save.design, landed.direction, self.ground(landed),
+            )
         tank = self.player.tank
         if save.fuel is not None:
             tank.level = min(save.fuel, tank.capacity)
-        for outpost in self.outposts:
-            outpost.restore(save.outposts.get(outpost.key, Progress()))
         self.player.miner.ore.clear()
         self.player.miner.ore.update(save.cargo)
         self.player.looked_for = set(save.looked_for)

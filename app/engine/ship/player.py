@@ -92,10 +92,11 @@ class Player:
     def spots(self, ground: Ground) -> list[float]:
         return self.fits[ground.body.entity_id]
 
-    def spawn(self, direction: float) -> None:
-        """ Landed home, on the ground closest to `direction` """
-        home = self.home.body
-        direction = closest_spot(direction, self.spots(self.home))
+    def spawn(self, direction: float, ground: Ground | None = None) -> None:
+        """ Landed home, or on `ground`, as close to `direction` as it can """
+        ground = ground or self.home
+        home = ground.body
+        direction = closest_spot(direction, self.spots(ground))
         length = self.stats.size[0]
         pos = landed_on(home, direction, length)
         entity_id = create_ship_entity(
@@ -161,15 +162,23 @@ class Player:
         return nearest(self.grounds, self.anchor).body
 
     def refit(self, design: Design) -> None:
-        """ Swap the ship for one built after `design`, where it is parked
-        at home """
-        if self.parking is not None and self.docked:
-            self.restart(design, self.parking.direction)
+        """ Swap the ship for one built after `design`, where it is
+        parked """
+        parking = self.parking
+        if parking is not None and self.docked:
+            self.restart(design, parking.direction,
+                         self.ground_of(parking.body))
+
+    def ground_of(self, body: Celestial) -> Ground | None:
+        return next(
+            (ground for ground in self.grounds if ground.body is body), None,
+        )
 
     def restart(self, design: Design,
-                direction: float = math.radians(START_DIRECTION)) -> None:
-        """ A ship built after `design`, landed home whatever the ship was
-        doing """
+                direction: float = math.radians(START_DIRECTION),
+                ground: Ground | None = None) -> None:
+        """ A ship built after `design`, landed home, or on `ground`,
+        whatever the ship was doing """
         if self.ship is not None:
             self.gameworld.remove_entity(self.ship.entity_id)
         self.landing, self.crash = None, None
@@ -178,7 +187,7 @@ class Player:
         self.miner.stats = self.stats
         self.condition.refit(self.stats)
         self.fit()
-        self.spawn(direction)
+        self.spawn(direction, ground)
 
     def land(self) -> None:
         """ Land automatically on the closest ground, when close enough """

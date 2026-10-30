@@ -8,7 +8,7 @@ from app.logic.preferences import (
     dump_preferences,
     load_preferences,
 )
-from app.logic.save import Progress, Save, SaveError, dump, load
+from app.logic.save import Landed, Progress, Save, SaveError, dump, load
 from app.logic.ship.scanner import LOOKED_FOR
 from app.logic.ship.shipyard import Design
 
@@ -33,6 +33,7 @@ SAVE = Save(
             2,
         ),
     },
+    landed=Landed('frontier', 1.5),
 )
 
 
@@ -113,6 +114,16 @@ def test_older_saves_have_no_outpost_started() -> None:
     data = json.loads(dump(SAVE))
     del data['outposts']
     assert load(json.dumps(data)).outposts == {}
+
+
+def test_older_saves_come_back_on_the_earth() -> None:
+    data = json.loads(dump(SAVE))
+    del data['landed']
+    assert load(json.dumps(data)).landed is None
+
+
+def test_saved_in_flight_the_ship_is_landed_nowhere() -> None:
+    assert load(dump(Save(seed=1, landed=None))).landed is None
 
 
 def test_older_saves_have_missions_of_the_first_level() -> None:
