@@ -1,5 +1,5 @@
 """ What is drawn over the game world on each frame: orbits, waves of solar
-flares, markers, the work of the ship and explosions """
+flares, outposts, markers, the work of the ship and explosions """
 
 import math
 
@@ -9,6 +9,7 @@ from ...logic.config import (
     HOME_COLOR,
     ORBIT_DOT_SPACING,
     ORBIT_PLANET_GAP,
+    OUTPOST_COLOR,
     PLANET_COLOR,
     SCAN_ARROWS,
     SUN_COLOR,
@@ -20,26 +21,33 @@ from ...logic.preferences import Preferences
 from ...logic.ship.lasers import laser
 from ...logic.ship.scanner import found, mineral_of
 from ...logic.world.space import Vec2
+from ..base.outposts import Outpost
 from ..ship.looks import ShipLooks
 from ..ship.player import Player
 from ..world.solar_system import SolarSystem
+from ..world.spots import Spot
+from .outpost_look import draw_outpost
 from .overlay import Overlay
+
+OUTPOST_SIZE = 60.            # around the pad, for its marker
 
 
 def draw_scene(overlay: Overlay, size: Vec2, system: SolarSystem,
-               player: Player, ship: ShipLooks, playing: bool,
-               preferences: Preferences) -> None:
+               outposts: list[Outpost], player: Player, ship: ShipLooks,
+               playing: bool, preferences: Preferences) -> None:
     """ Markers and the work of the ship are for playing, not for the
     scenery behind the home page """
     overlay.begin(size)
     if preferences.orbits:
         draw_orbits(overlay, size, system)
     draw_wave(overlay, system)
+    for outpost in outposts:
+        draw_outpost(overlay, outpost)
     ship.exhaust.draw(overlay)
     ship.gear.draw(overlay, player)
     if playing:
         if preferences.markers:
-            draw_markers(overlay, system)
+            draw_markers(overlay, system, outposts)
         draw_scan(overlay, system, player)
         draw_work(overlay, player)
     for explosion in player.explosions:
@@ -71,9 +79,10 @@ def draw_orbits(overlay: Overlay, size: Vec2, system: SolarSystem) -> None:
         ))
 
 
-def draw_markers(overlay: Overlay, system: SolarSystem) -> None:
-    """ Towards the planets, the sun, a swarm passing by and the ejecta of a
-    flare, out of the screen """
+def draw_markers(overlay: Overlay, system: SolarSystem,
+                 outposts: list[Outpost]) -> None:
+    """ Towards the planets, the sun, a swarm passing by, the ejecta of a
+    flare and the outposts, out of the screen """
     overlay.marker(system.sun, SUN_COLOR)
     swarm = system.events.swarm_spot
     if swarm is not None:
@@ -81,6 +90,8 @@ def draw_markers(overlay: Overlay, system: SolarSystem) -> None:
     ejecta = system.events.flares.ejecta_spot
     if ejecta is not None:
         overlay.marker(ejecta, FLARE_COLOR)
+    for outpost in outposts:
+        overlay.marker(Spot(outpost.pos, OUTPOST_SIZE), OUTPOST_COLOR)
     for planet in system.planets:
         overlay.marker(
             planet, HOME_COLOR if planet is system.earth else PLANET_COLOR

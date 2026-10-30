@@ -5,7 +5,14 @@ import math
 from collections.abc import Iterable
 from typing import Any
 
-from kivy.graphics import Color, InstructionGroup, Line, Point, Rectangle
+from kivy.graphics import (
+    Color,
+    InstructionGroup,
+    Line,
+    Mesh,
+    Point,
+    Rectangle,
+)
 
 from ...logic.colors import Rgb
 from ...logic.config import (
@@ -86,6 +93,27 @@ class Overlay:
         self.group.add(Line(
             circle=(x, y, radius / self.camera.camera_scale), width=3,
         ))
+
+    def shape(self, points: list[Vec2], color: Rgb,
+              outline: Rgb | None = None) -> None:
+        """ A convex polygon of the world, filled """
+        screen = [self.to_screen(point) for point in points]
+        self.group.add(Color(*color, 1))
+        self.group.add(Mesh(
+            vertices=[value for x, y in screen for value in (x, y, 0, 0)],
+            indices=list(range(len(screen))), mode='triangle_fan',
+        ))
+        if outline is not None:
+            self.group.add(Color(*outline, 1))
+            self.group.add(Line(
+                points=[value for point in screen for value in point],
+                width=1, close=True,
+            ))
+
+    def light(self, pos: Vec2, color: Rgb, opacity: float) -> None:
+        """ A dot of light, as big whatever the zoom """
+        self.group.add(Color(*color, opacity))
+        self.group.add(Point(points=self.to_screen(pos), pointsize=2.5))
 
     def dots(self, dots: list[Vec2]) -> None:
         """ Faint dots, as in a dotted orbit """

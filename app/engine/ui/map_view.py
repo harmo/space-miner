@@ -4,6 +4,7 @@ swarm passing by and the ejecta of a flare. Drawn once when opened, the
 game standing still. """
 
 import math
+from dataclasses import dataclass
 from typing import Any
 
 from kivy.core.text import Label as CoreLabel
@@ -17,6 +18,7 @@ from ...logic.colors import Rgb
 from ...logic.config import (
     FLARE_COLOR,
     HOME_COLOR,
+    OUTPOST_COLOR,
     PLANET_COLORS,
     RINGED,
     SUN_COLOR,
@@ -26,6 +28,7 @@ from ...logic.mining.minerals import MINERALS
 from ...logic.ship.scanner import found, mineral_of
 from ...logic.world.chart import ZOOMS, Chart, chart, zoomed
 from ...logic.world.space import Vec2
+from ..base.outposts import Outpost
 from ..ship.player import Player
 from ..world.solar_system import SolarSystem
 
@@ -34,17 +37,25 @@ CANISTER_COLOR = (1., .6, .3)
 SHIP_COLOR = (1., 1., 1.)
 
 
+@dataclass(frozen=True)
+class Charted:
+    """ What the map shows """
+    system: SolarSystem
+    player: Player
+    outposts: list[Outpost]
+
+
 class MapView(Widget):
 
     zoom = NumericProperty(ZOOMS[0])
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.shown: tuple[SolarSystem, Player] | None = None
+        self.shown: Charted | None = None
         self.chart: Chart | None = None     # as drawn last
 
-    def show(self, system: SolarSystem, player: Player) -> None:
-        self.shown = system, player
+    def show(self, charted: Charted) -> None:
+        self.shown = charted
         self.draw()
 
     def zoom_by(self, closer: bool) -> None:
@@ -61,7 +72,7 @@ class MapView(Widget):
     def draw(self) -> None:
         if self.shown is None:
             return
-        system, player = self.shown
+        system, player = self.shown.system, self.shown.player
         sun = system.sun
         farthest = max(
             planet.orbit.radius + planet.radius
@@ -82,6 +93,7 @@ class MapView(Widget):
             self.lost(player, frame)
             self.swarm(system, frame)
             self.ejecta(system, frame)
+            self.outposts(self.shown.outposts, frame)
             self.ship(player, frame)
 
     def orbits(self, system: SolarSystem, frame: Chart) -> None:
@@ -158,6 +170,19 @@ class MapView(Widget):
         Color(*FLARE_COLOR, 1)
         Line(circle=(x, y, dp(9)), width=1.4)
         self.label('Éjectas', (x, y + dp(18)), FLARE_COLOR)
+
+    def outposts(self, outposts: list[Outpost], frame: Chart) -> None:
+        """ A square on each site, outlined until something is built """
+        side = dp(7)
+        for outpost in outposts:
+            x, y = frame.place(outpost.pos)
+            Color(*OUTPOST_COLOR, 1)
+            if outpost.construction.built:
+                Rectangle(pos=(x - side / 2, y - side / 2), size=(side, side))
+            else:
+                Line(rectangle=(x - side / 2, y - side / 2, side, side),
+                     width=1.2)
+            self.label(outpost.name, (x, y + dp(16)), OUTPOST_COLOR)
 
     def ship(self, player: Player, frame: Chart) -> None:
         """ Pointing where it heads, within the reach of its scanner """

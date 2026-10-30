@@ -60,6 +60,7 @@ HOME_COLOR = (.23, .49, .76)  # the Earth
 PLANET_COLOR = (.85, .85, .9)  # the other planets
 SWARM_COLOR = (1., .4, .85)   # rich asteroids passing by
 FLARE_COLOR = (1., .55, .2)   # waves of solar flares, and their ejecta
+OUTPOST_COLOR = (.5, .9, .78)  # sites of outposts, and outposts
 SUN_COLOR = (1., .82, .25)
 # Towards what the scanner finds, out of the screen
 SCAN_ARROWS = 10              # at most, the closest

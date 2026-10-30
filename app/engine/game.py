@@ -26,6 +26,7 @@ from ..logic.hud import heat_at, is_compact
 from ..logic.ship.landing import Ground
 from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
+from .base.outposts import Outpost, found
 from .entities import setup_collisions, setup_state, step_systems
 from .keeper import Keeper
 from .ship.looks import ShipLooks
@@ -35,6 +36,7 @@ from .storage import read_preferences, read_save
 from .textures import ground_edge, load_textures
 from .ui.controls import escape, steers
 from .ui.hud import show_hud
+from .ui.map_view import Charted
 from .ui.overlay import Overlay
 from .ui.pointer import pointer_heading
 from .ui.scene import draw_scene
@@ -70,6 +72,7 @@ class Game(Widget):
     stars: StarField
     system: SolarSystem
     player: Player
+    outposts: list[Outpost]
     overlay: Overlay
     soundtrack: Soundtrack
 
@@ -103,9 +106,13 @@ class Game(Widget):
             self.gameworld, plan_system(Random(seed)),
             center=(WORLD_SIZE / 2, WORLD_SIZE / 2), rng=self.rng,
         )
+        self.outposts = found(self.system, self.rng)
         self.player = Player(
             self.gameworld, self.system, self.camera, self.rng,
-            [Ground(self.system.earth, tuple(ground_edge('earth')))],
+            [
+                Ground(self.system.earth, tuple(ground_edge('earth'))),
+                *(outpost.ground for outpost in self.outposts),
+            ],
         )
         setup_collisions(self.gameworld, self.player.on_contact)
         self.soundtrack = Soundtrack(self.player, self.rng)
@@ -207,15 +214,15 @@ class Game(Widget):
             self.ids.base.close()
             self.ids.scanner.open = False
             self.pointer = None
-            self.ids.map.show(self.system, self.player)
+            self.ids.map.show(Charted(self.system, self.player, self.outposts))
 
     def toggle_cargo(self) -> None:
         self.cargo_open = not self.cargo_open
 
     def draw_overlay(self) -> None:
         draw_scene(
-            self.overlay, self.size, self.system, self.player, self.looks,
-            self.playing, self.preferences,
+            self.overlay, self.size, self.system, self.outposts, self.player,
+            self.looks, self.playing, self.preferences,
         )
 
     # Input

@@ -40,6 +40,10 @@ FRONTIER = Site('Base Frontière', 'ground', (
 ))
 
 
+# By the key they are saved under
+SITES = {'frontier': FRONTIER}
+
+
 class Construction:
     """ An outpost on its site: the stages built, and what was delivered
     for the next one """
