@@ -107,7 +107,7 @@ class Game(Widget):
             ground_edge('earth'),
         )
         setup_collisions(self.gameworld, self.player.on_contact)
-        self.soundtrack = Soundtrack(self.player)
+        self.soundtrack = Soundtrack(self.player, self.rng)
         self.ids.base.setup(self.player, self.rng)
         self.ids.scanner.setup(self.player, self.system, self.ids.base)
         self.keeper = Keeper(seed, self.player, self.ids.base)

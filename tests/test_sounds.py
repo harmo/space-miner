@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from app.logic.ambience import CALLS, DRONES
 from app.logic.config import SOUNDS
 from app.logic.mining.minerals import MINERALS
 from app.logic.ship.lasers import BEST
@@ -29,8 +30,7 @@ FLYING = Moment(
 )
 EVENTS = (
     'explosion', 'gear_out', 'gear_in', 'touchdown', 'cargo_full',
-    'mission', 'sale', 'purchase', 'swarm', 'pickup', 'click', 'ambient',
-    'unloading',
+    'mission', 'sale', 'purchase', 'swarm', 'pickup', 'click', 'unloading',
 )
 
 
@@ -38,7 +38,8 @@ def test_every_sound_has_its_file() -> None:
     names = [
         HULL_ENGINE, *(f'engine_{part}' for part in ENGINES),
         *(laser_sound(level) for level in range(1, BEST + 1)),
-        *(break_sound(name) for name in MINERALS), *EVENTS,
+        *(break_sound(name) for name in MINERALS), *EVENTS, *DRONES,
+        *CALLS,
     ]
     for name in names:
         assert (ROOT / SOUNDS / f'{name}.ogg').is_file(), name
@@ -46,11 +47,12 @@ def test_every_sound_has_its_file() -> None:
 
 def test_loops_are_told_apart() -> None:
     loops = [
-        'ambient', 'unloading', HULL_ENGINE, 'engine_fusion_engine',
-        laser_sound(3),
+        'unloading', HULL_ENGINE, 'engine_fusion_engine', laser_sound(3),
+        *DRONES,
     ]
     assert all(is_loop(name) for name in loops)
     assert not any(is_loop(name) for name in EVENTS if name not in loops)
+    assert not any(is_loop(name) for name in CALLS)
     assert not is_loop(break_sound('gold'))
 
 

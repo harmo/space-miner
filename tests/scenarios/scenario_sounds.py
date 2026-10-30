@@ -1,11 +1,15 @@
 """ Hearing the game: space humming, the engine taking off, the laser
-mining, an asteroid breaking up, the crash, the base, and silence once the
-sounds are turned off """
+mining, an asteroid breaking up, the crash, the base, the drones of the
+ambience fading into one another, a radio call, and silence once the
+sounds then the ambience are turned off """
 
 import math
+from pathlib import Path
 from typing import Any
 
 from app.engine.audio import audio
+from app.logic.ambience import CALLS, DRONE_FADE
+from app.logic.config import SOUNDS
 from app.logic.ship.config import RESPAWN_DELAY
 
 from .harness import Scenario, loneliest
@@ -20,32 +24,44 @@ def record() -> None:
     """ The sounds played once, from now on """
     play = audio.play
 
-    def recording(name: str) -> None:
+    def recording(name: str, volume: float | None = None) -> None:
         played.append(name)
-        play(name)
+        play(name, volume)
     audio.play = recording  # type: ignore[method-assign]
 
 
-def loops() -> dict[str, str | None]:
+def loops() -> dict[str, Any]:
     soundtrack = scenario.game.soundtrack
     return {
-        'ambient': soundtrack.ambient.name,
+        'drones': {loop.name for loop in soundtrack.drones} - {None},
         'engine': soundtrack.engine.name,
         'laser': soundtrack.laser.name,
         'unloading': soundtrack.unloading.name,
     }
 
 
+def loaded(name: str) -> bool:
+    """ Decoded, or being decoded, by the mixer """
+    path = Path(SOUNDS) / f'{name}.ogg'
+    mixer = audio.mixer
+    return mixer is not None and (
+        path in mixer.chunks or path in mixer.decoding
+    )
+
+
 @scenario.step(1.)
 def hums_landed() -> None:
     record()
+    ambience = scenario.game.soundtrack.ambience
     check(loops() == {
-        'ambient': 'ambient', 'engine': 'engine_hull', 'laser': None,
-        'unloading': None,
+        'drones': {ambience.current}, 'engine': 'engine_hull',
+        'laser': None, 'unloading': None,
     }, f'space hums, the engine is ready: {loops()}')
     check(scenario.game.soundtrack.volume == 0, 'and silent')
     check(audio.mixer is not None, 'loops play on the channels of the mixer')
-    check(scenario.game.soundtrack.ambient.playing, 'space hums for real')
+    check(all(drone.playing for drone in scenario.game.soundtrack.drones
+              if drone.name), 'space hums for real')
+    check(loaded(ambience.upcoming), 'the next drone is decoded aside')
     remembered['touch'] = scenario.hold_towards(scenario.away_from_earth())
 
 
@@ -104,21 +120,51 @@ def trades() -> None:
 def hears_the_base() -> None:
     check(loops()['unloading'] == 'unloading', f'ore unloads: {loops()}')
     check('sale' in played, f'the rock is sold: {played}')
+    ambience = scenario.game.soundtrack.ambience
+    remembered['drones'] = ambience.current, ambience.upcoming
+    ambience.alone = 0.                     # time to fade
+
+
+@scenario.step(1.)
+def fades_into_the_next_drone() -> None:
+    current, upcoming = remembered['drones']
+    check(loops()['drones'] == {current, upcoming},
+          f'both drones are heard: {loops()}')
+    check(all(drone.playing for drone in scenario.game.soundtrack.drones),
+          'for real')
+    scenario.game.soundtrack.ambience.fading = DRONE_FADE - .05
+
+
+@scenario.step(.5)
+def hears_the_next_drone_alone() -> None:
+    current, upcoming = remembered['drones']
+    ambience = scenario.game.soundtrack.ambience
+    check(loops()['drones'] == {upcoming}, f'once faded: {loops()}')
+    check(not loaded(current), 'the previous drone is freed')
+    check(loaded(ambience.upcoming), 'and another one decoded aside')
+    ambience.call_in = 0.
+
+
+@scenario.step(.5)
+def hears_a_radio_call() -> None:
+    check(any(name in CALLS for name in played), f'a call: {played}')
     scenario.game.preferences.sounds = 0.
 
 
 @scenario.step(.5)
 def falls_silent() -> None:
     check(audio.volume == 0, 'the sounds are off')
-    check(set(loops().values()) == {'ambient', None},
+    quiet = loops()
+    check(bool(quiet.pop('drones')) and set(quiet.values()) == {None},
           f'all is quiet but space: {loops()}')
     scenario.game.preferences.ambience = 0.
 
 
 @scenario.step(.5)
 def space_falls_silent() -> None:
-    check(set(loops().values()) == {None}, f'all is quiet: {loops()}')
-    check(not scenario.game.soundtrack.ambient.playing, 'space too')
+    check(loops()['drones'] == set(), f'all is quiet: {loops()}')
+    check(not any(drone.playing for drone in scenario.game.soundtrack.drones),
+          'space too')
 
 
 scenario.run()

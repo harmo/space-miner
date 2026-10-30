@@ -45,8 +45,8 @@ def break_sound(mineral: str) -> str:
 
 def is_loop(name: str) -> bool:
     """ Played over and over, rather than once """
-    return name in ('ambient', 'unloading') or name.startswith(
-        ('engine_', 'laser_')
+    return name == 'unloading' or name.startswith(
+        ('engine_', 'laser_', 'drone_')
     )
 
 

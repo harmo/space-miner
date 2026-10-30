@@ -4,6 +4,7 @@ from pathlib import Path
 
 from kivy.core.audio import Sound, SoundLoader
 
+from ..logic.ambience import DRONES
 from ..logic.config import SOUNDS
 from ..logic.sounds import is_loop
 from .mixer import LOOP_CHANNELS, Mixer, open_mixer
@@ -18,10 +19,14 @@ class Audio:
         self.volume = 1.                    # of the sounds played once
 
     def open(self) -> None:
-        """ Loads every sound. Kivy opens the audio device with the first
-        one: before the window, as SDL may hang opening it afterwards, with
-        PulseAudio. """
-        paths = sorted(Path(SOUNDS).glob('*.ogg'))
+        """ Loads every sound, but the drones of the ambience: too long to
+        keep them all, they are loaded when about to play. Kivy opens the
+        audio device with the first one: before the window, as SDL may
+        hang opening it afterwards, with PulseAudio. """
+        paths = [
+            path for path in sorted(Path(SOUNDS).glob('*.ogg'))
+            if path.stem not in DRONES
+        ]
         for path in paths:
             if not is_loop(path.stem):
                 self.sound(path.stem)
@@ -33,16 +38,31 @@ class Audio:
                 else:
                     self.sound(path.stem)
 
+    def preload(self, name: str) -> None:
+        """ A loop about to play, decoded aside where the mixer can """
+        if self.mixer is not None:
+            self.mixer.preload(Path(SOUNDS) / f'{name}.ogg')
+
+    def release(self, name: str) -> None:
+        """ A sound no longer played, its memory freed """
+        if self.mixer is not None:
+            self.mixer.free(Path(SOUNDS) / f'{name}.ogg')
+        sound = self.sounds.pop(name, None)
+        if sound is not None:
+            sound.unload()
+
     def sound(self, name: str) -> Sound | None:
         """ Loaded on first use, None when it can't be """
         if name not in self.sounds:
             self.sounds[name] = SoundLoader.load(f'{SOUNDS}/{name}.ogg')
         return self.sounds[name]
 
-    def play(self, name: str) -> None:
-        sound = self.sound(name) if self.volume > 0 else None
+    def play(self, name: str, volume: float | None = None) -> None:
+        """ At the volume of the sounds, unless told another one """
+        volume = self.volume if volume is None else volume
+        sound = self.sound(name) if volume > 0 else None
         if sound is not None:
-            sound.volume = self.volume
+            sound.volume = volume
             sound.play()
 
     def reserve(self) -> int | None:

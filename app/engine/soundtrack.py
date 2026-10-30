@@ -1,11 +1,14 @@
-""" The sounds of the game, on each frame: space humming all around, the
-engine following the thrust, the laser while it fires, the ore unloaded,
-and what happened since the previous frame. The game standing still, only
-space goes on humming. The ambience and the other sounds each have their
-own volume, chosen in the settings. """
+""" The sounds of the game, on each frame: drones of the ambience fading
+into one another and radio calls, the engine following the thrust, the
+laser while it fires, the ore unloaded, and what happened since the
+previous frame. The game standing still, only the drones go on. The
+ambience and the other sounds each have their own volume, chosen in the
+settings. """
 
+from random import Random
 from typing import TYPE_CHECKING
 
+from ..logic.ambience import Ambience
 from ..logic.sounds import (
     Moment,
     break_sound,
@@ -23,8 +26,9 @@ if TYPE_CHECKING:
 
 class Soundtrack:
 
-    def __init__(self, player: Player) -> None:
-        self.ambient = Loop(audio)
+    def __init__(self, player: Player, rng: Random) -> None:
+        self.ambience = Ambience(rng)
+        self.drones = [Loop(audio), Loop(audio)]    # fading into each other
         self.engine = Loop(audio)
         self.laser = Loop(audio)
         self.unloading = Loop(audio)
@@ -37,8 +41,8 @@ class Soundtrack:
     def update(self, game: 'Game', dt: float, heading: float | None) -> None:
         preferences = game.preferences
         audio.volume = sounds = preferences.sounds
-        ambience = preferences.ambience
-        self.ambient.play('ambient' if ambience > 0 else None, ambience)
+        playing = game.playing and not game.map_open
+        self.hum(preferences.ambience, dt, playing)
         player, base = game.player, game.ids.base
         moment = Moment(
             ship=player.ship.entity_id if player.ship else None,
@@ -49,7 +53,7 @@ class Soundtrack:
             validated=base.board.validated if base.board else 0,
             swarm=bool(game.system.events.swarm),
         )
-        running = game.playing and not game.map_open and sounds > 0
+        running = playing and sounds > 0
         if running and self.moment is not None:
             for name in heard(self.moment, moment):
                 audio.play(name)
@@ -70,3 +74,36 @@ class Soundtrack:
             laser_sound(player.stats.laser) if firing else None, sounds,
         )
         self.unloading.play('unloading' if base.unloading else None, sounds)
+
+    def hum(self, volume: float, dt: float, playing: bool) -> None:
+        """ The drones of the ambience, the next one decoded aside before
+        its turn, and radio calls while playing """
+        if volume <= 0:
+            for loop in self.drones:
+                self.silence(loop)
+            return
+        ambience = self.ambience
+        ambience.update(dt)
+        audio.preload(ambience.upcoming)
+        volumes = ambience.volumes
+        for loop in self.drones:
+            if loop.name not in volumes:
+                self.silence(loop)
+        for name, share in volumes.items():
+            loop = next(
+                (loop for loop in self.drones if loop.name == name), None,
+            ) or next(loop for loop in self.drones if loop.name is None)
+            loop.play(name, share * volume)
+        call = ambience.call(dt) if playing else None
+        if call is not None:
+            audio.play(call, volume)
+
+    def silence(self, drone: Loop) -> None:
+        """ Freeing the drone it played, unless it comes back soon """
+        name = drone.name
+        drone.stop()
+        ambience = self.ambience
+        if name is not None and name not in (
+            ambience.current, ambience.upcoming,
+        ):
+            audio.release(name)
