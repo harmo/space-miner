@@ -183,14 +183,15 @@ def test_no_gravity_no_pull() -> None:
     assert Celestial(0, 10.).pull(10., 0.) == (0., 0.)
 
 
-def test_sun_pulls_from_anywhere_in_the_world() -> None:
+def test_sun_pulls_from_anywhere_in_the_world_lightly() -> None:
     sun = Celestial(
         0, SUN_RADIUS, gravity=SUN_GRAVITY,
         gravity_falloff=SUN_GRAVITY_FALLOFF, gravity_range=None,
     )
     far = WORLD_SIZE / 2
     pull_x, _ = sun.pull(far, 0.)
-    assert -pull_x == pytest.approx(SUN_GRAVITY * SUN_RADIUS / far)
+    assert -pull_x == pytest.approx(SUN_GRAVITY * (SUN_RADIUS / far) ** 2)
+    assert -pull_x > 0
 
 
 # Neighbors

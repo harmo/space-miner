@@ -3,7 +3,8 @@
 # Sun
 SUN_RADIUS = 600.
 SUN_GRAVITY = 400.            # pull at its surface (px/s²)
-SUN_GRAVITY_FALLOFF = 1.      # pull in 1/distance: it reaches everywhere
+# Pull in 1/distance², as planets: strong close to it, light far away
+SUN_GRAVITY_FALLOFF = 2.
 
 # Planets
 FIRST_ORBIT = 2200.           # distance of the closest planet to the sun

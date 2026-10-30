@@ -2,7 +2,9 @@
 pixels, speeds in px/s. The rest depends on its parts: see parts.py """
 
 SHIP_MASS = 50.
-SHIP_DRAG = .3                # how fast the ship slows down when coasting
+# How fast the ship slows down when coasting: barely, it glides on, bent by
+# gravity, for a score of seconds
+SHIP_DRAG = .05
 # However heavy its parts make it, a ship still flies
 MIN_SPEED = 120.
 MIN_THRUST = .4

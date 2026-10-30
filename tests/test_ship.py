@@ -81,9 +81,15 @@ def test_coasting_slows_down_progressively() -> None:
     assert speed(body) == pytest.approx(300. * math.exp(-SHIP_DRAG), rel=.01)
 
 
+def test_coasting_ship_glides_on() -> None:
+    ship, body = make_ship(velocity=(300., 0.))
+    fly(ship, body, 5., None, [])
+    assert speed(body) > 300. * .75
+
+
 def test_coasting_ship_moves_with_its_reference() -> None:
     ship, body = make_ship()
-    for _ in range(round(20 / DT)):
+    for _ in range(round(120 / DT)):
         ship.drive(DT, None, (30., -10.))
     assert body.velocity == pytest.approx((30., -10.), rel=.01)
 
@@ -102,13 +108,15 @@ def test_reference_is_the_strongest_attractor() -> None:
 def test_gravity_accelerates_towards_the_attractor() -> None:
     ship, body = make_ship(position=(2 * SUN_RADIUS, 0.))
     ship.apply_gravity(1., [make_sun()])
-    assert body.velocity == pytest.approx((-SUN_GRAVITY / 2, 0.))
+    # Twice as far from the center as its surface, in 1/distance²
+    assert body.velocity == pytest.approx((-SUN_GRAVITY / 4, 0.))
 
 
 def test_idle_ship_falls_towards_the_sun() -> None:
     ship, body = make_ship(position=(5400., 0.))
     fly(ship, body, 10., None, [make_sun()])
-    assert body.position.x < 5400. - 500.
+    # Slowly, far from it
+    assert 5400. - 500. < body.position.x < 5400. - 100.
     assert body.velocity.x < 0
 
 
