@@ -50,7 +50,7 @@ class Outpost:
         site = self.construction.site
         return Ground(
             self.body, pad(self.body.radius, self.direction, site.pad),
-            docking=site.form == 'orbit',
+            kind='port' if site.form == 'orbit' else 'pad',
         )
 
     @property

@@ -128,7 +128,7 @@ def moment_of(game: 'Game') -> Moment:
         warmth=player.hull.warmth,
         flare=events.flares.clock.phase,
         port=player.parking is not None and any(
-            ground.docking and ground.body is player.parking.body
+            ground.kind == 'port' and ground.body is player.parking.body
             for ground in player.grounds
         ),
     )

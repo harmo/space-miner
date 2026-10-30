@@ -31,6 +31,16 @@ def flies_to_ceres() -> None:
     belt = sun_belt_orbit(system.orbits)
     check(abs(distance - belt) < 1, f'in the belt around the sun: {distance}')
     check(outpost.body in system.attractors, 'pulling the ship')
+    # Below it, away from its pad
+    x, y = outpost.body.pos
+    scenario.put_ship((x, y - outpost.body.radius - 120),
+                      outpost.body.velocity)
+
+
+@scenario.step(.3)
+def is_aside_from_the_pad() -> None:
+    button = scenario.game.ids.land_button
+    check(button.text == 'Hors de la plateforme', f'told: {button.text}')
     above_the_pad()
 
 

@@ -17,9 +17,18 @@ from .config import (
     SHORTCUT_RANGE,
 )
 
-# Hidden, shown but too far to be used, close enough but above the water,
+# Hidden, shown but too far to be used, close enough but not above where
+# the ship can land,
 # or ready to be used
-Shortcut = Literal['hidden', 'far', 'water', 'ready']
+Shortcut = Literal['hidden', 'far', 'aside', 'ready']
+# What ships land on: land, the pad of an outpost, the port of a station
+GroundKind = Literal['land', 'pad', 'port']
+# Told beside it
+ASIDE: dict[GroundKind, str] = {
+    'land': "Au-dessus de l'eau",
+    'pad': 'Hors de la plateforme',
+    'port': 'Hors du port',
+}
 
 
 def landed_distance(planet: Celestial, length: float) -> float:
@@ -45,7 +54,7 @@ class Ground:
     counterclockwise from the east, true over solid ground """
     body: Celestial
     edge: tuple[bool, ...]
-    docking: bool = False     # the port of a station, rather than ground
+    kind: GroundKind = 'land'
 
     def spots(self, width: float) -> list[float]:
         """ Directions where a ship of `width` fits """
@@ -174,12 +183,19 @@ def is_landed(pos: Vec2, velocity: Vec2, angle: float,
 
 def shortcut(distance: float, landed: bool, ground: bool) -> Shortcut:
     """ State of the shortcut at `distance` from the surface, above the
-    `ground` or the water """
+    `ground` or aside from it """
     if landed or distance > SHORTCUT_RANGE:
         return 'hidden'
     if distance > LANDING_RANGE:
         return 'far'
-    return 'ready' if ground else 'water'
+    return 'ready' if ground else 'aside'
+
+
+def shortcut_text(state: Shortcut, kind: GroundKind) -> str:
+    """ Shown on the shortcut, near that kind of ground """
+    if state == 'aside':
+        return ASIDE[kind]
+    return "S'amarrer" if kind == 'port' else 'Atterrir'
 
 
 def ease(progress: float) -> float:

@@ -24,6 +24,7 @@ from app.logic.ship.landing import (
     parking_at,
     parking_on,
     shortcut,
+    shortcut_text,
     surface_distance,
 )
 from app.logic.world.space import Celestial
@@ -83,7 +84,7 @@ def test_shortcut_shows_up_then_can_be_used() -> None:
 
 
 def test_shortcut_needs_ground_below() -> None:
-    assert shortcut(LANDING_RANGE / 2, False, ground=False) == 'water'
+    assert shortcut(LANDING_RANGE / 2, False, ground=False) == 'aside'
     middle = (SHORTCUT_RANGE + LANDING_RANGE) / 2
     assert shortcut(middle, False, ground=False) == 'far'
 
@@ -189,3 +190,15 @@ def test_a_pad_is_ground_around_its_direction_only() -> None:
 def test_a_pad_across_the_east() -> None:
     edge = pad(100., 0., 60.)
     assert edge[0] and edge[359] and edge[10] and not edge[180]
+
+
+def test_the_shortcut_tells_what_it_is_aside_from() -> None:
+    assert shortcut_text('aside', 'land') == "Au-dessus de l'eau"
+    assert shortcut_text('aside', 'pad') == 'Hors de la plateforme'
+    assert shortcut_text('aside', 'port') == 'Hors du port'
+
+
+def test_the_shortcut_lands_or_docks() -> None:
+    assert shortcut_text('ready', 'land') == 'Atterrir'
+    assert shortcut_text('far', 'pad') == 'Atterrir'
+    assert shortcut_text('ready', 'port') == "S'amarrer"

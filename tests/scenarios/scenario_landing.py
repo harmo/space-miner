@@ -55,7 +55,7 @@ def takes_off() -> None:
 @scenario.step(.2)
 def not_above_the_water() -> None:
     button = scenario.game.ids.land_button
-    check(scenario.player.shortcut == 'water', 'above the water')
+    check(scenario.player.shortcut == 'aside', 'above the water')
     check(button.disabled and button.text == "Au-dessus de l'eau",
           'the shortcut says so, and can not be used')
     scenario.press(button)

@@ -23,7 +23,7 @@ def show_hud(game: 'Game') -> None:
     show_needs(ids.tracker, ids.base, player)
     game.land_glow = show_shortcut(
         ids.land_button, player.shortcut,
-        nearest(player.grounds, player.anchor).docking, game.time,
+        nearest(player.grounds, player.anchor).kind, game.time,
     )
     show_fuel(ids.fuel, player.tank)
     show_heat(ids.heat, player.hull)

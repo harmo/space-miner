@@ -5,22 +5,17 @@ from kivy.uix.widget import Widget
 
 from ...logic.hud import pulse
 from ...logic.ship.config import SHORTCUT_PULSE
-from ...logic.ship.landing import Shortcut
+from ...logic.ship.landing import GroundKind, Shortcut, shortcut_text
 
-OPACITY = {'hidden': 0., 'far': .45, 'water': .45, 'ready': 1.}
+OPACITY = {'hidden': 0., 'far': .45, 'aside': .45, 'ready': 1.}
 
 
-def show_shortcut(button: Widget, state: Shortcut, docking: bool,
+def show_shortcut(button: Widget, state: Shortcut, kind: GroundKind,
                   time: float) -> float:
-    """ Faded when too far to be used or above the water. Returns how much
-    its outline glows: pulsing when usable. """
+    """ Faded when too far to be used or aside from where the ship can
+    land. Returns how much its outline glows: pulsing when usable. """
     button.opacity = OPACITY[state]
-    if docking:
-        button.text = "S'amarrer"
-    else:
-        button.text = (
-            "Au-dessus de l'eau" if state == 'water' else 'Atterrir'
-        )
+    button.text = shortcut_text(state, kind)
     button.disabled = state != 'ready'
     if state == 'ready':
         return .45 + .55 * pulse(time, SHORTCUT_PULSE)
