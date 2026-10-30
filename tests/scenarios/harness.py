@@ -26,6 +26,15 @@ Step = Callable[[], None]
 STARTUP = 3.                  # seconds for the game to set itself up
 
 
+def loneliest(asteroids: list[Any]) -> Any:
+    """ Of rock, the farthest from the others: none to bump into """
+    rocks = [a for a in asteroids if (a.mineral or 'rock') == 'rock']
+    return max(rocks, key=lambda rock: min(
+        math.dist(rock.pos, other.pos)
+        for other in asteroids if other is not rock
+    ))
+
+
 def prepare() -> None:
     """ Before the window opens """
     if 'SPACE_MINER_DATA' not in os.environ:
@@ -33,6 +42,8 @@ def prepare() -> None:
     os.environ.setdefault('SPACE_MINER_WINDOW', '1280x720')
     # Always the same solar system
     os.environ.setdefault('SPACE_MINER_SEED', '1')
+    # Sounds play all the same, without being heard
+    os.environ.setdefault('SDL_AUDIODRIVER', 'dummy')
 
 
 class Scenario:

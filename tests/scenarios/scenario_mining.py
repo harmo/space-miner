@@ -3,20 +3,11 @@
 import math
 from typing import Any
 
-from .harness import Scenario
+from .harness import Scenario, loneliest
 
 scenario = Scenario('mining')
 check = scenario.check
 remembered: dict[str, Any] = {}
-
-
-def loneliest(asteroids: list[Any]) -> Any:
-    """ Of rock, the farthest from the others: none to bump into """
-    rocks = [a for a in asteroids if (a.mineral or 'rock') == 'rock']
-    return max(rocks, key=lambda rock: min(
-        math.dist(rock.pos, other.pos)
-        for other in asteroids if other is not rock
-    ))
 
 
 @scenario.step(1.)
