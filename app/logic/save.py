@@ -20,6 +20,13 @@ class SaveError(ValueError):
     """ Not a saved game of this version """
 
 
+@dataclass(frozen=True)
+class Progress:
+    """ Of an outpost being built """
+    built: int = 0                      # stages
+    delivered: dict[str, int] = field(default_factory=dict)
+
+
 @dataclass
 class Save:
     seed: int                           # of the solar system
@@ -37,6 +44,8 @@ class Save:
     # What the scanner looks for
     looked_for: list[str] = field(default_factory=lambda: list(LOOKED_FOR))
     fuel: float | None = None           # in the tank, None when full
+    # By site, those not started left out
+    outposts: dict[str, Progress] = field(default_factory=dict)
 
 
 def ores(data: Any) -> dict[str, float]:
@@ -94,6 +103,21 @@ def fuel_of(data: Any) -> float | None:
     return None if data is None else max(0., float(data))
 
 
+def outposts_of(data: Any) -> dict[str, Progress]:
+    """ Older saves have none started """
+    return {
+        str(site): Progress(
+            max(0, int(progress['built'])),
+            {
+                name: int(units)
+                for name, units in dict(progress['delivered']).items()
+                if name in MINERALS and int(units) > 0
+            },
+        )
+        for site, progress in dict(data).items()
+    }
+
+
 def dump(save: Save) -> str:
     return json.dumps({
         'version': VERSION,
@@ -111,6 +135,10 @@ def dump(save: Save) -> str:
         'looked_for': save.looked_for,
         'mission_level': save.mission_level,
         'fuel': save.fuel,
+        'outposts': {
+            site: {'built': progress.built, 'delivered': progress.delivered}
+            for site, progress in save.outposts.items()
+        },
     }, ensure_ascii=False, indent=1, sort_keys=True)
 
 
@@ -142,6 +170,7 @@ def load(text: str) -> Save:
                 if name in data.get('looked_for', LOOKED_FOR)
             ],
             fuel=fuel_of(data.get('fuel')),
+            outposts=outposts_of(data.get('outposts', {})),
         )
     except SaveError:
         raise

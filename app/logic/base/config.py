@@ -30,6 +30,10 @@ MISSION_GROWTH = .3           # bigger orders on each level, paying as much
 # flattened by this much on each level
 MISSION_RARER = .2
 
+# Outposts, see outposts.py
+PAD_WIDTH = 90.               # pixels, where ships land on their site
+PAD_DIRECTION = 90.           # degrees, from the center of their body
+
 # Refinery: rock of the depot crushed into what little it holds
 CRUSH_RATE = 4.               # units of rock a second
 # Found in a unit of rock, the rest is regolith

@@ -51,6 +51,17 @@ class Ground:
         return ground_spots(self.edge, ground_margin(self.body, width))
 
 
+def pad(radius: float, direction: float, width: float) -> tuple[bool, ...]:
+    """ The ground of an outpost: a pad `width` wide, in `direction` from
+    the center of a body of `radius` """
+    half = math.degrees(width / 2 / radius)
+    middle = math.degrees(direction)
+    return tuple(
+        abs((degree - middle + 180) % 360 - 180) <= half
+        for degree in range(360)
+    )
+
+
 def nearest(grounds: Sequence[Ground], pos: Vec2) -> Ground:
     """ Of the grounds, the closest to `pos` """
     return min(

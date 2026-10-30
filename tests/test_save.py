@@ -8,7 +8,7 @@ from app.logic.preferences import (
     dump_preferences,
     load_preferences,
 )
-from app.logic.save import Save, SaveError, dump, load
+from app.logic.save import Progress, Save, SaveError, dump, load
 from app.logic.ship.scanner import LOOKED_FOR
 from app.logic.ship.shipyard import Design
 
@@ -26,6 +26,7 @@ SAVE = Save(
     looked_for=['gold', 'ruby'],
     mission_level=3,
     fuel=42.5,
+    outposts={'frontier': Progress(1, {'rock': 30, 'iron': 12})},
 )
 
 
@@ -100,6 +101,12 @@ def test_older_saves_have_a_full_tank() -> None:
     data = json.loads(dump(SAVE))
     del data['fuel']
     assert load(json.dumps(data)).fuel is None
+
+
+def test_older_saves_have_no_outpost_started() -> None:
+    data = json.loads(dump(SAVE))
+    del data['outposts']
+    assert load(json.dumps(data)).outposts == {}
 
 
 def test_older_saves_have_missions_of_the_first_level() -> None:
