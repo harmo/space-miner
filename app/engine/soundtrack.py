@@ -43,46 +43,38 @@ class Soundtrack:
         audio.volume = sounds = preferences.sounds
         playing = game.playing and not game.map_open
         self.hum(preferences.ambience, dt, playing)
-        player, base = game.player, game.ids.base
-        moment = Moment(
-            ship=player.spawned if player.ship else None,
-            parked=player.parking is not None,
-            legs_out=game.looks.gear.out,
-            cargo_full=player.miner.cargo_full,
-            credits=base.wallet.credits,
-            validated=base.board.validated if base.board else 0,
-            swarm=bool(game.system.events.swarm),
-            fuel=player.tank.level,
-            gauge=player.tank.gauge,
-            stranded=player.stranded,
-            warmth=player.hull.warmth,
-            flare=game.system.events.flares.clock.phase,
-        )
         running = playing and sounds > 0
+        moment = moment_of(game)
         if running and self.moment is not None:
             for name in heard(self.moment, moment):
                 audio.play(name)
         self.moment = moment
-        if not running:
+        if running:
+            self.work(game, dt, heading, sounds)
+        else:
             self.volume = 0.
             for loop in (self.engine, self.laser, self.unloading):
                 loop.stop()
-            return
-        thrust = player.thrust(heading)
-        self.volume = toward(self.volume, thrust, dt)
+
+    def work(self, game: 'Game', dt: float, heading: float | None,
+             volume: float) -> None:
+        """ The engine following the thrust, the laser firing, and the
+        machines of the base """
+        player, base = game.player, game.ids.base
+        self.volume = toward(self.volume, player.thrust(heading), dt)
         self.engine.play(
             engine_sound(player.design) if player.ship else None,
-            self.volume * sounds,
+            self.volume * volume,
         )
         firing = player.miner.firing
         self.laser.play(
-            laser_sound(player.stats.laser) if firing else None, sounds,
+            laser_sound(player.stats.laser) if firing else None, volume,
         )
         # One machine of the base at a time, unloading first
         machine = 'unloading' if base.unloading else (
             'crushing' if base.crushing and base.docked else None
         )
-        self.unloading.play(machine, sounds)
+        self.unloading.play(machine, volume)
 
     def hum(self, volume: float, dt: float, playing: bool) -> None:
         """ The drones of the ambience, the next one decoded aside before
@@ -116,3 +108,23 @@ class Soundtrack:
             ambience.current, ambience.upcoming,
         ):
             audio.release(name)
+
+
+def moment_of(game: 'Game') -> Moment:
+    """ What can be heard changing, now """
+    player, base = game.player, game.ids.base
+    events = game.system.events
+    return Moment(
+        ship=player.spawned if player.ship else None,
+        parked=player.parking is not None,
+        legs_out=game.looks.gear.out,
+        cargo_full=player.miner.cargo_full,
+        credits=base.wallet.credits,
+        validated=base.board.validated if base.board else 0,
+        swarm=bool(events.swarm),
+        fuel=player.tank.level,
+        gauge=player.tank.gauge,
+        stranded=player.stranded,
+        warmth=player.hull.warmth,
+        flare=events.flares.clock.phase,
+    )

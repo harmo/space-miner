@@ -79,39 +79,63 @@ class Moment:
 
 
 def heard(before: Moment, now: Moment) -> list[str]:
-    """ Sounds of what happened between two frames. Legs, landings and the
-    gauge are only heard on the same ship, not on a new one. Fuel put in
-    the tank, or a ship towed back, is heard rather than the credits it
-    cost. """
+    """ Sounds of what happened between two frames. Fuel put in the tank,
+    or a ship towed back, is heard rather than the credits it cost. """
+    towed = before.stranded and now.ship not in (None, before.ship)
+    refuelled = now.parked and now.fuel >= before.fuel + REFUEL_HEARD
+    return [
+        *heard_of_ships(before, now, towed),
+        *(['refuel'] if refuelled else []),
+        *(['cargo_full'] if now.cargo_full and not before.cargo_full else []),
+        *heard_of_money(before, now, towed or refuelled),
+        *heard_of_space(before, now),
+    ]
+
+
+def heard_of_ships(before: Moment, now: Moment, towed: bool) -> list[str]:
+    """ Lost, towed back, or what happened to the same one: legs, landings,
+    fuel and heat are not heard on a new ship """
     sounds = []
     if before.ship is not None and now.ship is None:
         sounds.append('explosion')
-    towed = before.stranded and now.ship not in (None, before.ship)
     if towed:
         sounds.append('tow')
     if before.ship is not None and now.ship == before.ship:
-        if now.legs_out != before.legs_out:
-            sounds.append('gear_out' if now.legs_out else 'gear_in')
-        if now.parked and not before.parked:
-            sounds.append('touchdown')
-        if now.gauge != before.gauge:
-            if now.gauge == 'critical' and before.gauge != 'empty':
-                sounds.append('low_fuel')
-            elif now.gauge == 'empty':
-                sounds.append('fuel_out')
-        if now.warmth == 'overheating' != before.warmth:
-            sounds.append('overheat')
-    refuelled = now.parked and now.fuel >= before.fuel + REFUEL_HEARD
-    if refuelled:
-        sounds.append('refuel')
-    if now.cargo_full and not before.cargo_full:
-        sounds.append('cargo_full')
+        sounds += heard_of_ship(before, now)
+    return sounds
+
+
+def heard_of_ship(before: Moment, now: Moment) -> list[str]:
+    sounds = []
+    if now.legs_out != before.legs_out:
+        sounds.append('gear_out' if now.legs_out else 'gear_in')
+    if now.parked and not before.parked:
+        sounds.append('touchdown')
+    if now.gauge != before.gauge:
+        if now.gauge == 'critical' and before.gauge != 'empty':
+            sounds.append('low_fuel')
+        elif now.gauge == 'empty':
+            sounds.append('fuel_out')
+    if now.warmth == 'overheating' != before.warmth:
+        sounds.append('overheat')
+    return sounds
+
+
+def heard_of_money(before: Moment, now: Moment, paid_for: bool) -> list[str]:
+    """ Missions validated rather than their reward, nothing for what is
+    heard otherwise """
     if now.validated > before.validated:
-        sounds.append('mission')
-    elif now.credits > before.credits:
-        sounds.append('sale')
-    elif now.credits < before.credits and not (towed or refuelled):
-        sounds.append('purchase')
+        return ['mission']
+    if now.credits > before.credits:
+        return ['sale']
+    if now.credits < before.credits and not paid_for:
+        return ['purchase']
+    return []
+
+
+def heard_of_space(before: Moment, now: Moment) -> list[str]:
+    """ Swarms arriving, flares told then blazing """
+    sounds = []
     if now.swarm and not before.swarm:
         sounds.append('swarm')
     if now.flare != before.flare:
