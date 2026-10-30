@@ -1,6 +1,7 @@
-""" The base on the Earth, open while the ship is landed there: its cargo
-is unloaded into the depot, missions are given and validated, and the
-ship can be refitted in the hangar. Styled in earth_base.kv. """
+""" The base on the Earth, open while the ship is landed there: its tank is
+filled, its cargo is unloaded into the depot, missions are given and
+validated, and the ship can be refitted in the hangar. It tows ships out
+of fuel back. Styled in earth_base.kv. """
 
 from random import Random
 
@@ -8,11 +9,13 @@ from kivy.properties import BooleanProperty, StringProperty
 from kivy.uix.widget import Widget
 
 from ...logic.base.missions import Board
+from ...logic.base.refuel import fill, tow, tow_price
 from ...logic.base.reputation import tier
 from ...logic.base.shop import Inventory
 from ...logic.base.unloading import Depot
 from ...logic.base.wallet import Wallet
 from ...logic.mining.ore import cargo_total
+from ...logic.ship.landing import surface_distance
 from ..ship.player import Player
 from ..ui.cargo_panel import show_depot
 from ..ui.widgets import (
@@ -36,6 +39,8 @@ class EarthBase(Widget):
     to_validate = BooleanProperty(False)  # a mission can be validated
     new_parts = BooleanProperty(False)  # a tier reached, not seen yet
     full_row = BooleanProperty(False)   # the scanner button ends its row
+    stranded = BooleanProperty(False)   # the ship, out of fuel
+    tow_cost = StringProperty('')
 
     def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
@@ -91,6 +96,11 @@ class EarthBase(Widget):
             return
         ore, stock = self.player.miner.ore, self.depot.stock
         self.docked = self.player.docked
+        if self.docked:
+            fill(self.player.tank, self.wallet, ore, stock)
+        self.stranded = self.player.stranded
+        if self.stranded:
+            self.tow_cost = credits_text(self.tow_price)
         self.depot.update(ore, dt, self.docked)
         if not self.docked:
             self.panel = ''
@@ -105,6 +115,23 @@ class EarthBase(Widget):
         self.new_parts = tier(self.board.validated) > self.seen_tier
         if self.docked:
             show_depot(self.ids.depot, self.depot)
+
+    @property
+    def tow_price(self) -> int:
+        """ From where the ship is """
+        ship = self.player.ship if self.player else None
+        if ship is None or self.player is None:
+            return 0
+        return tow_price(surface_distance(
+            ship.position, self.player.system.earth,
+        ))
+
+    def call_for_help(self) -> None:
+        """ Towed back onto the Earth, with its cargo """
+        player = self.player
+        if player is not None and player.stranded:
+            tow(self.tow_price, self.wallet)
+            player.restart(player.design)
 
     def unload(self) -> None:
         if self.player is not None and self.player.docked:

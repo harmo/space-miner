@@ -16,6 +16,9 @@ ORE_SALE = .5                 # ore sells for this part of what it is worth
 # Fuel, filled on landing: the ice of the depot first, then credits
 ICE_FUEL = 2.                 # units of fuel a unit of ice makes
 FUEL_PRICE = 2                # credits a unit
+# Players out of ice and credits are given this part of their tank, not to
+# be stuck on the Earth
+FREE_RESERVE = .2
 # Towing a ship out of fuel back to the Earth
 TOW_BASE = 100                # credits
 TOW_RATE = .02                # credits a pixel away from the Earth

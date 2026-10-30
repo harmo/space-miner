@@ -111,6 +111,14 @@ class Player:
         )
 
     @property
+    def stranded(self) -> bool:
+        """ Out of fuel away from the Earth, waiting to be towed back """
+        return (
+            self.ship is not None and self.tank.empty
+            and self.parking is None and self.landing is None
+        )
+
+    @property
     def docked(self) -> bool:
         """ Parked on the Earth, where the ship can be refitted """
         return (

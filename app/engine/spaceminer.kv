@@ -170,6 +170,19 @@ Game:
             disabled: True
             on_release: root.player.land()
 
+        # Out of fuel away from the Earth, where the landing shortcut shows
+        PanelButton:
+            id: distress_button
+            text: f'Appel de détresse  ·  {base.tow_cost}'
+            font_size: '17sp'
+            color: 1, .55, .5, 1
+            glow: .9
+            size: max(dp(170), self.texture_size[0] + dp(36)), dp(48)
+            pos: root.center_x - self.width / 2, root.y + dp(24)
+            opacity: 1 if base.stranded else 0
+            disabled: not base.stranded
+            on_release: base.call_for_help()
+
         EarthBase:
             id: base
             size: root.size

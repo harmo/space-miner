@@ -1,5 +1,7 @@
 """ Burning fuel: taking off empties the tank as the gauge shows, and out of
-it the ship can neither thrust nor mine, until saved as it is """
+it the ship can neither thrust nor mine. Saved as it is, it calls for help
+and is towed back to the Earth, where its tank is filled with the ice of
+its cargo then credits, or given a reserve without any. """
 
 import json
 import math
@@ -7,6 +9,8 @@ import os
 from typing import Any
 
 import pytest
+
+from app.logic.base.config import FREE_RESERVE, FUEL_PRICE, ICE_FUEL
 
 from .harness import Scenario, loneliest
 
@@ -63,6 +67,40 @@ def is_saved_dry() -> None:
     with open(path, encoding='utf-8') as file:
         fuel = json.load(file)['fuel']
     check(fuel == 0., f'saved with its tank empty: {fuel}')
+    base = scenario.base
+    base.wallet.credits = 1000
+    scenario.player.miner.ore.update({'iron': 5., 'ice': 10.})
+
+
+@scenario.step(.2)
+def calls_for_help() -> None:
+    base, button = scenario.base, scenario.game.ids.distress_button
+    check(base.stranded and button.opacity == 1, 'help can be called')
+    check(base.tow_cost in button.text, f'for a price: {button.text!r}')
+    remembered['price'] = base.tow_price
+    scenario.screenshot('stranded')
+    scenario.press(button)
+
+
+@scenario.step(.5)
+def is_towed_back_and_refuelled() -> None:
+    base, player = scenario.base, scenario.player
+    check(base.docked, 'towed back onto the Earth')
+    check(player.miner.ore == {'iron': 5.}, f'with its cargo, but the ice'
+          f' burnt: {player.miner.ore}')
+    check(player.tank.share == 1., f'the tank is full: {player.tank.level}')
+    paid = (player.tank.capacity - 10. * ICE_FUEL) * FUEL_PRICE
+    expected = 1000 - remembered['price'] - paid
+    check(base.wallet.credits == expected,
+          f'paid the tow and fuel: {base.wallet.credits} for {expected}')
+    base.wallet.credits = 0
+    player.tank.level = 0.
+
+
+@scenario.step(.2)
+def is_given_a_reserve_when_broke() -> None:
+    share = scenario.player.tank.share
+    check(share == pytest.approx(FREE_RESERVE), f'a reserve: {share:.2f}')
 
 
 scenario.run()

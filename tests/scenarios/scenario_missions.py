@@ -107,6 +107,9 @@ def lacking() -> None:
 def validated() -> None:
     first = cards('active')[0]
     check(first.can_act, 'enough with the depot and the cargo, at once')
+    # Full, the base buys no fuel with the reward
+    tank = scenario.player.tank
+    tank.fill(tank.capacity)
     scenario.press(scenario.button(first, 'Valider'))
 
 
