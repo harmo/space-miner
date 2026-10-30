@@ -1,6 +1,7 @@
-""" How outposts look, drawn on the surface of their body as they are
-built: a beacon on a bare site, then a pad, a dome and tanks, towers.
-Drawn along the curve of the surface, as small bodies are round. """
+""" How outposts look as they are built. On the ground, drawn along the
+curve of the surface as small bodies are round: a beacon on a bare site,
+then a pad, a dome and tanks, towers. In orbit, stations: a floating
+beacon, then a ring around a hub with its port, lit, solar panels. """
 
 import math
 import time
@@ -59,6 +60,9 @@ def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
     center = overlay.camera.get_camera_center()
     if math.dist(center, outpost.pos) > SEEN + outpost.body.radius:
         return
+    if outpost.construction.site.form == 'orbit':
+        draw_station(overlay, outpost)
+        return
     frame = Frame(outpost)
     built = outpost.construction.built
     half = outpost.construction.site.pad / 2
@@ -113,3 +117,60 @@ def towers(overlay: Overlay, frame: Frame, along: float) -> None:
         for t in (math.pi * k / 8 for k in range(9))
     ]
     overlay.shape(dish, GLASS, DARK)
+
+
+def draw_station(overlay: Overlay, outpost: Outpost) -> None:
+    """ Its body unseen, the ring is as wide, its port on top """
+    frame = Frame(outpost)
+    center, radius = outpost.body.pos, outpost.body.radius
+    built = outpost.construction.built
+    if built == 0:
+        overlay.circle(center, radius - 4, OUTPOST_COLOR, 1, .35)
+        overlay.shape(around(center, 6), STEEL, DARK)
+        overlay.light(center, OUTPOST_COLOR, blinking(0.))
+        return
+    for k in range(4):
+        angle = outpost.direction + math.pi / 4 + k * math.pi / 2
+        overlay.segment(
+            point(center, angle, 10), point(center, angle, radius - 4),
+            STEEL, 1.5,
+        )
+    overlay.circle(center, radius - 4, STEEL, 4 if built >= 2 else 1.5)
+    overlay.shape(around(center, 10), STEEL, DARK)
+    overlay.band(*frame.box(-8, 8, 6), STEEL, DARK)
+    overlay.light(frame.at(0, 7), OUTPOST_COLOR, blinking(0.))
+    if built >= 2:
+        for k in range(12):
+            angle = outpost.direction + (k + .5) * math.pi / 6
+            overlay.light(point(center, angle, radius - 4), GLASS,
+                          blinking(k / 12) * .8)
+    if built >= 3:
+        for side in (-1, 1):
+            angle = outpost.direction + side * math.pi / 2
+            overlay.segment(point(center, angle, radius),
+                            point(center, angle, radius + 10), STEEL, 1.5)
+            middle = point(center, angle, radius + 22)
+            overlay.shape(around(middle, 14, 4), GLASS, DARK)
+        foot = point(center, outpost.direction + math.pi, radius - 2)
+        tip = point(center, outpost.direction + math.pi, radius + 18)
+        overlay.segment(foot, tip, STEEL, 1.5)
+        overlay.light(tip, RED, blinking(.5))
+
+
+def point(center: Vec2, angle: float, distance: float) -> Vec2:
+    return (
+        center[0] + math.cos(angle) * distance,
+        center[1] + math.sin(angle) * distance,
+    )
+
+
+def around(center: Vec2, wide: float,
+           high: float | None = None) -> list[Vec2]:
+    """ A box `wide` and `high` both ways, or a disc `wide` across """
+    if high is not None:
+        x, y = center
+        return [
+            (x - wide, y - high), (x + wide, y - high),
+            (x + wide, y + high), (x - wide, y + high),
+        ]
+    return [point(center, math.pi * k / 8, wide) for k in range(16)]

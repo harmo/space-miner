@@ -14,7 +14,7 @@ from ...logic.base.reputation import Standing
 from ...logic.base.wallet import Wallet
 from ...logic.save import Progress
 from ...logic.ship.landing import Ground, Parking, pad
-from ...logic.world.layout import plan_ceres
+from ...logic.world.layout import plan_ceres, plan_station
 from ...logic.world.space import Celestial, Vec2
 from ..world.solar_system import SolarSystem
 
@@ -47,9 +47,11 @@ class Outpost:
 
     @property
     def ground(self) -> Ground:
-        return Ground(self.body, pad(
-            self.body.radius, self.direction, self.construction.site.pad,
-        ))
+        site = self.construction.site
+        return Ground(
+            self.body, pad(self.body.radius, self.direction, site.pad),
+            docking=site.form == 'orbit',
+        )
 
     @property
     def pos(self) -> Vec2:
@@ -101,14 +103,18 @@ class Outpost:
 
 def found(system: SolarSystem, rng: Random) -> list[Outpost]:
     """ On their sites, nothing built yet: the Frontier on the farthest
-    planet, Cérès in the belt around the sun, added to the system """
+    planet, Cérès in the belt around the sun, and Icare orbiting the
+    first planet, both added to the system """
     earth = system.earth.orbit
     ceres = system.add_body(plan_ceres(
         system.orbits, earth.angle if earth else 0.,
     ))
+    first = system.planets[0]
+    icare = system.add_body(plan_station(first.radius), first)
     return [
         outpost(key, body, rng) for key, body in (
             ('frontier', system.planets[-1]), ('ceres', ceres),
+            ('icare', icare),
         )
     ]
 

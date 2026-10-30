@@ -7,7 +7,7 @@ from kivent_core.managers.resource_managers import texture_manager
 from kivy.core.image import Image as CoreImage
 from kivy.graphics.texture import Texture
 
-from ..logic.config import IMAGES, MOON, PLANETS, SUN_DISC
+from ..logic.config import IMAGES, MOON, PLANETS, STATION, SUN_DISC
 from ..logic.mining.canisters import canister_texture
 from ..logic.mining.minerals import ASTEROID_SHAPES, MINERALS, asteroid_texture
 from ..logic.ship.config import GROUND_DEPTH
@@ -48,6 +48,10 @@ def sun_pixel(distance: float, half: float) -> Rgba:
     )
 
 
+def unseen_pixel(distance: float, half: float) -> Rgba:
+    return 0, 0, 0, 0
+
+
 def load_image(source: str) -> None:
     tex_key = texture_manager.load_image(source)
     # load_image maps images upside down, flip uvs like load_atlas does
@@ -65,6 +69,7 @@ def load_textures() -> None:
         load_image(f'{IMAGES}/canisters/{canister_texture(mineral)}.png')
     texture_manager.load_texture('star', make_texture(8, star_pixel))
     texture_manager.load_texture('sun', make_texture(256, sun_pixel))
+    texture_manager.load_texture(STATION, make_texture(4, unseen_pixel))
 
 
 def ground_edge(planet: str) -> list[bool]:

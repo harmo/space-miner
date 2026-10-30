@@ -135,6 +135,23 @@ class Overlay:
                 width=1, close=True,
             ))
 
+    def circle(self, center: Vec2, radius: float, color: Rgb, width: float,
+               opacity: float = 1.) -> None:
+        """ `radius` in the world, `width` on the screen """
+        x, y = self.to_screen(center)
+        self.group.add(Color(*color, opacity))
+        self.group.add(Line(
+            circle=(x, y, radius / self.camera.camera_scale), width=width,
+        ))
+
+    def segment(self, start: Vec2, end: Vec2, color: Rgb,
+                width: float) -> None:
+        self.group.add(Color(*color, 1))
+        self.group.add(Line(
+            points=[*self.to_screen(start), *self.to_screen(end)],
+            width=width,
+        ))
+
     def light(self, pos: Vec2, color: Rgb, opacity: float) -> None:
         """ A dot of light, as big whatever the zoom """
         self.group.add(Color(*color, opacity))
