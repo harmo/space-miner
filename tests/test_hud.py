@@ -8,6 +8,7 @@ from app.logic.config import (
     CARGO_COLOR,
     CARGO_FULL_COLOR,
     FUEL_COLOR,
+    HEAT_GAUGE_COLOR,
     HEAT_RANGE,
     MARKER_FAR,
     MARKER_LENGTH,
@@ -19,13 +20,15 @@ from app.logic.hud import (
     fuel_color,
     fuel_message,
     heat_at,
+    heat_color,
     is_compact,
     is_on_screen,
     marker_length,
+    message,
     orbit_dots,
     pulse,
-    sun_heat,
 )
+from app.logic.ship.heat import sun_heat
 from app.logic.world.space import Celestial, Vec2
 
 HALF_SIZE = (960., 540.)
@@ -188,3 +191,19 @@ def test_fuel_is_told_about_out_in_space() -> None:
     assert fuel_message('critical', False) == 'Carburant bas'
     assert fuel_message('empty', False) == 'Panne sèche'
     assert fuel_message('empty', True) == ''
+
+
+def test_the_heat_gauge_warns_as_the_hull_heats_up() -> None:
+    assert heat_color('cool') == HEAT_GAUGE_COLOR
+    assert heat_color('hot') == CARGO_ALMOST_FULL_COLOR
+    assert heat_color('overheating') == CARGO_FULL_COLOR
+
+
+def test_blowing_up_is_told_first_then_the_work_fuel_and_heat() -> None:
+    assert message('Soute pleine', 'empty', 'overheating', False) == (
+        'Surchauffe !'
+    )
+    assert message('Soute pleine', 'empty', 'hot', False) == 'Soute pleine'
+    assert message('', 'empty', 'hot', False) == 'Panne sèche'
+    assert message('', 'full', 'hot', False) == 'Coque brûlante'
+    assert message('', 'full', 'cool', False) == ''

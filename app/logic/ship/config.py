@@ -13,6 +13,12 @@ HULL_BURN = 1.                # units a second at full thrust, by any hull
 LOW_FUEL = .25                # of the tank, the gauge warns below
 CRITICAL_FUEL = .1
 
+# Heat of the hull, from 0 to 1 where it blows up, close to the sun
+HEAT_GAIN = .25               # a second at the sun surface, unshielded
+HEAT_COOLING = .05            # a second, always
+HOT = .5                      # the gauge warns above
+OVERHEATING = .8
+
 # Landing legs, the ship stands on them on the ground
 LEG_LENGTH = 4.               # behind the rear of the ship
 LEG_SPREAD = 1.5              # beyond its sides

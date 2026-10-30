@@ -1,7 +1,7 @@
 """ What the interface shows, computed without Kivy: markers pointing to
 places out of the screen, dotted orbits, the heat of the sun, the cargo
-bar, the fuel gauge, the glow of the shortcut, and when to be compact as on
-phones """
+bar, the gauges of fuel and heat, the messages, the glow of the shortcut,
+and when to be compact as on phones """
 
 import math
 
@@ -15,13 +15,14 @@ from .config import (
     CHEVRON_SIZE,
     COMPACT_SCREEN,
     FUEL_COLOR,
-    HEAT_RANGE,
+    HEAT_GAUGE_COLOR,
     MARKER_FAR,
     MARKER_LENGTH,
     MARKER_NEAR,
     MOBILE_PLATFORMS,
 )
 from .ship.fuel import Gauge
+from .ship.heat import Warmth, sun_heat
 from .world.space import Round, Vec2
 
 
@@ -62,13 +63,6 @@ def chevron_look(distance: float, reach: float) -> tuple[float, float]:
         smallest + (biggest - smallest) * closeness,
         faint + (bright - faint) * closeness,
     )
-
-
-def sun_heat(distance: float) -> float:
-    """ From 0 out of HEAT_RANGE from the sun surface, to 1 on it: slowly
-    at first, then faster and faster """
-    closeness = min(1., max(0., 1. - distance / HEAT_RANGE))
-    return closeness ** 2
 
 
 def heat_at(pos: Vec2, sun: Round) -> float:
@@ -148,6 +142,22 @@ def fuel_message(gauge: Gauge, docked: bool) -> str:
     if gauge == 'empty':
         return 'Panne sèche'
     return 'Carburant bas' if gauge == 'critical' else ''
+
+
+def heat_color(warmth: Warmth) -> Rgb:
+    """ Of the heat gauge: warns when hot, then when about to blow up """
+    if warmth == 'overheating':
+        return CARGO_FULL_COLOR
+    return CARGO_ALMOST_FULL_COLOR if warmth == 'hot' else HEAT_GAUGE_COLOR
+
+
+def message(work: str, gauge: Gauge, warmth: Warmth, docked: bool) -> str:
+    """ What matters most: blowing up, then the work of the ship, its
+    fuel, its heat """
+    if warmth == 'overheating':
+        return 'Surchauffe !'
+    hot = 'Coque brûlante' if warmth == 'hot' else ''
+    return work or fuel_message(gauge, docked) or hot
 
 
 def pulse(time: float, period: float) -> float:

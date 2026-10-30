@@ -1,6 +1,6 @@
-# The fuel gauge, see fuel_gauge.py
+# The gauges, see gauges.py
 
-<FuelGauge>:
+<Gauge>:
     orientation: 'vertical'
     size_hint: None, None
     width: dp(160)
@@ -23,7 +23,7 @@
         size_hint_y: None
         height: dp(22)
         Label:
-            text: 'CARBURANT'
+            text: root.title
             bold: True
             font_size: '12sp'
             color: 1, 1, 1, .5
@@ -39,7 +39,7 @@
             text_size: self.size
             halign: 'right'
             valign: 'middle'
-    # Fuel left in the tank
+    # How full
     Widget:
         size_hint_y: None
         height: dp(12)

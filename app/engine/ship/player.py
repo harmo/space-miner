@@ -1,6 +1,7 @@
 """ The ship of the player through its lives: flying, crashing and coming
 back on the Earth. Its work, mining, is up to its miner. Both burn the
-fuel of its tank: out of it, the ship can neither thrust nor mine. """
+fuel of its tank: out of it, the ship can neither thrust nor mine. Its
+hull heats up close to the sun, and blows up too hot. """
 
 import math
 from random import Random
@@ -15,6 +16,7 @@ from ...logic.ship.config import (
     TRAIL_LANDING,
 )
 from ...logic.ship.fuel import Tank, burn_rate
+from ...logic.ship.heat import Hull, heating
 from ...logic.ship.landing import (
     Landing,
     Parking,
@@ -65,6 +67,7 @@ class Player:
         self.design = Design()
         self.stats = ship_stats(self.design)
         self.tank = Tank(self.stats.tank)
+        self.hull = Hull()
         self.looked_for = set(LOOKED_FOR)   # by its scanner
         self.ground = self.ground_spots()   # where the ship fits
         self.miner = Miner(
@@ -91,6 +94,7 @@ class Player:
         body = get_body(self.gameworld, entity_id)
         self.ship = Ship(entity_id, body, self.stats)
         self.spawned += 1
+        self.hull.cool()
         self.parking = parking_on(earth, direction, length)
         self.anchor = pos
         self.camera.look_at(pos)
@@ -193,6 +197,7 @@ class Player:
                 self.miner.release()
             self.move_ship(self.ship, dt, heading)
             self.anchor = self.ship.position
+            self.heat_up(self.ship, dt)
 
         self.canisters.update(
             dt, self.system.asteroids, self.system.attractors
@@ -233,6 +238,17 @@ class Player:
             self.landing = None
             self.parking = parking_on(
                 self.system.earth, landing.end_direction, self.stats.size[0]
+            )
+
+    def heat_up(self, ship: Ship, dt: float) -> None:
+        """ By the sun, blowing up too hot """
+        sun = self.system.sun
+        x, y = ship.position
+        distance = math.dist(ship.position, sun.pos) - sun.radius
+        self.hull.update(dt, heating(distance))
+        if self.hull.burnt:
+            self.crash = Crash(
+                ship.velocity, math.atan2(y - sun.pos[1], x - sun.pos[0]),
             )
 
     def on_contact(self, space: Any, arbiter: Any) -> bool:

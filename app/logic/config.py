@@ -43,6 +43,7 @@ CARGO_ALMOST_FULL = .9
 CARGO_ALMOST_FULL_COLOR = (1., .62, .3)
 CARGO_FULL_COLOR = (1., .35, .3)
 FUEL_COLOR = (.45, .85, .55)  # gauge of the tank, warning as the cargo bar
+HEAT_GAUGE_COLOR = (1., .8, .45)  # of the hull, likewise
 MONEY_COLOR = (1., .82, .4)   # credits, wherever they show
 MET_COLOR = (.45, .9, .5)     # ore wanted, once there is enough
 MARKER_MARGIN = 6.            # from the screen edge

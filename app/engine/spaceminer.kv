@@ -125,14 +125,23 @@ Game:
                 - self.height
             opacity: 1 if not root.compact or root.cargo_open else 0
 
-        FuelGauge:
+        Gauge:
             id: fuel
+            title: 'CARBURANT'
             # From the size, set once its rows are laid out. Landed, below
             # the depot and the credits of the base.
             x: root.right - dp(16) - self.width
             y:
                 (base.ids.money_label.y - dp(10) if base.docked \
                 else root.top - dp(16)) - self.height
+
+        # Below the fuel, once the hull warms up
+        Gauge:
+            id: heat
+            title: 'CHALEUR'
+            x: root.right - dp(16) - self.width
+            y: fuel.y - dp(10) - self.height
+            opacity: 1 if self.fill > 0 else 0
 
         MissionTracker:
             id: tracker
