@@ -32,5 +32,5 @@ MISSION_RARER = .2
 
 # Refinery: rock of the depot crushed into what little it holds
 CRUSH_RATE = 4.               # units of rock a second
-# Found in a unit of rock, the rest is dust
+# Found in a unit of rock, the rest is regolith
 CRUSH_YIELDS = (('iron', .3), ('copper', .15), ('gold', .04), ('crystal', .02))

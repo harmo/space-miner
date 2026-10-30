@@ -3,7 +3,7 @@ from random import Random
 
 import pytest
 
-from app.logic.mining.minerals import MINERALS
+from app.logic.mining.minerals import MINED, MINERALS
 from app.logic.world.config import (
     EJECTA_ASTEROIDS,
     EJECTA_ORBIT,
@@ -65,5 +65,5 @@ def test_ejecta_are_thrown_together() -> None:
 
 
 def test_the_richest_ore_is_the_rarest() -> None:
-    frequencies = sorted(mineral.frequency for mineral in MINERALS.values())
+    frequencies = sorted(MINERALS[name].frequency for name in MINED)
     assert all(MINERALS[name].frequency in frequencies[:4] for name in RICHEST)

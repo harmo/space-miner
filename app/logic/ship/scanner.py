@@ -4,11 +4,11 @@ of the minerals it looks for """
 import math
 from collections.abc import Collection, Sequence
 
-from ..mining.minerals import MINERALS
+from ..mining.minerals import MINED
 from ..world.space import Celestial, Vec2
 
 # Looked for unless chosen otherwise: anything worth more than rock
-LOOKED_FOR = [name for name in MINERALS if name != 'rock']
+LOOKED_FOR = [name for name in MINED if name != 'rock']
 
 
 def mineral_of(asteroid: Celestial) -> str:
@@ -37,7 +37,7 @@ def found(asteroids: Sequence[Celestial], pos: Vec2, reach: float,
 def counts(asteroids: Sequence[Celestial], pos: Vec2,
            reach: float) -> dict[str, int]:
     """ Asteroids within reach, by mineral """
-    counted = dict.fromkeys(MINERALS, 0)
+    counted = dict.fromkeys(MINED, 0)
     for asteroid in within(asteroids, pos, reach):
         counted[mineral_of(asteroid)] += 1
     return counted

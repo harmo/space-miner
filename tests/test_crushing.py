@@ -28,7 +28,7 @@ def test_until_none_is_left() -> None:
     crusher.start(stock)
     found = crusher.update(stock, 100.)
     assert 'rock' not in stock and not crusher.crushing
-    assert sum(stock.values()) == len(found) <= 10
+    assert sum(stock.values()) == len(found) == 10
 
 
 def test_crushed_rock_gives_other_ore_now_and_then() -> None:
@@ -41,7 +41,7 @@ def test_crushed_rock_gives_other_ore_now_and_then() -> None:
         assert stock[mineral] == found.count(mineral)
 
 
-def test_most_of_it_is_dust() -> None:
+def test_most_of_it_is_regolith() -> None:
     rng = Random(5)
-    dust = sum(sift(rng) is None for _ in range(1000))
-    assert dust > 400
+    regolith = sum(sift(rng) == 'regolith' for _ in range(1000))
+    assert regolith > 400

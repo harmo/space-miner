@@ -3,6 +3,7 @@ import pytest
 from app.logic.colors import rgb
 from app.logic.mining.minerals import (
     GLOW_SCALE,
+    MINED,
     MINERALS,
     display_scale,
     mining_rate,
@@ -30,8 +31,9 @@ def test_some_minerals_need_a_better_laser() -> None:
         assert mining_rate(mineral, mineral.laser, LASER_RATE) > 0
 
 
-def test_every_mineral_can_be_found() -> None:
-    assert all(mineral.frequency > 0 for mineral in MINERALS.values())
+def test_every_mineral_but_regolith_is_found_in_asteroids() -> None:
+    assert all(MINERALS[name].frequency > 0 for name in MINED)
+    assert MINERALS['regolith'].frequency == 0
 
 
 def test_colors() -> None:

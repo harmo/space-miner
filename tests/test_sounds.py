@@ -5,7 +5,7 @@ import pytest
 
 from app.logic.ambience import CALLS, DRONES
 from app.logic.config import SOUNDS
-from app.logic.mining.minerals import MINERALS
+from app.logic.mining.minerals import MINED
 from app.logic.ship.lasers import BEST
 from app.logic.ship.parts import PARTS
 from app.logic.ship.shipyard import Design
@@ -39,7 +39,7 @@ def test_every_sound_has_its_file() -> None:
     names = [
         HULL_ENGINE, *(f'engine_{part}' for part in ENGINES),
         *(laser_sound(level) for level in range(1, BEST + 1)),
-        *(break_sound(name) for name in MINERALS), *EVENTS, *DRONES,
+        *(break_sound(name) for name in MINED), *EVENTS, *DRONES,
         *CALLS,
     ]
     for name in names:

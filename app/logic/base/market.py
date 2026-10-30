@@ -10,10 +10,11 @@ from .wallet import Wallet
 
 
 def ore_value(mineral: Mineral) -> float:
-    """ Credits for a unit: harder to mine and rarer is worth more """
+    """ Credits for a unit: harder to mine and rarer is worth more. What
+    no asteroid holds is as common as rock. """
     rock = MINERALS['rock']
     return 5 * mineral.hardness * math.sqrt(
-        rock.frequency / mineral.frequency
+        rock.frequency / (mineral.frequency or rock.frequency)
     )
 
 

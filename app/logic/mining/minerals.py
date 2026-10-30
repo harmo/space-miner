@@ -15,7 +15,8 @@ class Mineral:
     fill: str
     hardness: float       # mining takes this many times longer than rock
     laser: int            # level of laser needed to mine it at all
-    frequency: float      # relative, in the asteroid belts
+    frequency: float      # relative, in the asteroid belts, none if not
+    # found in any
     glow: bool = False    # surrounded by a halo of its color
 
     @property
@@ -28,6 +29,9 @@ class Mineral:
 MINERALS = {
     'rock': Mineral(
         'Roche', 'la roche', '#6f6a63', '#b3ada4', 1., 1, 40.),
+    # Dust of crushed rock, at the refinery: the stuff of heat shields
+    'regolith': Mineral(
+        'Régolithe', 'le régolithe', '#6b5a48', '#a89276', .5, 1, 0.),
     'ice': Mineral(
         'Glace', 'la glace', '#4a86a8', '#c4e6f5', .6, 1, 14.),
     'iron': Mineral(
@@ -55,6 +59,9 @@ MINERALS = {
         'Antimatière', "l'antimatière", '#2a2f8c', '#8f9bff', 6., 4, .5,
         glow=True),
 }
+
+# What asteroids are made of
+MINED = tuple(name for name, mineral in MINERALS.items() if mineral.frequency)
 
 # Images of glowing minerals are this much bigger, to hold the halo
 GLOW_SCALE = 1.4

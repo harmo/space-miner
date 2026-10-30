@@ -15,7 +15,7 @@ from kivy.properties import (
 from kivy.uix.boxlayout import BoxLayout
 
 from ...logic.config import IMAGES
-from ...logic.mining.minerals import MINERALS, asteroid_texture
+from ...logic.mining.minerals import MINED, MINERALS, asteroid_texture
 from ...logic.ship.scanner import counts
 from ..base.earth_base import EarthBase
 from ..ship.player import Player
@@ -60,7 +60,8 @@ class ScannerPanel(BoxLayout):
               base: EarthBase) -> None:
         self.player, self.system, self.base = player, system, base
         rows = self.ids.rows
-        for name, mineral in MINERALS.items():
+        for name in MINED:
+            mineral = MINERALS[name]
             texture = asteroid_texture(name, ICON_SHAPE)
             self.rows[name] = row = ScanRow(
                 panel=self, mineral=name, name=mineral.name,
@@ -90,7 +91,7 @@ class ScannerPanel(BoxLayout):
         self.reach = f'portée {round(reach):,}'.replace(',', ' ')
         found = (
             counts(system.asteroids, player.ship.position, reach)
-            if player.ship is not None else dict.fromkeys(MINERALS, 0)
+            if player.ship is not None else dict.fromkeys(MINED, 0)
         )
         for name, row in self.rows.items():
             row.count = found[name]
@@ -106,7 +107,7 @@ class ScannerPanel(BoxLayout):
             self.look_for(self.player.looked_for ^ {mineral})
 
     def everything(self) -> None:
-        self.look_for(set(MINERALS))
+        self.look_for(set(MINED))
 
     def nothing(self) -> None:
         self.look_for(set())

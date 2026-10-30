@@ -1,6 +1,6 @@
 """ The refinery of the base: the rock of the depot crushed a bit at a
-time, each unit giving now and then a unit of some other ore, back into
-the depot. It goes on while the ship is away. """
+time, each unit giving now and then a unit of some other ore, regolith
+otherwise, back into the depot. It goes on while the ship is away. """
 
 from random import Random
 
@@ -8,14 +8,15 @@ from ..mining.ore import whole_units
 from .config import CRUSH_RATE, CRUSH_YIELDS
 
 
-def sift(rng: Random) -> str | None:
-    """ What a unit of rock gives, None for dust """
+def sift(rng: Random) -> str:
+    """ What a unit of rock gives """
     draw = rng.random()
     for mineral, chance in CRUSH_YIELDS:
         if draw < chance:
             return mineral
         draw -= chance
-    return None
+    return 'regolith'
+
 
 
 class Crusher:
@@ -42,7 +43,6 @@ class Crusher:
         while self.ground >= 1:
             self.ground -= 1
             mineral = sift(self.rng)
-            if mineral is not None:
-                stock[mineral] = stock.get(mineral, 0.) + 1
-                found.append(mineral)
+            stock[mineral] = stock.get(mineral, 0.) + 1
+            found.append(mineral)
         return found

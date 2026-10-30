@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from random import Random
 
-from ..mining.minerals import MINERALS
+from ..mining.minerals import MINED, MINERALS
 from ..mining.ore import whole_units
 from .config import (
     MISSION_AMOUNT,
@@ -27,7 +27,7 @@ CLIENTS = (
     'Consortium Halley',
 )
 # Common rock and ice are not worth a mission
-WANTED = [name for name in MINERALS if name not in ('rock', 'ice')]
+WANTED = [name for name in MINED if name not in ('rock', 'ice')]
 
 
 @dataclass(frozen=True)
