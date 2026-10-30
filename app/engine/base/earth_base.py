@@ -1,8 +1,8 @@
-""" The base on the Earth, open while the ship is landed there: its tank is
-filled, its cargo is unloaded into the depot, missions are given and
-validated, and the ship can be refitted in the hangar. Its refinery
-crushes the rock of the depot, and it tows ships out of fuel back. Styled
-in earth_base.kv. """
+""" The base on the Earth, open while the ship is landed there. Its post
+fills the tank, takes the cargo into its depot and crushes rock, see
+post.py. The base keeps what the whole game shares: the credits, the
+hangar where the ship is refitted, and the missions. It tows ships out of
+fuel back. Styled in earth_base.kv. """
 
 from random import Random
 
@@ -11,7 +11,8 @@ from kivy.uix.widget import Widget
 
 from ...logic.base.crushing import Crusher
 from ...logic.base.missions import Board
-from ...logic.base.refuel import fill, tow, tow_price
+from ...logic.base.post import EVERYTHING, Docked, Post
+from ...logic.base.refuel import tow, tow_price
 from ...logic.base.reputation import tier
 from ...logic.base.shop import Inventory
 from ...logic.base.unloading import Depot
@@ -47,26 +48,24 @@ class EarthBase(Widget):
 
     def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
-        self.depot = Depot()
         self.wallet = Wallet()
         self.inventory = Inventory()        # parts in the hangar
         self.player: Player | None = None
         self.rng = Random()
-        self.crusher = Crusher(self.rng)
+        self.home = Post('Terre', EVERYTHING, self.rng)
         self.board: Board | None = None
         self.seen_tier = 1                  # in the hangar
 
     def setup(self, player: Player, rng: Random) -> None:
         self.player, self.rng = player, rng
-        self.crusher = Crusher(rng)
+        self.home = Post('Terre', EVERYTHING, rng)
         self.connect()
 
     def reset(self) -> None:
         """ For a new game """
-        self.depot = Depot()
         self.wallet = Wallet()
         self.inventory = Inventory()
-        self.crusher = Crusher(self.rng)
+        self.home = Post('Terre', EVERYTHING, self.rng)
         self.seen_tier = 1
         self.panel = ''
         self.connect()
@@ -91,6 +90,14 @@ class EarthBase(Widget):
             self.ids.missions.cargo = player.miner.ore
 
     @property
+    def depot(self) -> Depot:
+        return self.home.depot
+
+    @property
+    def crusher(self) -> Crusher:
+        return self.home.crusher
+
+    @property
     def buttons(self) -> list[Widget]:
         ids = self.ids
         return [
@@ -101,15 +108,16 @@ class EarthBase(Widget):
     def update(self, dt: float) -> None:
         if self.player is None or self.board is None:
             return
-        ore, stock = self.player.miner.ore, self.depot.stock
-        self.docked = self.player.docked_on(self.player.system.earth)
-        if self.docked:
-            fill(self.player.tank, self.wallet, ore, stock)
-        self.stranded = self.player.stranded
+        player = self.player
+        ore, stock = player.miner.ore, self.depot.stock
+        self.docked = player.docked_on(player.system.earth)
+        self.stranded = player.stranded
         if self.stranded:
             self.tow_cost = credits_text(self.tow_price)
-        self.depot.update(ore, dt, self.docked)
-        found = self.crusher.update(stock, dt)
+        found = self.home.update(
+            dt, Docked(ore, player.tank) if self.docked else None,
+            self.wallet,
+        )
         # The market shows what was found, and when it is over
         if self.panel == 'market' and (
             found or self.crushing != self.crusher.crushing
