@@ -1,6 +1,6 @@
 """ The market of the base, buying ore from the depot, for less than the
-missions pay, and its refinery, crushing the rock of the depot. Styled
-in market_panel.kv. """
+missions pay, loading it back into the ship, and its refinery, crushing
+the rock of the depot. Styled in market_panel.kv. """
 
 from typing import Any
 
@@ -16,10 +16,12 @@ from ...logic.base.crushing import Crusher
 from ...logic.base.market import ore_price, sell_ore
 from ...logic.base.missions import Board, needs
 from ...logic.base.outposts import Trade
+from ...logic.base.unloading import Depot, load
 from ...logic.base.wallet import Wallet
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
-from ...logic.mining.ore import whole_units
+from ...logic.mining.ore import cargo_room, whole_units
+from ..ship.miner import Miner
 from ..ui.cargo_panel import ICON_SHAPE
 from ..ui.widgets import load_style
 from .missions_panel import credits_text
@@ -38,6 +40,7 @@ class OreRow(BoxLayout):
     batch = StringProperty('')          # sold by the smaller button
     batch_units = NumericProperty(BATCH)
     can_batch = BooleanProperty(False)
+    can_load = BooleanProperty(False)   # the cargo has room
 
 
 class MarketPanel(BoxLayout):
@@ -56,6 +59,8 @@ class MarketPanel(BoxLayout):
         self.board: Board | None = None
         self.crusher: Crusher | None = None
         self.prices = Trade()               # those of the Earth
+        self.depot: Depot | None = None     # holding the stock
+        self.miner: Miner | None = None     # of the ship, for its cargo
 
     def on_close(self) -> None:
         """ The close button was pressed """
@@ -79,11 +84,28 @@ class MarketPanel(BoxLayout):
                 wanted=f'missions : {wanted[name]}' if name in wanted else '',
                 batch=f'Vendre {min(BATCH, units)}',
                 can_batch=units > BATCH,
+                can_load=self.room >= 1,
             ))
         self.empty = not rows.children
         self.rock = whole_units(self.stock.get('rock', 0.))
         self.refinery = self.crusher is not None
         self.crushing = self.crusher is not None and self.crusher.crushing
+
+    @property
+    def room(self) -> float:
+        """ In the cargo of the ship """
+        miner = self.miner
+        return cargo_room(miner.ore, miner.capacity) if miner else 0.
+
+    def load(self, mineral: str) -> None:
+        """ As much as fits into the ship. Unloading stops, or the ore
+        would go right back. """
+        if self.miner is None:
+            return
+        if self.depot is not None:
+            self.depot.stop()
+        load(self.stock, self.miner.ore, mineral, self.room)
+        self.refresh()
 
     def price(self, mineral: str) -> int:
         """ Here, for a unit """

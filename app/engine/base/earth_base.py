@@ -83,11 +83,12 @@ class EarthBase(Widget):
         market.wallet, market.stock, market.board = (
             self.wallet, stock, self.board
         )
-        market.crusher = self.crusher
+        market.crusher, market.depot = self.crusher, self.depot
         self.ids.missions.board = self.board
         self.ids.missions.stock = stock
         if player is not None:
             self.ids.missions.cargo = player.miner.ore
+            market.miner = player.miner
 
     @property
     def depot(self) -> Depot:

@@ -1,8 +1,8 @@
 """ Unloading the cargo into the depot on the Earth, where the ship lands
-to empty it """
+to empty it, and loading it back from there """
 
 from ..mining.minerals import MINERALS
-from ..mining.ore import cargo_load
+from ..mining.ore import cargo_load, whole_units
 from .config import UNLOAD_RATE
 
 
@@ -21,6 +21,20 @@ def unload(ore: dict[str, float], stock: dict[str, float],
         # What rounding left goes along
         stock[mineral] += ore.pop(mineral)
     return mineral
+
+
+def load(stock: dict[str, float], ore: dict[str, float], mineral: str,
+         room: float) -> int:
+    """ Whole units of `mineral` back into the cargo, as many as there are
+    and as fit in `room`. Returns how many. """
+    units = min(whole_units(stock.get(mineral, 0.)), whole_units(room))
+    if units <= 0:
+        return 0
+    stock[mineral] -= units
+    if stock[mineral] <= 1e-6:
+        del stock[mineral]
+    ore[mineral] = ore.get(mineral, 0.) + units
+    return units
 
 
 class Depot:

@@ -4,7 +4,7 @@
 <MarketPanel>:
     orientation: 'vertical'
     size_hint: None, None
-    size: dp(520), self.minimum_height
+    size: dp(600), self.minimum_height
     padding: dp(18), dp(14), dp(18), dp(16)
     spacing: dp(8)
     canvas.before:
@@ -166,3 +166,13 @@
         size_hint_x: None
         width: dp(92)
         on_release: root.panel.sell(root.mineral)
+    PanelButton:
+        text: 'Charger'
+        bold: False
+        font_size: '12sp'
+        corner: 8
+        glow: .5 if root.can_load else .15
+        size_hint_x: None
+        width: dp(72)
+        disabled: not root.can_load
+        on_release: root.panel.load(root.mineral)

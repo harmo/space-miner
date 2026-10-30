@@ -193,6 +193,7 @@ class OutpostView(Widget):
         elif panel == 'market':
             market = self.ids.market
             market.wallet, market.stock = base.wallet, depot.stock
+            market.depot, market.miner = depot, player.miner
             refinery = current.post.services.refinery
             market.board = board
             market.crusher = current.post.crusher if refinery else None
