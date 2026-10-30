@@ -7,10 +7,10 @@ landing and its crash, then the base: ore unloaded, trade, missions
 validated and buttons clicked, the solar system: swarms arriving, and the
 ambience of space, drones and radio calls, see ambience.py.
 
-    uv run python -m tools.compose_sounds [sounds] [fuel] [ambience]
+    uv run python -m tools.compose_sounds [sounds] [fuel] [sun] [ambience]
 
 All of them without any, those named otherwise. The sounds of the fuel are
-in fuel_sounds.py.
+in fuel_sounds.py, those of the sun in sun_sounds.py.
 
 ffmpeg encodes them, with libvorbis.
 """
@@ -24,6 +24,7 @@ from random import Random
 
 from .ambience import DRONES, calls, play
 from .fuel_sounds import FUEL_EVENTS
+from .sun_sounds import SUN_EVENTS
 from .synth import (
     Samples,
     crackle,
@@ -51,12 +52,14 @@ SOUNDS_DIR = Path(__file__).parent.parent / 'assets' / 'sounds'
 SEED = 5
 AMBIENCE_SEED = 8
 FUEL_SEED = 13
+SUN_SEED = 21
 
 # Loudness, in decibels, from the laser, which sounds right in the game:
 # the other loops stay below it, as do sounds of events at their loudest
 LASER_DB = -26.
 LOOP_DB = -32.
 EVENT_DB = -28.
+FLARE_DB = -26.               # the sun blasting, above everything
 BREAK_DB = -34.               # heard again and again while mining
 CLICK_DB = -34.               # heard so often it must stay discreet
 AMBIENT_DB = -30.             # always there, its volume set apart
@@ -539,6 +542,27 @@ def unloading(rng: Random) -> Samples:
     return mix((.6, motor), (.5, normalized(ticks)), (.4, ore))
 
 
+def crushing(rng: Random) -> Samples:
+    """ A loop of UNLOAD_LOOP seconds: the refinery grinding rock, dull and
+    steady, its jaws knocking twice a second """
+    seconds = UNLOAD_LOOP
+    n = length(seconds)
+    motor = saw(looping(55., seconds), n)
+    motor = normalized(lowpass(lowpass(motor, 300., loop=True), 300.,
+                               loop=True))
+    knocks = mix(*(
+        (1., delayed(thump(n, 80.), k * seconds / 4)) for k in range(4)
+    ))
+    grind = lowpass(lowpass(noise(rng, n), 400., loop=True), 400.,
+                    loop=True)
+    grind = times(normalized(grind), throb(looping(4., seconds), n, .5))
+    rocks = lowpass(crackle(rng, n, 30, decay=.012), 500., loop=True)
+    return mix(
+        (.6, motor), (.5, normalized(knocks)), (.6, grind),
+        (.2, normalized(rocks)),
+    )
+
+
 def chirps(n: int, notes: tuple[float, ...], step: float,
            decay: float) -> Samples:
     """ Bright notes struck one after the other """
@@ -656,6 +680,15 @@ def compose_fuel() -> None:
         save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose))
 
 
+def compose_sun() -> None:
+    """ The sun, and the refinery, with random numbers of their own """
+    rng = Random(SUN_SEED)
+    for name, (seconds, compose) in SUN_EVENTS.items():
+        db = FLARE_DB if name == 'flare' else EVENT_DB
+        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose, db))
+    save(SOUNDS_DIR / 'crushing.ogg', level(crushing(rng), LOOP_DB))
+
+
 def compose_ambience() -> None:
     """ The drones side by side, as they take long """
     with ProcessPoolExecutor() as pool:
@@ -668,11 +701,13 @@ def compose_ambience() -> None:
 
 if __name__ == '__main__':
     # All of them, or the groups named
-    wanted = sys.argv[1:] or ['sounds', 'fuel', 'ambience']
+    wanted = sys.argv[1:] or ['sounds', 'fuel', 'sun', 'ambience']
     SOUNDS_DIR.mkdir(parents=True, exist_ok=True)
     if 'sounds' in wanted:
         main()
     if 'fuel' in wanted:
         compose_fuel()
+    if 'sun' in wanted:
+        compose_sun()
     if 'ambience' in wanted:
         compose_ambience()
