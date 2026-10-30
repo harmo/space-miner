@@ -1,5 +1,6 @@
 """ The market of the base, buying ore from the depot, for less than the
-missions pay. Styled in market_panel.kv. """
+missions pay, and its refinery, crushing the rock of the depot. Styled
+in market_panel.kv. """
 
 from typing import Any
 
@@ -11,6 +12,7 @@ from kivy.properties import (
 )
 from kivy.uix.boxlayout import BoxLayout
 
+from ...logic.base.crushing import Crusher
 from ...logic.base.market import ore_price, sell_ore
 from ...logic.base.missions import Board, needs
 from ...logic.base.wallet import Wallet
@@ -41,6 +43,8 @@ class MarketPanel(BoxLayout):
 
     money = StringProperty('')
     empty = BooleanProperty(True)
+    rock = NumericProperty(0)           # units in the depot
+    crushing = BooleanProperty(False)
 
     def __init__(self, **kwargs: Any) -> None:
         self.register_event_type('on_close')
@@ -48,6 +52,7 @@ class MarketPanel(BoxLayout):
         self.wallet = Wallet()
         self.stock: dict[str, float] = {}   # of the depot
         self.board: Board | None = None
+        self.crusher: Crusher | None = None
 
     def on_close(self) -> None:
         """ The close button was pressed """
@@ -73,6 +78,14 @@ class MarketPanel(BoxLayout):
                 can_batch=units > BATCH,
             ))
         self.empty = not rows.children
+        self.rock = whole_units(self.stock.get('rock', 0.))
+        self.crushing = self.crusher is not None and self.crusher.crushing
+
+    def crush(self) -> None:
+        """ The rock of the depot, at the refinery """
+        if self.crusher is not None:
+            self.crusher.start(self.stock)
+        self.refresh()
 
     def sell(self, mineral: str, units: int | None = None) -> None:
         """ All of it without `units` """

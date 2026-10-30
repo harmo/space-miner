@@ -76,7 +76,11 @@ class Soundtrack:
         self.laser.play(
             laser_sound(player.stats.laser) if firing else None, sounds,
         )
-        self.unloading.play('unloading' if base.unloading else None, sounds)
+        # One machine of the base at a time, unloading first
+        machine = 'unloading' if base.unloading else (
+            'crushing' if base.crushing and base.docked else None
+        )
+        self.unloading.play(machine, sounds)
 
     def hum(self, volume: float, dt: float, playing: bool) -> None:
         """ The drones of the ambience, the next one decoded aside before

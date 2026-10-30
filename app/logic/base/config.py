@@ -29,3 +29,8 @@ MISSION_GROWTH = .3           # bigger orders on each level, paying as much
 # Rarer minerals are wanted more on higher levels: their frequencies are
 # flattened by this much on each level
 MISSION_RARER = .2
+
+# Refinery: rock of the depot crushed into what little it holds
+CRUSH_RATE = 4.               # units of rock a second
+# Found in a unit of rock, the rest is dust
+CRUSH_YIELDS = (('iron', .3), ('copper', .15), ('gold', .04), ('crystal', .02))

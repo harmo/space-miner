@@ -81,9 +81,11 @@ def show_cargo(panel: CargoPanel, miner: Miner,
     return load
 
 
-def show_depot(panel: CargoPanel, depot: Depot) -> None:
+def show_depot(panel: CargoPanel, depot: Depot, crushing: bool) -> None:
+    """ What is unloaded highlighted, or the rock being crushed """
     stock = depot.stock
-    panel.show(stock, depot.mineral, 0., str(cargo_total(stock)), (1, 1, 1))
+    mineral = depot.mineral or ('rock' if crushing else None)
+    panel.show(stock, mineral, 0., str(cargo_total(stock)), (1, 1, 1))
 
 
 load_style(__file__)

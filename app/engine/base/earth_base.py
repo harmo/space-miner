@@ -1,13 +1,15 @@
 """ The base on the Earth, open while the ship is landed there: its tank is
 filled, its cargo is unloaded into the depot, missions are given and
-validated, and the ship can be refitted in the hangar. It tows ships out
-of fuel back. Styled in earth_base.kv. """
+validated, and the ship can be refitted in the hangar. Its refinery
+crushes the rock of the depot, and it tows ships out of fuel back. Styled
+in earth_base.kv. """
 
 from random import Random
 
 from kivy.properties import BooleanProperty, StringProperty
 from kivy.uix.widget import Widget
 
+from ...logic.base.crushing import Crusher
 from ...logic.base.missions import Board
 from ...logic.base.refuel import fill, tow, tow_price
 from ...logic.base.reputation import tier
@@ -35,6 +37,7 @@ class EarthBase(Widget):
     shown = BooleanProperty(False)      # its buttons, with no panel open
     can_unload = BooleanProperty(False)
     unloading = BooleanProperty(False)
+    crushing = BooleanProperty(False)   # rock, at the refinery
     money = StringProperty('')
     to_validate = BooleanProperty(False)  # a mission can be validated
     new_parts = BooleanProperty(False)  # a tier reached, not seen yet
@@ -49,11 +52,13 @@ class EarthBase(Widget):
         self.inventory = Inventory()        # parts in the hangar
         self.player: Player | None = None
         self.rng = Random()
+        self.crusher = Crusher(self.rng)
         self.board: Board | None = None
         self.seen_tier = 1                  # in the hangar
 
     def setup(self, player: Player, rng: Random) -> None:
         self.player, self.rng = player, rng
+        self.crusher = Crusher(rng)
         self.connect()
 
     def reset(self) -> None:
@@ -61,6 +66,7 @@ class EarthBase(Widget):
         self.depot = Depot()
         self.wallet = Wallet()
         self.inventory = Inventory()
+        self.crusher = Crusher(self.rng)
         self.seen_tier = 1
         self.panel = ''
         self.connect()
@@ -78,6 +84,7 @@ class EarthBase(Widget):
         market.wallet, market.stock, market.board = (
             self.wallet, stock, self.board
         )
+        market.crusher = self.crusher
         self.ids.missions.board = self.board
         self.ids.missions.stock = stock
         if player is not None:
@@ -102,6 +109,13 @@ class EarthBase(Widget):
         if self.stranded:
             self.tow_cost = credits_text(self.tow_price)
         self.depot.update(ore, dt, self.docked)
+        found = self.crusher.update(stock, dt)
+        # The market shows what was found, and when it is over
+        if self.panel == 'market' and (
+            found or self.crushing != self.crusher.crushing
+        ):
+            self.ids.market.refresh()
+        self.crushing = self.crusher.crushing
         if not self.docked:
             self.panel = ''
         self.unloading = self.depot.unloading
@@ -114,7 +128,7 @@ class EarthBase(Widget):
         )
         self.new_parts = tier(self.board.validated) > self.seen_tier
         if self.docked:
-            show_depot(self.ids.depot, self.depot)
+            show_depot(self.ids.depot, self.depot, self.crushing)
 
     @property
     def tow_price(self) -> int:
