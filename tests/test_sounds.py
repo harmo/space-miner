@@ -17,6 +17,7 @@ from app.logic.sounds import (
     break_sound,
     engine_sound,
     heard,
+    is_loop,
     laser_sound,
     toward,
 )
@@ -41,6 +42,16 @@ def test_every_sound_has_its_file() -> None:
     ]
     for name in names:
         assert (ROOT / SOUNDS / f'{name}.ogg').is_file(), name
+
+
+def test_loops_are_told_apart() -> None:
+    loops = [
+        'ambient', 'unloading', HULL_ENGINE, 'engine_fusion_engine',
+        laser_sound(3),
+    ]
+    assert all(is_loop(name) for name in loops)
+    assert not any(is_loop(name) for name in EVENTS if name not in loops)
+    assert not is_loop(break_sound('gold'))
 
 
 def test_engines_are_rear_parts() -> None:

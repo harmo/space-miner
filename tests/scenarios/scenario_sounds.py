@@ -44,6 +44,8 @@ def hums_landed() -> None:
         'unloading': None,
     }, f'space hums, the engine is ready: {loops()}')
     check(scenario.game.soundtrack.volume == 0, 'and silent')
+    check(audio.mixer is not None, 'loops play on the channels of the mixer')
+    check(scenario.game.soundtrack.ambient.playing, 'space hums for real')
     remembered['touch'] = scenario.hold_towards(scenario.away_from_earth())
 
 
@@ -62,6 +64,7 @@ def takes_off() -> None:
 @scenario.step(1.)
 def mines() -> None:
     check(loops()['laser'] == 'laser_1', f'the laser fires: {loops()}')
+    check(scenario.game.soundtrack.laser.playing, 'it is heard')
 
 
 @scenario.step(4.)
@@ -108,6 +111,7 @@ def hears_the_base() -> None:
 def falls_silent() -> None:
     check(audio.muted, 'the sounds are off')
     check(set(loops().values()) == {None}, f'all is quiet: {loops()}')
+    check(not scenario.game.soundtrack.ambient.playing, 'space too')
 
 
 scenario.run()

@@ -43,6 +43,13 @@ def break_sound(mineral: str) -> str:
     return f'break_{mineral}'
 
 
+def is_loop(name: str) -> bool:
+    """ Played over and over, rather than once """
+    return name in ('ambient', 'unloading') or name.startswith(
+        ('engine_', 'laser_')
+    )
+
+
 def toward(volume: float, target: float, dt: float) -> float:
     """ The volume of the engine, following its thrust """
     if target > volume:
