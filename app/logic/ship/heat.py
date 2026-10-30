@@ -8,7 +8,13 @@ from typing import Literal
 
 from ..config import HEAT_RANGE
 from ..world.space import Vec2
-from .config import HEAT_COOLING, HEAT_GAIN, HOT, OVERHEATING
+from .config import (
+    HEAT_COOLING,
+    HEAT_GAIN,
+    HOT,
+    OVERHEATING,
+    SHELTER_COOLING,
+)
 
 Warmth = Literal['cool', 'hot', 'overheating']
 
@@ -56,6 +62,10 @@ class Hull:
 
     def update(self, dt: float, heating: float) -> None:
         self.heat = min(1., max(0., self.heat + (heating - HEAT_COOLING) * dt))
+
+    def shelter(self, dt: float) -> None:
+        """ Out of the heat, cooling down fast """
+        self.heat = max(0., self.heat - SHELTER_COOLING * dt)
 
     def cool(self) -> None:
         """ A new ship """

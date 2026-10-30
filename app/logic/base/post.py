@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from random import Random
 
 from ..ship.fuel import Tank
+from ..ship.heat import Hull
 from .crushing import Crusher
 from .refuel import fill
 from .unloading import Depot
@@ -20,6 +21,7 @@ class Services:
     missions: bool = False
     hangar: bool = False      # parts bought and fitted
     refinery: bool = False    # rock of the depot crushed
+    shelter: bool = False     # their hull cooled, out of the heat
 
 
 EVERYTHING = Services(True, True, True, True, True, True)
@@ -30,6 +32,7 @@ class Docked:
     """ A ship landed at a post, as the post sees it """
     ore: dict[str, float]     # in its cargo
     tank: Tank
+    hull: Hull
 
 
 class Post:
@@ -42,11 +45,14 @@ class Post:
 
     def update(self, dt: float, ship: Docked | None,
                wallet: Wallet) -> list[str]:
-        """ Fills the tank of a ship landed there, unloads it, and crushes
-        rock even without any. Returns what the crushing found. """
+        """ Fills the tank of a ship landed there, cools its hull down in
+        a shelter, unloads it, and crushes rock even without any. Returns
+        what the crushing found. """
         stock = self.depot.stock
         if ship is not None and self.services.fuel:
             fill(ship.tank, wallet, ship.ore, stock)
+        if ship is not None and self.services.shelter:
+            ship.hull.shelter(dt)
         self.depot.update(ship.ore if ship else {}, dt, ship is not None)
         if not self.services.refinery:
             return []

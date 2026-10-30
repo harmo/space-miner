@@ -115,7 +115,7 @@ class EarthBase(Widget):
         if self.stranded:
             self.tow_cost = credits_text(self.tow_price)
         found = self.home.update(
-            dt, Docked(ore, player.tank) if self.docked else None,
+            dt, Docked(ore, player.tank, player.hull) if self.docked else None,
             self.wallet,
         )
         # The market shows what was found, and when it is over

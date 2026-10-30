@@ -27,6 +27,11 @@ GRAVITY_RANGE = 6.            # planets pull the ship up to this many radii
 CERES_RADIUS = 70.
 CERES_GRAVITY = 40.           # at its surface, weak (px/s²)
 
+# Stations orbiting planets, sites of outposts
+STATION_RADIUS = 40.
+STATION_ALTITUDE = 300.       # above the surface of their planet
+STATION_SPEED = 50.
+
 # Moon and asteroids
 MOON_RADIUS = 45.
 MOON_ORBIT = 550.             # distance from the Earth's center

@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from random import Random
 
-from ..config import MOON, PLANETS
+from ..config import MOON, PLANETS, STATION
 from ..mining.minerals import ASTEROID_SHAPES, MINERALS, asteroid_texture
 from .config import (
     ASTEROID_MASS,
@@ -31,6 +31,9 @@ from .config import (
     PLANET_MASS,
     PLANET_RADIUS,
     PLANET_SPEED,
+    STATION_ALTITUDE,
+    STATION_RADIUS,
+    STATION_SPEED,
     SUN_BELT_ASTEROIDS,
     SUN_BELT_SPEED,
     SUN_BELT_WIDTH,
@@ -171,6 +174,15 @@ def plan_ceres(orbits: tuple[float, ...],
         asteroid_texture('rock', 3), CERES_RADIUS, PLANET_MASS, distance,
         speed=orbital_speed(distance), orbit_angle=earth_angle + math.pi,
         gravity=CERES_GRAVITY,
+    )
+
+
+def plan_station(planet_radius: float) -> OrbiterPlan:
+    """ Around a planet, not spinning, pulling nothing: drawn over the game,
+    its body unseen """
+    return OrbiterPlan(
+        STATION, STATION_RADIUS, PLANET_MASS,
+        planet_radius + STATION_ALTITUDE, STATION_SPEED, orbit_angle=0.,
     )
 
 

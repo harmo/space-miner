@@ -45,6 +45,7 @@ class Ground:
     counterclockwise from the east, true over solid ground """
     body: Celestial
     edge: tuple[bool, ...]
+    docking: bool = False     # the port of a station, rather than ground
 
     def spots(self, width: float) -> list[float]:
         """ Directions where a ship of `width` fits """

@@ -3,6 +3,7 @@ from app.logic.base.outposts import (
     DEPOT,
     FRONTIER,
     FUEL,
+    ICARE,
     TRADE,
     Construction,
     unlocked,
@@ -85,3 +86,10 @@ def test_ceres_refines_but_gives_no_missions() -> None:
     assert FRONTIER.contracts and not CERES.contracts
     assert CERES.stages[-1].services.refinery
     assert CERES.pad < FRONTIER.pad
+
+
+def test_icare_shelters_and_buys_ejecta_dearer() -> None:
+    assert ICARE.form == 'orbit' and not ICARE.contracts
+    assert ICARE.stages[0].services.shelter
+    assert ICARE.trade.factor('antimatter') > 1.5
+    assert ICARE.trade.factor('iron') == 1.

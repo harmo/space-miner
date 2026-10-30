@@ -131,7 +131,7 @@ class OutpostView(Widget):
             if served:
                 self.current = outpost
             outpost.post.update(
-                dt, Docked(ore, player.tank) if served else None,
+                dt, Docked(ore, player.tank, player.hull) if served else None,
                 base.wallet,
             )
         current = self.current

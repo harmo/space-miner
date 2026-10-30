@@ -4,7 +4,7 @@ from random import Random
 
 import pytest
 
-from app.logic.config import MOON, PLANETS, SUN_DISC, WORLD_SIZE
+from app.logic.config import MOON, PLANETS, STATION, SUN_DISC, WORLD_SIZE
 from app.logic.mining.minerals import (
     ASTEROID_SHAPES,
     MINERALS,
@@ -18,6 +18,7 @@ from app.logic.world.config import (
     EARTH_RADIUS,
     GRAVITY,
     MOON_ORBIT,
+    STATION_ALTITUDE,
     SUN_BELT_ASTEROIDS,
     SUN_BELT_WIDTH,
     SUN_RADIUS,
@@ -26,6 +27,7 @@ from app.logic.world.layout import (
     OrbiterPlan,
     SystemPlan,
     orbital_speed,
+    plan_station,
     plan_system,
     sun_belt_orbit,
 )
@@ -157,3 +159,10 @@ def test_the_moon_shows_the_earth_always_the_same_face(
     assert math.radians(moon.spin) == pytest.approx(
         moon.speed / moon.orbit_radius
     )
+
+
+def test_a_station_orbits_above_its_planet_unseen() -> None:
+    station = plan_station(200.)
+    assert station.texture == STATION
+    assert station.orbit_radius == 200. + STATION_ALTITUDE
+    assert station.gravity == 0. and station.spin == 0.

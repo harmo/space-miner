@@ -53,6 +53,7 @@ FUEL = Services(fuel=True)
 DEPOT = replace(FUEL, depot=True)
 TRADE = replace(DEPOT, market=True, missions=True)
 REFINING = replace(DEPOT, market=True, refinery=True)
+SHELTER = replace(FUEL, shelter=True)
 
 # On the farthest planet from the sun, far from everything: ore is dearer
 # there, ice most of all as fuel is lacking
@@ -74,13 +75,25 @@ CERES = Site('Comptoir de Cérès', 'ground', (
           REFINING),
 ), pad=60.)
 
+# Orbiting the first planet, close to the sun: a refuge to mine the ejecta
+# of flares, paying well for them
+_RING = replace(SHELTER, depot=True)
+ICARE = Site('Station Icare', 'orbit', (
+    Stage('Armature', (('rock', 100),), SHELTER),
+    Stage('Anneau habitable', (('rock', 120), ('iron', 50)), _RING),
+    Stage('Comptoir', (('rock', 150), ('iron', 60), ('copper', 30)),
+          replace(_RING, market=True)),
+), Trade(dearer=(('nebulite', 1.6), ('stellarium', 1.6),
+                 ('antimatter', 1.6))), pad=40.)
+
 # By the key they are saved under
-SITES = {'frontier': FRONTIER, 'ceres': CERES}
+SITES = {'frontier': FRONTIER, 'ceres': CERES, 'icare': ICARE}
 
 # As told to the player
 OFFERED = (
     ('fuel', 'le plein'), ('depot', 'un entrepôt'), ('market', 'un marché'),
     ('missions', 'des missions'), ('refinery', 'une raffinerie'),
+    ('shelter', 'un abri contre la chaleur'),
 )
 
 
