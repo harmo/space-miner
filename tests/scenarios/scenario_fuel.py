@@ -17,6 +17,7 @@ from .harness import Scenario, loneliest
 scenario = Scenario('fuel')
 check = scenario.check
 remembered: dict[str, Any] = {}
+played = scenario.record_sounds()
 
 
 @scenario.step(1.)
@@ -47,6 +48,8 @@ def runs_dry() -> None:
     check(player.thrust(0.) == 0., 'the ship no longer thrusts')
     message = scenario.game.ids.message_label.text
     check(message == 'Panne sèche', f'as told: {message!r}')
+    check(played[-2:] == ['low_fuel', 'fuel_out'],
+          f'heard running low, then dry: {played}')
     remembered['touch'].touch_up()
     rock = loneliest(scenario.game.system.asteroids)
     x, y = rock.pos
@@ -89,6 +92,8 @@ def is_towed_back_and_refuelled() -> None:
     check(player.miner.ore == {'iron': 5.}, f'with its cargo, but the ice'
           f' burnt: {player.miner.ore}')
     check(player.tank.share == 1., f'the tank is full: {player.tank.level}')
+    check(played[-2:] == ['tow', 'refuel'],
+          f'heard towed back, then filled: {played}')
     paid = (player.tank.capacity - 10. * ICE_FUEL) * FUEL_PRICE
     expected = 1000 - remembered['price'] - paid
     check(base.wallet.credits == expected,

@@ -31,6 +31,7 @@ FLYING = Moment(
 EVENTS = (
     'explosion', 'gear_out', 'gear_in', 'touchdown', 'cargo_full',
     'mission', 'sale', 'purchase', 'swarm', 'pickup', 'click', 'unloading',
+    'low_fuel', 'fuel_out', 'refuel', 'tow',
 )
 
 
@@ -132,3 +133,27 @@ def test_a_swarm_is_heard_arriving_not_leaving() -> None:
     swarm = replace(FLYING, swarm=True)
     assert heard(FLYING, swarm) == ['swarm']
     assert heard(swarm, FLYING) == []
+
+
+def test_the_tank_running_low_then_dry_is_heard() -> None:
+    low = replace(FLYING, gauge='critical', fuel=5.)
+    assert heard(replace(FLYING, gauge='low'), low) == ['low_fuel']
+    assert heard(low, low) == []
+    dry = replace(FLYING, gauge='empty', stranded=True)
+    assert heard(low, dry) == ['fuel_out']
+
+
+def test_filling_the_tank_is_heard_rather_than_what_it_costs() -> None:
+    parked = replace(FLYING, parked=True, legs_out=True, fuel=10.)
+    filled = replace(parked, fuel=100., credits=800)
+    assert heard(parked, filled) == ['refuel']
+
+
+def test_towing_is_heard_rather_than_what_it_costs() -> None:
+    dry = replace(FLYING, gauge='empty', stranded=True)
+    back = replace(
+        FLYING, ship=8, parked=True, legs_out=True, credits=700, fuel=0.,
+    )
+    assert heard(dry, back) == ['tow']
+    filled = replace(back, fuel=100., gauge='full')
+    assert heard(dry, filled) == ['tow', 'refuel']

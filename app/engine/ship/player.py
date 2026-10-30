@@ -53,6 +53,8 @@ class Player:
         self.camera = camera
         self.rng = rng
         self.ship: Ship | None = None       # None while exploded
+        # Ships spawned: entities are reused, not this number
+        self.spawned = 0
         self.anchor: Vec2 = (0., 0.)        # where the ship is, or was
         self.crash: Crash | None = None
         self.respawn_in = 0.
@@ -88,6 +90,7 @@ class Player:
         )
         body = get_body(self.gameworld, entity_id)
         self.ship = Ship(entity_id, body, self.stats)
+        self.spawned += 1
         self.parking = parking_on(earth, direction, length)
         self.anchor = pos
         self.camera.look_at(pos)

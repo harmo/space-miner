@@ -17,17 +17,7 @@ from .harness import Scenario, loneliest
 scenario = Scenario('sounds')
 check = scenario.check
 remembered: dict[str, Any] = {}
-played: list[str] = []
-
-
-def record() -> None:
-    """ The sounds played once, from now on """
-    play = audio.play
-
-    def recording(name: str, volume: float | None = None) -> None:
-        played.append(name)
-        play(name, volume)
-    audio.play = recording  # type: ignore[method-assign]
+played = scenario.record_sounds()
 
 
 def loops() -> dict[str, Any]:
@@ -51,7 +41,6 @@ def loaded(name: str) -> bool:
 
 @scenario.step(1.)
 def hums_landed() -> None:
-    record()
     ambience = scenario.game.soundtrack.ambience
     check(loops() == {
         'drones': {ambience.current}, 'engine': 'engine_hull',

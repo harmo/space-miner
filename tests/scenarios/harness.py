@@ -108,6 +108,18 @@ class Scenario:
                 return widget
         raise LookupError(f'no button "{text}"')
 
+    def record_sounds(self) -> list[str]:
+        """ The names of the sounds played once, from now on """
+        from app.engine.audio import audio
+        played: list[str] = []
+        play = audio.play
+
+        def recording(name: str, volume: float | None = None) -> None:
+            played.append(name)
+            play(name, volume)
+        audio.play = recording  # type: ignore[method-assign]
+        return played
+
     def screenshot(self, name: str) -> None:
         """ Into SPACE_MINER_SHOTS, when set, to look at """
         folder = os.environ.get('SPACE_MINER_SHOTS')

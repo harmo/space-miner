@@ -45,13 +45,16 @@ class Soundtrack:
         self.hum(preferences.ambience, dt, playing)
         player, base = game.player, game.ids.base
         moment = Moment(
-            ship=player.ship.entity_id if player.ship else None,
+            ship=player.spawned if player.ship else None,
             parked=player.parking is not None,
             legs_out=game.looks.gear.out,
             cargo_full=player.miner.cargo_full,
             credits=base.wallet.credits,
             validated=base.board.validated if base.board else 0,
             swarm=bool(game.system.events.swarm),
+            fuel=player.tank.level,
+            gauge=player.tank.gauge,
+            stranded=player.stranded,
         )
         running = playing and sounds > 0
         if running and self.moment is not None:

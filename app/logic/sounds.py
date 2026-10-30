@@ -4,6 +4,7 @@ next. Sounds are named after their files in SOUNDS. """
 
 from dataclasses import dataclass
 
+from .ship.fuel import Gauge
 from .ship.hulls import HULLS
 from .ship.lasers import BEST
 from .ship.parts import PARTS
@@ -18,6 +19,7 @@ HULL_ENGINE = 'engine_hull'
 # Seconds for the engine to go from silent to full, and back
 ENGINE_RISE = .15
 ENGINE_FALL = .4
+REFUEL_HEARD = .5             # units of fuel put in the tank at least
 
 
 def engine_sound(design: Design) -> str:
@@ -60,33 +62,49 @@ def toward(volume: float, target: float, dt: float) -> float:
 @dataclass(frozen=True)
 class Moment:
     """ What can be heard changing, on a frame """
-    ship: int | None          # its entity, None while exploded
+    ship: int | None          # which one, None while exploded
     parked: bool              # on the Earth
     legs_out: bool
     cargo_full: bool
     credits: int
     validated: int            # missions
     swarm: bool               # passing through the solar system
+    fuel: float = 0.          # in the tank
+    gauge: Gauge = 'full'
+    stranded: bool = False    # out of fuel away from the Earth
 
 
 def heard(before: Moment, now: Moment) -> list[str]:
-    """ Sounds of what happened between two frames. Legs and landings are
-    only heard on the same ship, not on a new one. """
+    """ Sounds of what happened between two frames. Legs, landings and the
+    gauge are only heard on the same ship, not on a new one. Fuel put in
+    the tank, or a ship towed back, is heard rather than the credits it
+    cost. """
     sounds = []
     if before.ship is not None and now.ship is None:
         sounds.append('explosion')
+    towed = before.stranded and now.ship not in (None, before.ship)
+    if towed:
+        sounds.append('tow')
     if before.ship is not None and now.ship == before.ship:
         if now.legs_out != before.legs_out:
             sounds.append('gear_out' if now.legs_out else 'gear_in')
         if now.parked and not before.parked:
             sounds.append('touchdown')
+        if now.gauge != before.gauge:
+            if now.gauge == 'critical' and before.gauge != 'empty':
+                sounds.append('low_fuel')
+            elif now.gauge == 'empty':
+                sounds.append('fuel_out')
+    refuelled = now.parked and now.fuel >= before.fuel + REFUEL_HEARD
+    if refuelled:
+        sounds.append('refuel')
     if now.cargo_full and not before.cargo_full:
         sounds.append('cargo_full')
     if now.validated > before.validated:
         sounds.append('mission')
     elif now.credits > before.credits:
         sounds.append('sale')
-    elif now.credits < before.credits:
+    elif now.credits < before.credits and not (towed or refuelled):
         sounds.append('purchase')
     if now.swarm and not before.swarm:
         sounds.append('swarm')
