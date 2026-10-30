@@ -13,6 +13,7 @@ from .harness import Scenario
 scenario = Scenario('icare')
 check = scenario.check
 remembered: dict[str, Any] = {}
+played = scenario.record_sounds()
 
 
 def icare() -> Any:
@@ -48,6 +49,8 @@ def docks() -> None:
 @scenario.step(LANDING_DURATION + .5)
 def is_docked() -> None:
     check(view().docked, 'docked at its port')
+    check('dock' in played and 'touchdown' not in played,
+          f'heard docking: {played}')
     ore = scenario.player.miner.ore
     stages = icare().construction.site.stages
     ore.update({name: float(units) for name, units in stages[0].materials})

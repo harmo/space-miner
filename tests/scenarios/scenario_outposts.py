@@ -18,6 +18,7 @@ from .harness import Scenario
 scenario = Scenario('outposts')
 check = scenario.check
 remembered: dict[str, Any] = {}
+played = scenario.record_sounds()
 
 
 def frontier() -> Any:
@@ -77,6 +78,8 @@ def builds_the_foundations() -> None:
     panel, player = view().ids.site, scenario.player
     check(frontier().construction.built == 1, 'the foundations are built')
     check(panel.news == 'Fondations construit', f'as told: {panel.news}')
+    # Then the tank filled, by the foundations
+    check(played[-2:] == ['built', 'refuel'], f'and heard: {played}')
     check('Habitat' in panel.stage, f'the habitat comes next: {panel.stage}')
     check(player.miner.ore == {'rock': 10., 'iron': 10.},
           f'the rest is kept: {player.miner.ore}')
@@ -90,6 +93,7 @@ def delivers_part_of_the_habitat() -> None:
     check(construction.built == 1, 'not enough for the habitat')
     check(construction.delivered == {'rock': 10, 'iron': 10},
           f'but delivered: {construction.delivered}')
+    check(played[-1:] == ['deliver'], f'as heard: {played}')
     scenario.player.miner.ore.update({'rock': 150., 'iron': 30., 'gold': 3.})
     view().open('site')                 # showing the new cargo
 

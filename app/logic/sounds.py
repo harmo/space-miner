@@ -76,6 +76,7 @@ class Moment:
     stranded: bool = False    # out of fuel away from the Earth
     warmth: Warmth = 'cool'   # of the hull
     flare: Phase = 'quiet'    # of the sun
+    port: bool = False        # parked at the port of a station
 
 
 def heard(before: Moment, now: Moment) -> list[str]:
@@ -110,7 +111,7 @@ def heard_of_ship(before: Moment, now: Moment) -> list[str]:
     if now.legs_out != before.legs_out:
         sounds.append('gear_out' if now.legs_out else 'gear_in')
     if now.parked and not before.parked:
-        sounds.append('touchdown')
+        sounds.append('dock' if now.port else 'touchdown')
     if now.gauge != before.gauge:
         if now.gauge == 'critical' and before.gauge != 'empty':
             sounds.append('low_fuel')

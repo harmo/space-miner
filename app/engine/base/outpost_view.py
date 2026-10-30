@@ -19,6 +19,7 @@ from ...logic.base.post import Docked
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
 from ...logic.mining.ore import cargo_total, whole_units
+from ..audio import audio
 from ..ship.player import Player
 from ..ui.cargo_panel import ICON_SHAPE, show_depot
 from ..ui.widgets import load_style
@@ -172,6 +173,7 @@ class OutpostView(Widget):
         if self.current is None or self.player is None:
             return
         built = self.current.deliver(self.player.miner.ore)
+        audio.play('built' if built else 'deliver')
         panel = self.ids.site
         panel.news = f'{built.name} construit' if built else ''
         panel.show(self.current, self.player.miner.ore)

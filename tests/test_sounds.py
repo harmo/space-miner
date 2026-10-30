@@ -32,7 +32,7 @@ EVENTS = (
     'explosion', 'gear_out', 'gear_in', 'touchdown', 'cargo_full',
     'mission', 'sale', 'purchase', 'swarm', 'pickup', 'click', 'unloading',
     'low_fuel', 'fuel_out', 'refuel', 'tow', 'overheat', 'flare_warning',
-    'flare', 'crushing',
+    'flare', 'crushing', 'deliver', 'built', 'dock',
 )
 
 
@@ -174,3 +174,9 @@ def test_a_flare_is_heard_told_then_blazing() -> None:
     assert heard(FLYING, warning) == ['flare_warning']
     assert heard(warning, blazing) == ['flare']
     assert heard(blazing, replace(FLYING, flare='ejecta')) == []
+
+
+def test_docking_is_heard_rather_than_touching_down() -> None:
+    legs = replace(FLYING, legs_out=True)
+    docked = replace(legs, parked=True, port=True)
+    assert heard(legs, docked) == ['dock']
