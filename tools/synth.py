@@ -1,16 +1,20 @@
 """ Sound synthesis: waves, noise and filters on plain lists of samples
-between -1 and 1, brought to a chosen loudness and saved as WAV files.
-Loops repeat seamlessly when their frequencies make whole cycles over
-them, see `looping`, and when they are filtered as loops. """
+between -1 and 1, brought to a chosen loudness and saved as Ogg Vorbis
+files, encoded by ffmpeg. Loops repeat seamlessly when their frequencies
+make whole cycles over them, see `looping`, and when they are filtered as
+loops: the encoding keeps their length to the sample. """
 
 import array
+import io
 import math
+import subprocess
 import wave
 from pathlib import Path
 from random import Random
 
 RATE = 44100                  # samples per second
 PEAK = .9                     # the loudest a sample may get
+QUALITY = 5                   # of the encoding, from 0 to 10
 
 Samples = list[float]
 
@@ -166,10 +170,20 @@ def level(samples: Samples, db: float,
 
 
 def save(path: Path, samples: Samples) -> None:
-    """ 16 bit mono """
+    """ Mono, at `path` ending in .ogg. The same samples always make the
+    same file, whatever the version of ffmpeg. """
     data = array.array('h', (round(sample * 32767) for sample in samples))
-    with wave.open(str(path), 'wb') as out:
+    source = io.BytesIO()
+    with wave.open(source, 'wb') as out:
         out.setnchannels(1)
         out.setsampwidth(2)
         out.setframerate(RATE)
         out.writeframes(data.tobytes())
+    subprocess.run(
+        [
+            'ffmpeg', '-loglevel', 'error', '-y', '-f', 'wav', '-i', '-',
+            '-c:a', 'libvorbis', '-q:a', str(QUALITY),
+            '-fflags', '+bitexact', '-flags:a', '+bitexact', str(path),
+        ],
+        input=source.getvalue(), check=True,
+    )

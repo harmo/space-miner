@@ -8,6 +8,8 @@ validated and buttons clicked, and the solar system: swarms arriving and
 the hum of space all around.
 
     uv run python -m tools.compose_sounds
+
+ffmpeg encodes them, with libvorbis.
 """
 
 from collections.abc import Callable
@@ -637,21 +639,21 @@ def main() -> None:
     rng = Random(SEED)
     SOUNDS_DIR.mkdir(parents=True, exist_ok=True)
     for number, beam in enumerate(BEAMS, start=1):
-        save(SOUNDS_DIR / f'laser_{number}.wav',
+        save(SOUNDS_DIR / f'laser_{number}.ogg',
              level(laser(rng, beam), LOOP_DB))
     for name, compose in ENGINES.items():
         sound = compose(rng, length(ENGINE_LOOP))
-        save(SOUNDS_DIR / f'engine_{name}.wav', level(sound, LOOP_DB))
+        save(SOUNDS_DIR / f'engine_{name}.ogg', level(sound, LOOP_DB))
     for name, compose in BREAKS.items():
-        save(SOUNDS_DIR / f'break_{name}.wav',
+        save(SOUNDS_DIR / f'break_{name}.ogg',
              event(rng, BREAKING, compose))
     for name, (seconds, compose) in SHIP_EVENTS.items():
-        save(SOUNDS_DIR / f'{name}.wav', event(rng, seconds, compose))
-    save(SOUNDS_DIR / 'unloading.wav', level(unloading(rng), LOOP_DB))
+        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose))
+    save(SOUNDS_DIR / 'unloading.ogg', level(unloading(rng), LOOP_DB))
     for name, (seconds, compose, db) in BASE_EVENTS.items():
-        save(SOUNDS_DIR / f'{name}.wav', event(rng, seconds, compose, db))
-    save(SOUNDS_DIR / 'swarm.wav', event(rng, SWARM_ALERT, swarm))
-    save(SOUNDS_DIR / 'ambient.wav', level(ambient(rng), AMBIENT_DB))
+        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose, db))
+    save(SOUNDS_DIR / 'swarm.ogg', event(rng, SWARM_ALERT, swarm))
+    save(SOUNDS_DIR / 'ambient.ogg', level(ambient(rng), AMBIENT_DB))
 
 
 if __name__ == '__main__':

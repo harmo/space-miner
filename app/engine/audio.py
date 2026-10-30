@@ -15,7 +15,7 @@ class Audio:
     def sound(self, name: str) -> Sound | None:
         """ Loaded on first use, None when it can't be """
         if name not in self.sounds:
-            self.sounds[name] = SoundLoader.load(f'{SOUNDS}/{name}.wav')
+            self.sounds[name] = SoundLoader.load(f'{SOUNDS}/{name}.ogg')
         return self.sounds[name]
 
     def play(self, name: str) -> None:

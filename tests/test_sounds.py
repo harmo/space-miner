@@ -40,7 +40,7 @@ def test_every_sound_has_its_file() -> None:
         *(break_sound(name) for name in MINERALS), *EVENTS,
     ]
     for name in names:
-        assert (ROOT / SOUNDS / f'{name}.wav').is_file(), name
+        assert (ROOT / SOUNDS / f'{name}.ogg').is_file(), name
 
 
 def test_engines_are_rear_parts() -> None:
