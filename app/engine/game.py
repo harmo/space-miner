@@ -117,8 +117,9 @@ class Game(Widget):
         setup_collisions(self.gameworld, self.player.on_contact)
         self.soundtrack = Soundtrack(self.player, self.rng)
         self.ids.base.setup(self.player, self.rng)
+        self.ids.outpost.setup(self.player, self.outposts, self.ids.base)
         self.ids.scanner.setup(self.player, self.system, self.ids.base)
-        self.keeper = Keeper(seed, self.player, self.ids.base)
+        self.keeper = Keeper(seed, self.player, self.ids.base, self.outposts)
         if save is not None:
             self.keeper.restore(save)
         Clock.schedule_interval(lambda dt: self.save(), AUTOSAVE_PERIOD)
@@ -148,6 +149,7 @@ class Game(Widget):
         self.player.update(dt, heading)
         self.looks.update(self.player, heading, dt)
         self.ids.base.update(dt)
+        self.ids.outpost.update(dt)
         self.scanning = self.player.stats.scan > 0
         self.system.update(dt, self.player.anchor)
         shift = recenter(self.player, self.camera, self.system, self.stars)
@@ -212,6 +214,7 @@ class Game(Widget):
         self.map_open = not self.map_open
         if self.map_open:
             self.ids.base.close()
+            self.ids.outpost.close()
             self.ids.scanner.open = False
             self.pointer = None
             self.ids.map.show(Charted(self.system, self.player, self.outposts))
@@ -230,7 +233,8 @@ class Game(Widget):
     def on_touch_down(self, touch: MotionEvent) -> bool:
         """ Thrusting towards the pointer while pressed, unless something
         is open over the game, or on the home page """
-        overlaid = self.ids.base.panel or self.ids.scanner.open
+        ids = self.ids
+        overlaid = ids.base.panel or ids.outpost.panel or ids.scanner.open
         if self.playing and not overlaid and not self.map_open and (
             steers(self, touch)
         ):

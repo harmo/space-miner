@@ -26,7 +26,9 @@ SAVE = Save(
     looked_for=['gold', 'ruby'],
     mission_level=3,
     fuel=42.5,
-    outposts={'frontier': Progress(1, {'rock': 30, 'iron': 12})},
+    outposts={
+        'frontier': Progress(1, {'rock': 30, 'iron': 12}, {'ice': 4.5}),
+    },
 )
 
 

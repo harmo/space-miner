@@ -43,6 +43,20 @@ FRONTIER = Site('Base Frontière', 'ground', (
 # By the key they are saved under
 SITES = {'frontier': FRONTIER}
 
+# As told to the player
+OFFERED = (
+    ('fuel', 'le plein'), ('depot', 'un entrepôt'), ('market', 'un marché'),
+    ('missions', 'des missions'),
+)
+
+
+def unlocked(stage: Stage, before: Services) -> list[str]:
+    """ What building `stage` adds to what was offered `before` """
+    return [
+        told for name, told in OFFERED
+        if getattr(stage.services, name) and not getattr(before, name)
+    ]
+
 
 class Construction:
     """ An outpost on its site: the stages built, and what was delivered

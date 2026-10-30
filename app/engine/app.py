@@ -4,6 +4,7 @@ from kivy.app import App
 
 # The widgets of spaceminer.kv, the Game widget at its root
 from .base.earth_base import EarthBase  # noqa: F401
+from .base.outpost_view import OutpostView  # noqa: F401
 from .game import Game
 from .ui.cargo_panel import CargoPanel  # noqa: F401
 from .ui.gauges import Gauge  # noqa: F401

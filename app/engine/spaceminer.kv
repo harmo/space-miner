@@ -133,6 +133,7 @@ Game:
             x: root.right - dp(16) - self.width
             y:
                 (base.ids.money_label.y - dp(10) if base.docked \
+                else outpost.ids.money_label.y - dp(10) if outpost.docked \
                 else root.top - dp(16)) - self.height
 
         # Below the fuel, once the hull warms up
@@ -202,6 +203,12 @@ Game:
             on_panel: setattr(scanner, 'open', False) if args[1] else None
             # The scanner button ends the row, when there is one
             full_row: root.scanning
+
+        # On the pad of an outpost
+        OutpostView:
+            id: outpost
+            size: root.size
+            pos: root.pos
 
         # Over everything, the game standing still behind
         MapPage:

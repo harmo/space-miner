@@ -24,6 +24,8 @@ def escape(game: 'Game') -> bool:
         scanner.open = False
     elif base.panel:
         base.close()
+    elif game.ids.outpost.panel:
+        game.ids.outpost.close()
     elif game.playing:
         game.pause()
     elif game.paused:
@@ -40,7 +42,7 @@ def steers(game: 'Game', touch: MotionEvent) -> bool:
     ids, player = game.ids, game.player
     buttons = [
         ids.land_button, ids.cargo_button, ids.scanner_button,
-        ids.map_button, *ids.base.buttons,
+        ids.map_button, *ids.base.buttons, *ids.outpost.buttons,
     ]
     ship = player.ship
     if on_any(buttons, touch.pos) or ship is None or player.landing:

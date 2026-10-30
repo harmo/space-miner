@@ -25,6 +25,11 @@ class Progress:
     """ Of an outpost being built """
     built: int = 0                      # stages
     delivered: dict[str, int] = field(default_factory=dict)
+    stock: dict[str, float] = field(default_factory=dict)  # of its depot
+
+    @property
+    def started(self) -> bool:
+        return bool(self.built or self.delivered or self.stock)
 
 
 @dataclass
@@ -113,6 +118,7 @@ def outposts_of(data: Any) -> dict[str, Progress]:
                 for name, units in dict(progress['delivered']).items()
                 if name in MINERALS and int(units) > 0
             },
+            ores(progress.get('stock', {})),
         )
         for site, progress in dict(data).items()
     }
@@ -136,7 +142,10 @@ def dump(save: Save) -> str:
         'mission_level': save.mission_level,
         'fuel': save.fuel,
         'outposts': {
-            site: {'built': progress.built, 'delivered': progress.delivered}
+            site: {
+                'built': progress.built, 'delivered': progress.delivered,
+                'stock': progress.stock,
+            }
             for site, progress in save.outposts.items()
         },
     }, ensure_ascii=False, indent=1, sort_keys=True)

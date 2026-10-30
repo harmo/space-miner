@@ -2,20 +2,23 @@
 it back in them """
 
 from ..logic.mining.minerals import MINERALS
-from ..logic.save import Save, dump
+from ..logic.save import Progress, Save, dump
 from ..logic.ship.hulls import HULLS
 from ..logic.ship.shipyard import Design
 from .base.earth_base import EarthBase
+from .base.outposts import Outpost
 from .ship.player import Player
 from .storage import delete_save, write_save
 
 
 class Keeper:
 
-    def __init__(self, seed: int, player: Player, base: EarthBase) -> None:
+    def __init__(self, seed: int, player: Player, base: EarthBase,
+                 outposts: list[Outpost]) -> None:
         self.seed = seed
         self.player = player
         self.base = base
+        self.outposts = outposts
         self.written = ''           # last saved, not to write it again
 
     def snapshot(self) -> Save:
@@ -37,6 +40,10 @@ class Keeper:
                 name for name in MINERALS if name in self.player.looked_for
             ],
             fuel=round(self.player.tank.level, 2),
+            outposts={
+                outpost.key: outpost.progress for outpost in self.outposts
+                if outpost.progress.started
+            },
         )
 
     def restore(self, save: Save) -> None:
@@ -63,6 +70,8 @@ class Keeper:
         tank = self.player.tank
         if save.fuel is not None:
             tank.level = min(save.fuel, tank.capacity)
+        for outpost in self.outposts:
+            outpost.restore(save.outposts.get(outpost.key, Progress()))
         self.player.miner.ore.clear()
         self.player.miner.ore.update(save.cargo)
         self.player.looked_for = set(save.looked_for)
@@ -85,6 +94,8 @@ class Keeper:
         player.explosions.clear()
         player.miner.ore.clear()
         self.base.reset()
+        for outpost in self.outposts:
+            outpost.restore(Progress())
         player.restart(Design())
         player.tank.fill(player.tank.capacity)
         self.written = ''

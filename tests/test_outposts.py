@@ -4,6 +4,7 @@ from app.logic.base.outposts import (
     FUEL,
     TRADE,
     Construction,
+    unlocked,
 )
 from app.logic.base.post import Services
 from app.logic.save import Progress
@@ -63,3 +64,10 @@ def test_how_far_it_was_built_comes_back() -> None:
     assert again.progress == Progress(1, {'rock': 30, 'iron': 12})
     again.restore(Progress(99, {}))
     assert again.built == len(FRONTIER.stages)
+
+
+def test_each_stage_tells_what_it_adds() -> None:
+    first, second, third = FRONTIER.stages
+    assert unlocked(first, Services()) == ['le plein']
+    assert unlocked(second, FUEL) == ['un entrepôt']
+    assert unlocked(third, DEPOT) == ['un marché', 'des missions']
