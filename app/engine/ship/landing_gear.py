@@ -13,16 +13,18 @@ class LandingGear:
 
     def __init__(self) -> None:
         self.unfolded = 1.    # the ship starts landed
+        self.out = True       # unfolding or unfolded
 
     def update(self, player: Player, dt: float) -> None:
         if player.ship is None:
             self.unfolded = 1.            # comes back landed
+            self.out = True
             return
         landing = player.landing
-        out = player.parking is not None or (
+        self.out = player.parking is not None or (
             landing is not None and landing.progress > UNFOLD_FROM
         )
-        self.unfolded = unfold(self.unfolded, dt, out)
+        self.unfolded = unfold(self.unfolded, dt, self.out)
 
     def draw(self, overlay: Overlay, player: Player) -> None:
         ship = player.ship

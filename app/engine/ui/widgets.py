@@ -9,6 +9,8 @@ from kivy.properties import BooleanProperty, NumericProperty
 from kivy.uix.button import Button
 from kivy.uix.widget import Widget
 
+from ..audio import audio
+
 
 class PanelButton(Button):
     """ Rounded button in the style of the panels, with an outline as bright
@@ -21,6 +23,9 @@ class PanelButton(Button):
         """ Disabled, it lets touches through to what lies below, as hidden
         buttons are """
         return not self.disabled and bool(super().on_touch_down(touch))
+
+    def on_press(self) -> None:
+        audio.play('click')
 
 
 class Layer(Widget):

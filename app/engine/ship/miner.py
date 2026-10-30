@@ -2,7 +2,7 @@
 its cargo """
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from random import Random
 
 from ...logic.config import DEBRIS_FRAGMENTS, DEBRIS_SPEED
@@ -42,6 +42,10 @@ class Miner:
         self.stats = stats                  # of the ship, refitted or not
         self.deposits = Deposits()
         self.ore: dict[str, float] = {}     # in the cargo, by mineral
+        # Told the mineral of each asteroid mined out, and of each canister
+        # picked up
+        self.on_mined_out: list[Callable[[str], None]] = []
+        self.on_pick_up: list[Callable[[], None]] = []
         system.on_remove.append(self.gone)
 
     def gone(self, asteroid: Celestial) -> None:
@@ -146,6 +150,8 @@ class Miner:
             mineral_of(asteroid).color, DEBRIS_FRAGMENTS, DEBRIS_SPEED,
         ))
         self.system.remove(asteroid)
+        for told in self.on_mined_out:
+            told(asteroid.mineral or 'rock')
 
     def collect(self, ship: Ship, canister: Canister) -> None:
         """ Takes in what fits in the cargo, once close enough """
@@ -169,3 +175,5 @@ class Miner:
         ))
         self.canisters.remove(canister)
         self.release()
+        for told in self.on_pick_up:
+            told()

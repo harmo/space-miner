@@ -29,6 +29,7 @@ from .entities import setup_collisions, setup_state, step_systems
 from .keeper import Keeper
 from .ship.looks import ShipLooks
 from .ship.player import Player
+from .soundtrack import Soundtrack
 from .storage import read_preferences, read_save
 from .textures import ground_edge, load_textures
 from .ui.controls import escape, steers
@@ -69,6 +70,7 @@ class Game(Widget):
     system: SolarSystem
     player: Player
     overlay: Overlay
+    soundtrack: Soundtrack
 
     def on_kv_post(self, base_widget: Widget) -> None:
         self.rng = Random()
@@ -101,6 +103,7 @@ class Game(Widget):
             ground_edge('earth'),
         )
         setup_collisions(self.gameworld, self.player.on_contact)
+        self.soundtrack = Soundtrack(self.player)
         self.ids.base.setup(self.player, self.rng)
         self.ids.scanner.setup(self.player, self.system, self.ids.base)
         self.keeper = Keeper(seed, self.player, self.ids.base)
@@ -125,6 +128,7 @@ class Game(Widget):
 
     def update(self, dt: float) -> None:
         if self.paused or self.map_open:
+            self.soundtrack.update(self, dt, None)
             self.draw_sky()         # filling the window if it changes
             return                  # everything stays as it was drawn
         dt = min(dt, MAX_FRAME_TIME)
@@ -145,6 +149,7 @@ class Game(Widget):
             PLATFORM, Window.width / dp(1), Window.height / dp(1)
         )
         show_hud(self)
+        self.soundtrack.update(self, dt, heading)
         self.draw_sky()
 
     def draw_sky(self) -> None:
