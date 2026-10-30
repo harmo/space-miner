@@ -4,7 +4,7 @@ pixels of the world, ships face +x: their nose points right. """
 from dataclasses import dataclass, field, replace
 
 from ..world.space import Vec2
-from .config import MIN_SPEED, MIN_THRUST, MIN_TURN_SPEED
+from .config import HULL_BURN, MIN_SPEED, MIN_THRUST, MIN_TURN_SPEED
 from .hulls import HULLS, Hull, Slot
 from .lasers import BEST
 from .parts import PARTS, Part
@@ -31,6 +31,8 @@ class ShipStats:
     laser: int
     scan: float               # reach of the scanners
     size: Vec2                # length, width
+    tank: float = 0.          # units of fuel
+    burn: float = 0.          # fuel a second at full thrust
 
 
 def part_rect(slot: Slot, part: Part) -> Rect:
@@ -119,6 +121,8 @@ def ship_stats(design: Design) -> ShipStats:
         laser=min(BEST, hull.laser + sum(p.laser for p in parts)),
         scan=scan_reach(hull.scan, [p.scan for p in parts]),
         size=ship_size(design),
+        tank=hull.tank + sum(p.tank for p in parts),
+        burn=max(0., HULL_BURN + sum(p.burn for p in parts)),
     )
 
 

@@ -20,6 +20,9 @@ class Part:
     capacity: float = 0.
     laser: int = 0
     scan: float = 0.          # reach of scanners, added to the hull's
+    tank: float = 0.          # units of fuel, added to the hull's
+    # Fuel burnt a second at full thrust, added to what the hull burns
+    burn: float = 0.
     price: int = 0            # credits
     # Ore taken from the depot to build it, by mineral
     materials: tuple[tuple[str, int], ...] = ()
@@ -65,7 +68,7 @@ PARTS = {
     # Rear
     'engine': Part(
         'Réacteur', 'rear', (10., 12.), max_speed=150., thrust=.3,
-        price=2000,
+        burn=.2, price=2000,
     ),
     'rear_hold': Part(
         'Soute arrière', 'rear', (12., 12.), capacity=20., max_speed=-30.,
@@ -77,25 +80,25 @@ PARTS = {
     ),
     'afterburner': Part(
         'Postcombustion', 'rear', (12., 11.),
-        max_speed=100., thrust=.8, turn_speed=-1.,
+        max_speed=100., thrust=.8, turn_speed=-1., burn=1.,
         price=5000, materials=(('iron', 15),), tier=2,
     ),
     'ion_engine': Part(
         'Propulseur ionique', 'rear', (14., 10.), max_speed=250., thrust=-.2,
-        price=9500, materials=(('helium3', 6),), tier=3,
+        burn=-.5, price=9500, materials=(('helium3', 6),), tier=3,
     ),
     'twin_engine': Part(
         'Double réacteur', 'rear', (12., 15.),
-        max_speed=200., thrust=.6, turn_speed=-1.,
+        max_speed=200., thrust=.6, turn_speed=-1., burn=.6,
         price=11000, materials=(('iron', 15), ('uranium', 5)), tier=3,
     ),
     'solar_sail': Part(
         'Voile solaire', 'rear', (10., 18.), max_speed=120., turn_speed=2.,
-        price=16000, materials=(('stellarium', 3),), tier=4,
+        burn=-1., price=16000, materials=(('stellarium', 3),), tier=4,
     ),
     'fusion_engine': Part(
         'Réacteur à fusion', 'rear', (14., 14.), max_speed=320., thrust=.6,
-        price=35000, materials=(('uranium', 10), ('antimatter', 3)),
+        burn=-.2, price=35000, materials=(('uranium', 10), ('antimatter', 3)),
         tier=5,
     ),
     # Sides
@@ -111,7 +114,7 @@ PARTS = {
     ),
     'side_thruster': Part(
         'Propulseur latéral', 'side', (12., 8.), thrust=.3, turn_speed=2.,
-        price=4500, tier=2,
+        burn=.2, price=4500, tier=2,
     ),
     'container': Part(
         'Grand conteneur', 'side', (24., 10.),
@@ -120,7 +123,7 @@ PARTS = {
     ),
     'ion_pod': Part(
         'Nacelle ionique', 'side', (14., 8.), max_speed=80., thrust=.4,
-        price=8000, materials=(('helium3', 4),), tier=3,
+        burn=.1, price=8000, materials=(('helium3', 4),), tier=3,
     ),
     'cargo_bay': Part(
         'Soute renforcée', 'side', (20., 10.), capacity=25.,
@@ -137,6 +140,13 @@ PARTS = {
         tier=5,
     ),
     # Internal, not drawn
+    'fuel_tank': Part(
+        'Réservoir', 'internal', (0., 0.), tank=60., price=1500,
+    ),
+    'large_tank': Part(
+        'Grand réservoir', 'internal', (0., 0.), tank=150., price=7000,
+        materials=(('iron', 20),), tier=3,
+    ),
     'scanner': Part(
         'Scanner', 'internal', (0., 0.), scan=3000., price=1200,
     ),
@@ -164,6 +174,8 @@ def effects(part: Part) -> str:
         (part.turn_speed, 'maniabilité', '{:+g}'),
         (part.capacity, 'soute', '{:+.0f}'),
         (part.scan, 'portée de scan', '{:+.0f}'),
+        (part.tank, 'réservoir', '{:+.0f}'),
+        (part.burn, 'consommation', '{:+.1f}'),
     ]
     return ' · '.join(
         f'{number.format(value)} {name}'

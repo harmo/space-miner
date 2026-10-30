@@ -13,15 +13,16 @@ class Laser:
     width: float              # of the beam, in screen pixels
     halo: bool = False        # wide translucent glow around the beam
     core: bool = False        # white hot center
+    burn: float = 0.          # fuel a second, while firing
 
 
 LASERS = (
-    Laser(1., (1., .35, .3), 1.5),
-    Laser(2., (1., .62, .25), 2.2, halo=True),
-    Laser(3.5, (1., .88, .4), 3., halo=True, core=True),
-    Laser(5., (.78, .55, 1.), 4., halo=True, core=True),
+    Laser(1., (1., .35, .3), 1.5, burn=.4),
+    Laser(2., (1., .62, .25), 2.2, halo=True, burn=.6),
+    Laser(3.5, (1., .88, .4), 3., halo=True, core=True, burn=.8),
+    Laser(5., (.78, .55, 1.), 4., halo=True, core=True, burn=1.),
     # Beyond what any mineral needs: only faster
-    Laser(7., (.6, .95, 1.), 5., halo=True, core=True),
+    Laser(7., (.6, .95, 1.), 5., halo=True, core=True, burn=1.2),
 )
 BEST = len(LASERS)
 

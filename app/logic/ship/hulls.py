@@ -31,6 +31,7 @@ class Hull:
     laser: int                # level of the laser built in
     # Reach added to the scanners fitted, none without any
     scan: float
+    tank: float               # units of fuel
     price: int = 0            # credits
     # Ore taken from the depot to build it, by mineral
     materials: tuple[tuple[str, int], ...] = ()
@@ -75,7 +76,7 @@ HULLS = {
             **internals(1),
         },
         max_speed=350., thrust=1.2, turn_speed=6., capacity=30., laser=1,
-        scan=0.,
+        scan=0., tank=100.,
     ),
     # Slow and roomy, four sides for cargo
     'hauler': Hull(
@@ -88,7 +89,7 @@ HULLS = {
             **internals(2),
         },
         max_speed=280., thrust=1., turn_speed=4.5, capacity=60., laser=1,
-        scan=0.,
+        scan=0., tank=160.,
         price=8000, materials=(('iron', 20),), tier=2,
     ),
     # A strong laser built in, which mines much faster
@@ -101,7 +102,7 @@ HULLS = {
             **internals(2),
         },
         max_speed=330., thrust=1.3, turn_speed=5.5, capacity=40., laser=2,
-        scan=2000.,
+        scan=2000., tank=120.,
         price=20000, materials=(('copper', 15), ('crystal', 8)), tier=3,
     ),
     # Two of everything
@@ -117,7 +118,7 @@ HULLS = {
             **internals(3),
         },
         max_speed=380., thrust=1.4, turn_speed=5., capacity=50., laser=1,
-        scan=1000.,
+        scan=1000., tank=200.,
         price=50000, materials=(('stellarium', 8), ('antimatter', 4)),
         tier=5,
     ),

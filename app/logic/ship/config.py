@@ -8,6 +8,11 @@ MIN_SPEED = 120.
 MIN_THRUST = .4
 MIN_TURN_SPEED = 1.5
 
+# Fuel, burnt by thrusting and firing the laser: see parts.py and lasers.py
+HULL_BURN = 1.                # units a second at full thrust, by any hull
+LOW_FUEL = .25                # of the tank, the gauge warns below
+CRITICAL_FUEL = .1
+
 # Landing legs, the ship stands on them on the ground
 LEG_LENGTH = 4.               # behind the rear of the ship
 LEG_SPREAD = 1.5              # beyond its sides
