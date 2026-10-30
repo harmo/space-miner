@@ -72,6 +72,12 @@ class SolarSystem:
     def parent_of(self, belt: BeltPlan) -> Celestial:
         return self.sun if belt.parent is None else self.planets[belt.parent]
 
+    def add_body(self, plan: OrbiterPlan) -> Celestial:
+        """ Around the sun, pulling and solid as the planets """
+        body = self.create_orbiter(plan, self.sun, COLLISION_PLANET)
+        self.attractors.append(body)
+        return body
+
     def add_asteroid(self, plan: OrbiterPlan,
                      parent: Celestial) -> Celestial:
         asteroid = self.create_orbiter(plan, parent, COLLISION_ORBITER)

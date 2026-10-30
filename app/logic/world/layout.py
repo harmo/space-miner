@@ -16,6 +16,8 @@ from .config import (
     BELT_COUNT,
     BELT_SPEED,
     BELT_WIDTH,
+    CERES_GRAVITY,
+    CERES_RADIUS,
     EARTH_ORBIT,
     EARTH_RADIUS,
     FIRST_ORBIT,
@@ -156,6 +158,19 @@ def plan_system(rng: Random) -> SystemPlan:
         tuple(planets), EARTH_ORBIT,
         tuple(sun_belt.asteroid(rng) for _ in range(sun_belt.full)),
         tuple(belt_plans), orbits,
+    )
+
+
+def plan_ceres(orbits: tuple[float, ...],
+               earth_angle: float) -> OrbiterPlan:
+    """ In the middle of the belt around the sun, across the sun from the
+    Earth at first. Upright and not spinning, as planets: a landed ship
+    stays where it is. """
+    distance = sun_belt_orbit(orbits)
+    return OrbiterPlan(
+        asteroid_texture('rock', 3), CERES_RADIUS, PLANET_MASS, distance,
+        speed=orbital_speed(distance), orbit_angle=earth_angle + math.pi,
+        gravity=CERES_GRAVITY,
     )
 
 

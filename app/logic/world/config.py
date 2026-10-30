@@ -22,6 +22,11 @@ GRAVITY = 1.25                # planet surface gravity is GRAVITY * radius
 GRAVITY_FALLOFF = 2.          # planets pull in 1/distance²
 GRAVITY_RANGE = 6.            # planets pull the ship up to this many radii
 
+# Cérès, a big asteroid in the middle of the belt around the sun: the site
+# of an outpost, never mined
+CERES_RADIUS = 70.
+CERES_GRAVITY = 40.           # at its surface, weak (px/s²)
+
 # Moon and asteroids
 MOON_RADIUS = 45.
 MOON_ORBIT = 550.             # distance from the Earth's center
