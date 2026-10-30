@@ -1,9 +1,10 @@
-""" Settings shared by the whole game: the textures, space, explosions,
-the interface and the physics. Sizes are in pixels, speeds in px/s. Each
-part of the game has its own in its package. """
+""" Settings shared by the whole game: the textures and sounds, space,
+explosions, the interface and the physics. Sizes are in pixels, speeds in
+px/s. Each part of the game has its own in its package. """
 
-# Textures
+# Textures and sounds
 IMAGES = 'assets/images'
+SOUNDS = 'assets/sounds'
 PLANETS = [f'planet{i}' for i in range(1, 8)]
 MOON = 'moon'
 SUN_DISC = .7                 # part of the sun texture that is not glow
