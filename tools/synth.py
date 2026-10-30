@@ -120,6 +120,85 @@ def highpass(samples: Samples, cutoff: float,
     return [sample - soft for sample, soft in zip(samples, low, strict=True)]
 
 
+def twice(samples: Samples, loop: bool) -> Samples:
+    """ What a filter runs over: a loop twice over, so that it ends as it
+    starts, see `settled` """
+    return samples * 2 if loop else samples
+
+
+def settled(out: Samples, n: int) -> Samples:
+    """ The last `n` samples, once a filter settled over a loop """
+    return out[len(out) - n:]
+
+
+def resonant(samples: Samples, cutoff: Samples, damping: float,
+             loop: bool = False, band: bool = False) -> Samples:
+    """ The filter of modular synthesizers, its cutoff moving along
+    `cutoff`, in Hz, sample after sample: a low pass, or a band pass
+    around it. It rings at its cutoff with a low `damping`, from 2 down
+    to 0.1 or so. """
+    tuning = [2 * math.sin(math.pi * min(hz, RATE / 6) / RATE)
+              for hz in cutoff]
+    low = middle = 0.
+    out = []
+    n = len(samples)
+    for i, sample in enumerate(twice(samples, loop)):
+        f = tuning[i % n]
+        low += f * middle
+        middle += f * (sample - low - damping * middle)
+        out.append(middle if band else low)
+    return settled(out, n)
+
+
+def echo(samples: Samples, seconds: float, feedback: float,
+         loop: bool = False) -> Samples:
+    """ Repeating every `seconds`, each time `feedback` as loud """
+    gap = length(seconds)
+    out: Samples = []
+    for i, sample in enumerate(twice(samples, loop)):
+        out.append(sample + (feedback * out[i - gap] if i >= gap else 0.))
+    return settled(out, len(samples))
+
+
+def reverb(samples: Samples, wet: float, loop: bool = False) -> Samples:
+    """ A room, `wet` the share of its reflections: echoes of combs out of
+    step with one another, smeared by all pass filters """
+    source = twice(samples, loop)
+    combs = []
+    for gap in (1557, 1617, 1491, 1422, 1277, 1356):
+        out: Samples = []
+        soft = 0.
+        for i, sample in enumerate(source):
+            back = out[i - gap] if i >= gap else 0.
+            soft += .4 * (back - soft)          # walls soften the highs
+            out.append(sample + .84 * soft)
+        combs.append(out)
+    wash = [sum(values) / len(combs) for values in zip(*combs, strict=True)]
+    for gap in (556, 441, 341, 225):
+        smeared: Samples = []
+        for i, sample in enumerate(wash):
+            if i >= gap:
+                smeared.append(
+                    wash[i - gap] + .5 * smeared[i - gap] - .5 * sample
+                )
+            else:
+                smeared.append(-.5 * sample)
+        wash = smeared
+    room = settled(wash, len(samples))
+    return [(1 - wet) * dry + wet * reflected
+            for dry, reflected in zip(samples, room, strict=True)]
+
+
+def placed(sound: Samples, n: int, seconds: float) -> Samples:
+    """ `n` samples long, `sound` starting `seconds` in and wrapping around
+    to the start: in a loop """
+    out = [0.] * n
+    start = length(seconds)
+    for k, sample in enumerate(sound):
+        out[(start + k) % n] += sample
+    return out
+
+
 def mix(*layers: tuple[float, Samples]) -> Samples:
     """ Sum of the layers, each times its weight """
     out = [0.] * max(len(samples) for _, samples in layers)

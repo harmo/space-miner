@@ -4,19 +4,24 @@ that can be fitted at the rear and one for the thrusters of the hulls,
 asteroids breaking up when mined out, one sound for each mineral, and what
 happens to the ship: picking canisters up, its hold full, its legs, its
 landing and its crash, then the base: ore unloaded, trade, missions
-validated and buttons clicked, and the solar system: swarms arriving and
-the hum of space all around.
+validated and buttons clicked, the solar system: swarms arriving, and the
+ambience of space, drones and radio calls, see ambience.py.
 
-    uv run python -m tools.compose_sounds
+    uv run python -m tools.compose_sounds [sounds] [ambience]
+
+Both without any, one of them with its name.
 
 ffmpeg encodes them, with libvorbis.
 """
 
+import sys
 from collections.abc import Callable
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from random import Random
 
+from .ambience import DRONES, calls, play
 from .synth import (
     Samples,
     crackle,
@@ -42,6 +47,7 @@ from .synth import (
 
 SOUNDS_DIR = Path(__file__).parent.parent / 'assets' / 'sounds'
 SEED = 5
+AMBIENCE_SEED = 8
 
 # Loudness, in decibels, from the laser, which sounds right in the game:
 # the other loops stay below it, as do sounds of events at their loudest
@@ -51,6 +57,7 @@ EVENT_DB = -28.
 BREAK_DB = -34.               # heard again and again while mining
 CLICK_DB = -34.               # heard so often it must stay discreet
 AMBIENT_DB = -30.             # always there, its volume set apart
+RADIO_DB = -36.               # calls now and then over the ambience
 EVENT_WINDOW = .1             # seconds, their loudness is measured over
 FADE = .4                     # seconds, at their end
 
@@ -58,7 +65,6 @@ LASER_LOOP = 2.               # seconds
 ENGINE_LOOP = 3.
 BREAKING = 1.5
 UNLOAD_LOOP = 2.
-AMBIENT_LOOP = 12.
 SWARM_ALERT = 1.6
 
 
@@ -606,30 +612,6 @@ def swarm(rng: Random, n: int) -> Samples:
     return mix((.3, static), (1., normalized(echoes)))
 
 
-def ambient(rng: Random) -> Samples:
-    """ A loop of AMBIENT_LOOP seconds: a deep drone slowly breathing, a
-    faint wind and shimmer """
-    seconds = AMBIENT_LOOP
-    n = length(seconds)
-
-    def breathing(freq: float, rate: float, depth: float) -> Samples:
-        return times(sine(looping(freq, seconds), n),
-                     throb(looping(rate, seconds), n, depth))
-
-    drone = mix(
-        (1., breathing(55., 1 / 12, .5)), (.7, breathing(82.5, 1 / 6, .5)),
-        (.5, breathing(110., 1 / 4, .6)),
-    )
-    shimmer = mix((1., breathing(1320., 1 / 6, .9)),
-                  (.7, breathing(1980., 1 / 4, .9)))
-    wind = normalized(lowpass(lowpass(noise(rng, n), 400., loop=True),
-                              400., loop=True))
-    wind = times(wind, throb(looping(1 / 6, seconds), n, .6))
-    return mix(
-        (1., normalized(drone)), (.3, wind), (.05, normalized(shimmer)),
-    )
-
-
 def event(rng: Random, seconds: float,
           compose: Callable[[Random, int], Samples],
           db: float = EVENT_DB) -> Samples:
@@ -655,8 +637,30 @@ def main() -> None:
     for name, (seconds, compose, db) in BASE_EVENTS.items():
         save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose, db))
     save(SOUNDS_DIR / 'swarm.ogg', event(rng, SWARM_ALERT, swarm))
-    save(SOUNDS_DIR / 'ambient.ogg', level(ambient(rng), AMBIENT_DB))
+
+
+def compose_drone(number: int) -> None:
+    """ Each with random numbers of its own, apart from the other sounds """
+    rng = Random(AMBIENCE_SEED + number - 1)
+    sound = play(DRONES[number - 1], rng)
+    save(SOUNDS_DIR / f'drone_{number}.ogg', level(sound, AMBIENT_DB))
+
+
+def compose_ambience() -> None:
+    """ The drones side by side, as they take long """
+    with ProcessPoolExecutor() as pool:
+        list(pool.map(compose_drone, range(1, len(DRONES) + 1)))
+    rng = Random(AMBIENCE_SEED + len(DRONES))
+    for name, call in calls(rng).items():
+        save(SOUNDS_DIR / f'{name}.ogg',
+             level(call, RADIO_DB, EVENT_WINDOW))
 
 
 if __name__ == '__main__':
-    main()
+    # Only the ambience with "ambience", the rest with "sounds"
+    wanted = sys.argv[1:] or ['sounds', 'ambience']
+    SOUNDS_DIR.mkdir(parents=True, exist_ok=True)
+    if 'sounds' in wanted:
+        main()
+    if 'ambience' in wanted:
+        compose_ambience()
