@@ -1,4 +1,5 @@
 from app.logic.base.outposts import (
+    CERES,
     DEPOT,
     FRONTIER,
     FUEL,
@@ -78,3 +79,9 @@ def test_the_frontier_pays_more_for_ore_ice_most_of_all() -> None:
     assert trade.factor('iron') == trade.markup > 1
     assert trade.factor('ice') > trade.factor('iron')
     assert trade.bonus > 1 and trade.clients
+
+
+def test_ceres_refines_but_gives_no_missions() -> None:
+    assert FRONTIER.contracts and not CERES.contracts
+    assert CERES.stages[-1].services.refinery
+    assert CERES.pad < FRONTIER.pad

@@ -110,6 +110,31 @@ class Overlay:
                 width=1, close=True,
             ))
 
+    def band(self, lower: list[Vec2], upper: list[Vec2], color: Rgb,
+             outline: Rgb | None = None) -> None:
+        """ Between two lines of the world, as many points each, filled
+        even where it bends """
+        lower = [self.to_screen(point) for point in lower]
+        upper = [self.to_screen(point) for point in upper]
+        strip = [
+            value for low, up in zip(lower, upper, strict=True)
+            for point in (low, up) for value in (*point, 0, 0)
+        ]
+        self.group.add(Color(*color, 1))
+        self.group.add(Mesh(
+            vertices=strip, indices=list(range(2 * len(lower))),
+            mode='triangle_strip',
+        ))
+        if outline is not None:
+            self.group.add(Color(*outline, 1))
+            self.group.add(Line(
+                points=[
+                    value for point in lower + upper[::-1]
+                    for value in point
+                ],
+                width=1, close=True,
+            ))
+
     def light(self, pos: Vec2, color: Rgb, opacity: float) -> None:
         """ A dot of light, as big whatever the zoom """
         self.group.add(Color(*color, opacity))

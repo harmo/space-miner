@@ -6,7 +6,7 @@ import math
 from dataclasses import dataclass, replace
 from random import Random
 
-from ...logic.base.config import PAD_DIRECTION, PAD_WIDTH
+from ...logic.base.config import PAD_DIRECTION
 from ...logic.base.missions import Board
 from ...logic.base.outposts import SITES, Construction, Stage
 from ...logic.base.post import Post, Services
@@ -14,6 +14,7 @@ from ...logic.base.reputation import Standing
 from ...logic.base.wallet import Wallet
 from ...logic.save import Progress
 from ...logic.ship.landing import Ground, Parking, pad
+from ...logic.world.layout import plan_ceres
 from ...logic.world.space import Celestial, Vec2
 from ..world.solar_system import SolarSystem
 
@@ -30,8 +31,12 @@ class Outpost:
 
     def open_trade(self, wallet: Wallet, standing: Standing) -> None:
         """ Its missions, paid into `wallet`, making the same reputation
-        as those of the Earth """
-        trade = self.construction.site.trade
+        as those of the Earth: none for sites giving none """
+        site = self.construction.site
+        if not site.contracts:
+            self.board = None
+            return
+        trade = site.trade
         self.board = Board(
             self.rng, wallet, standing, trade.clients, trade.bonus,
         )
@@ -42,8 +47,9 @@ class Outpost:
 
     @property
     def ground(self) -> Ground:
-        return Ground(self.body, pad(self.body.radius, self.direction,
-                                     PAD_WIDTH))
+        return Ground(self.body, pad(
+            self.body.radius, self.direction, self.construction.site.pad,
+        ))
 
     @property
     def pos(self) -> Vec2:
@@ -95,12 +101,25 @@ class Outpost:
 
 def found(system: SolarSystem, rng: Random) -> list[Outpost]:
     """ On their sites, nothing built yet: the Frontier on the farthest
-    planet """
-    site = SITES['frontier']
-    return [Outpost(
-        'frontier', system.planets[-1], math.radians(PAD_DIRECTION),
-        Construction(site), Post(site.name, Services(), rng), rng,
-    )]
+    planet, Cérès in the belt around the sun, added to the system """
+    earth = system.earth.orbit
+    ceres = system.add_body(plan_ceres(
+        system.orbits, earth.angle if earth else 0.,
+    ))
+    return [
+        outpost(key, body, rng) for key, body in (
+            ('frontier', system.planets[-1]), ('ceres', ceres),
+        )
+    ]
+
+
+def outpost(key: str, body: Celestial, rng: Random) -> Outpost:
+    """ On its site, nothing built """
+    site = SITES[key]
+    return Outpost(
+        key, body, math.radians(PAD_DIRECTION), Construction(site),
+        Post(site.name, Services(), rng), rng,
+    )
 
 
 def open_trades(outposts: list[Outpost], wallet: Wallet,

@@ -72,8 +72,8 @@
         x:
             root.center_x - self.width / 2 \
             + root.slot_width * (root.missions_slot + root.row_shift)
-        opacity: 1 if root.shown and root.trading else 0
-        disabled: not root.shown or not root.trading
+        opacity: 1 if root.shown and root.contracting else 0
+        disabled: not root.shown or not root.contracting
         on_release: root.open('missions')
 
     Layer:

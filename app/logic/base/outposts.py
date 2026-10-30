@@ -7,6 +7,7 @@ from typing import Literal
 
 from ..mining.ore import whole_units
 from ..save import Progress
+from .config import PAD_WIDTH
 from .post import Services
 
 Form = Literal['ground', 'orbit']    # landed on, or docked to
@@ -40,11 +41,18 @@ class Site:
     form: Form
     stages: tuple[Stage, ...]
     trade: Trade = Trade()
+    pad: float = PAD_WIDTH    # pixels, where ships land
+
+    @property
+    def contracts(self) -> bool:
+        """ Whether it gives missions, once built far enough """
+        return any(stage.services.missions for stage in self.stages)
 
 
 FUEL = Services(fuel=True)
 DEPOT = replace(FUEL, depot=True)
 TRADE = replace(DEPOT, market=True, missions=True)
+REFINING = replace(DEPOT, market=True, refinery=True)
 
 # On the farthest planet from the sun, far from everything: ore is dearer
 # there, ice most of all as fuel is lacking
@@ -57,13 +65,22 @@ FRONTIER = Site('Base Frontière', 'ground', (
 )))
 
 
+# In the middle of the belt around the sun: a relay to mine, keep and
+# crush ore there, without missions. Its pad is small, as it is.
+CERES = Site('Comptoir de Cérès', 'ground', (
+    Stage('Fondations', (('rock', 80),), FUEL),
+    Stage('Entrepôt', (('rock', 120), ('iron', 30)), DEPOT),
+    Stage('Raffinerie', (('rock', 150), ('iron', 40), ('copper', 20)),
+          REFINING),
+), pad=60.)
+
 # By the key they are saved under
-SITES = {'frontier': FRONTIER}
+SITES = {'frontier': FRONTIER, 'ceres': CERES}
 
 # As told to the player
 OFFERED = (
     ('fuel', 'le plein'), ('depot', 'un entrepôt'), ('market', 'un marché'),
-    ('missions', 'des missions'),
+    ('missions', 'des missions'), ('refinery', 'une raffinerie'),
 )
 
 

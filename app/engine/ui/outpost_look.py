@@ -1,10 +1,10 @@
 """ How outposts look, drawn on the surface of their body as they are
-built: a beacon on a bare site, then a pad, a dome and tanks, towers """
+built: a beacon on a bare site, then a pad, a dome and tanks, towers.
+Drawn along the curve of the surface, as small bodies are round. """
 
 import math
 import time
 
-from ...logic.base.config import PAD_WIDTH
 from ...logic.config import OUTPOST_COLOR
 from ...logic.world.space import Vec2
 from ..base.outposts import Outpost
@@ -16,31 +16,36 @@ GLASS = (.7, .82, .9)
 RED = (1., .3, .25)
 BLINK = 1.2                   # seconds, of the lights
 SEEN = 2000.                  # drawn only this close to the camera
+STEP = 8.                     # pixels, between points of long shapes
 
 
 class Frame:
-    """ On the surface, `along` it and `up` from it, in pixels """
+    """ On the surface, `along` it from the middle of the pad, and `up`
+    from it, in pixels """
 
     def __init__(self, outpost: Outpost) -> None:
-        self.origin = outpost.pos
-        direction = outpost.direction
-        self.up = (math.cos(direction), math.sin(direction))
-        self.side = (-math.sin(direction), math.cos(direction))
+        self.center = outpost.body.pos
+        self.radius = outpost.body.radius
+        self.direction = outpost.direction
 
     def at(self, along: float, up: float) -> Vec2:
-        x, y = self.origin
+        x, y = self.center
+        angle = self.direction + along / self.radius
+        distance = self.radius + up
         return (
-            x + self.side[0] * along + self.up[0] * up,
-            y + self.side[1] * along + self.up[1] * up,
+            x + math.cos(angle) * distance, y + math.sin(angle) * distance,
         )
 
     def box(self, left: float, right: float, top: float,
-            bottom: float = -3.) -> list[Vec2]:
-        """ Sunk a little into the ground, not to float above it """
-        return [
-            self.at(left, bottom), self.at(right, bottom),
-            self.at(right, top), self.at(left, top),
-        ]
+            bottom: float = -3.) -> tuple[list[Vec2], list[Vec2]]:
+        """ Its lower and upper edges, bending with the surface: sunk a
+        little into the ground, not to float above it """
+        steps = max(1, math.ceil((right - left) / STEP))
+        alongs = [left + (right - left) * k / steps for k in range(steps + 1)]
+        return (
+            [self.at(along, bottom) for along in alongs],
+            [self.at(along, top) for along in alongs],
+        )
 
 
 def blinking(phase: float) -> float:
@@ -56,18 +61,18 @@ def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
         return
     frame = Frame(outpost)
     built = outpost.construction.built
-    half = PAD_WIDTH / 2
+    half = outpost.construction.site.pad / 2
     if built == 0:
         corners(overlay, frame, half)
     else:
-        overlay.shape(frame.box(-half, half, 4), STEEL, DARK)
+        overlay.band(*frame.box(-half, half, 4), STEEL, DARK)
         for side, phase in ((-1, 0.), (1, .5)):
             overlay.light(frame.at(side * (half - 3), 5), OUTPOST_COLOR,
                           blinking(phase))
     if built >= 2:
         dome(overlay, frame, -half - 30)
-        overlay.shape(frame.box(-half - 70, -half - 58, 12), STEEL, DARK)
-        overlay.shape(frame.box(-half - 84, -half - 74, 9), STEEL, DARK)
+        overlay.band(*frame.box(-half - 70, -half - 58, 12), STEEL, DARK)
+        overlay.band(*frame.box(-half - 84, -half - 74, 9), STEEL, DARK)
     if built >= 3:
         towers(overlay, frame, half + 22)
     beacon(overlay, frame, half + 10 if built < 3 else half + 50)
@@ -76,13 +81,13 @@ def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
 def corners(overlay: Overlay, frame: Frame, half: float) -> None:
     """ Of the bare site, where the pad will be """
     for side in (-1, 1):
-        overlay.shape(
-            frame.box(side * half - 3, side * half + 3, 8), OUTPOST_COLOR,
+        overlay.band(
+            *frame.box(side * half - 3, side * half + 3, 8), OUTPOST_COLOR,
         )
 
 
 def beacon(overlay: Overlay, frame: Frame, along: float) -> None:
-    overlay.shape(frame.box(along - 1, along + 1, 24), STEEL)
+    overlay.band(*frame.box(along - 1, along + 1, 24), STEEL)
     overlay.light(frame.at(along, 26), OUTPOST_COLOR, blinking(0.))
 
 
@@ -99,7 +104,7 @@ def dome(overlay: Overlay, frame: Frame, along: float) -> None:
 def towers(overlay: Overlay, frame: Frame, along: float) -> None:
     """ Two towers, red lights on top, a dish between them """
     for offset, height, phase in ((0., 46., 0.), (16., 34., .5)):
-        overlay.shape(frame.box(along + offset - 3, along + offset + 3,
+        overlay.band(*frame.box(along + offset - 3, along + offset + 3,
                                 height), STEEL, DARK)
         overlay.light(frame.at(along + offset, height + 2), RED,
                       blinking(phase))

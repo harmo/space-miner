@@ -88,7 +88,8 @@ class OutpostView(Widget):
     shown = BooleanProperty(False)      # its buttons, with no panel open
     building = BooleanProperty(False)   # stages are left to build
     has_depot = BooleanProperty(False)
-    trading = BooleanProperty(False)    # a market and missions
+    trading = BooleanProperty(False)    # a market
+    contracting = BooleanProperty(False)  # missions
     can_unload = BooleanProperty(False)
     unloading = BooleanProperty(False)
     to_validate = BooleanProperty(False)  # one of its missions can be
@@ -142,11 +143,12 @@ class OutpostView(Widget):
         services = current.post.services
         self.building = current.construction.stage is not None
         self.has_depot = services.depot
-        self.trading = services.market and current.board is not None
+        self.trading = services.market
+        self.contracting = services.missions and current.board is not None
         self.arrange()
         self.unloading = depot.unloading
         board = current.board
-        self.to_validate = self.trading and board is not None and any(
+        self.to_validate = self.contracting and board is not None and any(
             mission.can_validate(depot.stock, ore) for mission in board.active
         )
         self.can_unload = (
@@ -160,7 +162,7 @@ class OutpostView(Widget):
         slot = -2
         for name, shown in (
             ('site', self.building), ('unload', self.has_depot),
-            ('market', self.trading), ('missions', self.trading),
+            ('market', self.trading), ('missions', self.contracting),
         ):
             if shown:
                 setattr(self, f'{name}_slot', slot)
@@ -179,21 +181,23 @@ class OutpostView(Widget):
             self.current.post.depot.start(self.player.miner.ore)
 
     def open(self, panel: str) -> None:
-        current, player = self.current, self.player
-        if current is None or player is None:
+        current, player, base = self.current, self.player, self.base
+        if current is None or player is None or base is None:
             return
         ore, depot, board = player.miner.ore, current.post.depot, current.board
         if panel == 'site':
             self.ids.site.news = ''
             self.ids.site.show(current, ore)
-        elif board is None:
-            return
         elif panel == 'market':
             market = self.ids.market
-            market.wallet, market.stock = board.wallet, depot.stock
-            market.board, market.crusher = board, None
+            market.wallet, market.stock = base.wallet, depot.stock
+            refinery = current.post.services.refinery
+            market.board = board
+            market.crusher = current.post.crusher if refinery else None
             market.prices = current.construction.site.trade
             market.refresh()
+        elif board is None:
+            return
         else:
             missions = self.ids.missions
             missions.board, missions.stock = board, depot.stock
