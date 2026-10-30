@@ -185,3 +185,22 @@ def test_higher_levels_want_rarer_minerals() -> None:
         rare = [name for name in wanted if MINERALS[name].laser >= 3]
         return len(rare) / len(wanted)
     assert rare_share(5) > 2 * rare_share(1)
+
+
+def test_local_clients_pay_more() -> None:
+    plain = make_mission(Random(7))
+    local = make_mission(Random(7), clients=('Colonie',), bonus=1.25)
+    assert local.client == 'Colonie' and local.wanted == plain.wanted
+    assert local.reward == pytest.approx(plain.reward * 1.25, abs=10)
+
+
+def test_boards_share_the_reputation_they_make() -> None:
+    wallet = Wallet()
+    earth = Board(Random(8), wallet)
+    outpost = Board(Random(9), wallet, earth.standing, ('Colonie',), 1.25)
+    mission = outpost.offers[0]
+    outpost.accept(mission)
+    stock = {name: float(units) for name, units in mission.wanted.items()}
+    outpost.validate(mission, stock)
+    assert outpost.validated == earth.validated == 1
+    assert wallet.credits == mission.reward

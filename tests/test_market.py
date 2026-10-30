@@ -32,3 +32,12 @@ def test_wallet() -> None:
     wallet.earn(25)
     wallet.pay(70)
     assert wallet.credits == 5 and not wallet.can_pay(6)
+
+
+def test_outposts_may_pay_more() -> None:
+    assert ore_price('gold', 2.) == round(
+        ore_value(MINERALS['gold']) * ORE_SALE * 2
+    )
+    wallet = Wallet()
+    sell_ore({'iron': 10.}, 'iron', 10, wallet, factor=1.5)
+    assert wallet.credits == 10 * ore_price('iron', 1.5)

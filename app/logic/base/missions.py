@@ -17,7 +17,7 @@ from .config import (
     MISSIONS_ACTIVE,
 )
 from .market import ore_value
-from .reputation import tier
+from .reputation import Standing, tier
 from .wallet import Wallet
 
 CLIENTS = (
@@ -81,10 +81,12 @@ def needs(missions: list[Mission],
     ]
 
 
-def make_mission(rng: Random, level: int = 1) -> Mission:
+def make_mission(rng: Random, level: int = 1,
+                 clients: Sequence[str] = CLIENTS,
+                 bonus: float = 1.) -> Mission:
     """ One or two minerals, the rarer the fewer, picked as often as they
     are found. Missions of a higher level order more of them, and rare
-    ones more often. """
+    ones more often. Those of `clients` pay `bonus` times more. """
     flatten = 1 - MISSION_RARER * (level - 1)
     weights = [MINERALS[name].frequency ** flatten for name in WANTED]
     count = rng.choice((1, 1, 2))
@@ -104,21 +106,40 @@ def make_mission(rng: Random, level: int = 1) -> Mission:
     value = sum(
         units * ore_value(MINERALS[name]) for name, units in wanted.items()
     )
-    reward = max(10, round(value * MISSION_BONUS, -1))
-    return Mission(rng.choice(CLIENTS), wanted, int(reward), level)
+    reward = max(10, round(value * MISSION_BONUS * bonus, -1))
+    return Mission(rng.choice(clients), wanted, int(reward), level)
 
 
 class Board:
-    """ Missions offered, and those accepted, paid into the wallet """
+    """ Missions offered, and those accepted, paid into the wallet. Boards
+    share the reputation they make: that of the Earth and those of the
+    outposts. """
 
-    def __init__(self, rng: Random, wallet: Wallet) -> None:
+    def __init__(self, rng: Random, wallet: Wallet,
+                 standing: Standing | None = None,
+                 clients: Sequence[str] = CLIENTS,
+                 bonus: float = 1.) -> None:
         self.rng = rng
         self.wallet = wallet
+        self.standing = standing or Standing()
+        self.clients = clients
+        self.bonus = bonus                  # missions pay that much more
         self.offers: list[Mission] = []
         self.active: list[Mission] = []
-        self.validated = 0                  # makes the reputation
         self.level = 1                      # of the missions offered
         self.top_up()
+
+    @property
+    def validated(self) -> int:
+        """ Missions, here and on the other boards """
+        return self.standing.validated
+
+    @validated.setter
+    def validated(self, count: int) -> None:
+        self.standing.validated = count
+
+    def make(self) -> Mission:
+        return make_mission(self.rng, self.level, self.clients, self.bonus)
 
     @property
     def tier(self) -> int:
@@ -144,14 +165,14 @@ class Board:
     def top_up(self) -> None:
         """ As many offers as the reputation brings """
         while len(self.offers) < MISSION_OFFERS[self.tier - 1]:
-            self.offers.append(make_mission(self.rng, self.level))
+            self.offers.append(self.make())
 
     def accept(self, mission: Mission) -> None:
         """ A new offer takes its place """
         if self.full or mission not in self.offers:
             return
         index = self.offers.index(mission)
-        self.offers[index] = make_mission(self.rng, self.level)
+        self.offers[index] = self.make()
         self.active.append(mission)
 
     def validate(self, mission: Mission, *holds: dict[str, float]) -> None:

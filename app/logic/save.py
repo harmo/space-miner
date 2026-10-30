@@ -22,10 +22,14 @@ class SaveError(ValueError):
 
 @dataclass(frozen=True)
 class Progress:
-    """ Of an outpost being built """
+    """ Of an outpost being built, and trading once it can """
     built: int = 0                      # stages
     delivered: dict[str, int] = field(default_factory=dict)
     stock: dict[str, float] = field(default_factory=dict)  # of its depot
+    # Its missions
+    offers: list[Mission] = field(default_factory=list)
+    active: list[Mission] = field(default_factory=list)
+    mission_level: int = 1
 
     @property
     def started(self) -> bool:
@@ -119,6 +123,9 @@ def outposts_of(data: Any) -> dict[str, Progress]:
                 if name in MINERALS and int(units) > 0
             },
             ores(progress.get('stock', {})),
+            missions(progress.get('offers', [])),
+            missions(progress.get('active', [])),
+            max(1, int(progress.get('mission_level', 1))),
         )
         for site, progress in dict(data).items()
     }
@@ -145,6 +152,9 @@ def dump(save: Save) -> str:
             site: {
                 'built': progress.built, 'delivered': progress.delivered,
                 'stock': progress.stock,
+                'offers': [mission_data(m) for m in progress.offers],
+                'active': [mission_data(m) for m in progress.active],
+                'mission_level': progress.mission_level,
             }
             for site, progress in save.outposts.items()
         },

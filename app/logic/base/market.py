@@ -18,13 +18,13 @@ def ore_value(mineral: Mineral) -> float:
     )
 
 
-def ore_price(name: str) -> int:
-    """ Paid by the market for a unit """
-    return max(1, round(ore_value(MINERALS[name]) * ORE_SALE))
+def ore_price(name: str, factor: float = 1.) -> int:
+    """ Paid by the market for a unit, `factor` times what the Earth pays """
+    return max(1, round(ore_value(MINERALS[name]) * ORE_SALE * factor))
 
 
 def sell_ore(stock: dict[str, float], name: str, units: int,
-             wallet: Wallet) -> int:
+             wallet: Wallet, factor: float = 1.) -> int:
     """ Sells up to `units` whole units of the stock, returns how many """
     sold = min(units, whole_units(stock.get(name, 0.)))
     if sold <= 0:
@@ -32,5 +32,5 @@ def sell_ore(stock: dict[str, float], name: str, units: int,
     stock[name] -= sold
     if stock[name] <= 1e-6:
         del stock[name]
-    wallet.earn(sold * ore_price(name))
+    wallet.earn(sold * ore_price(name, factor))
     return sold

@@ -6,6 +6,13 @@ from ..ship.parts import Part
 from .config import TIER_MISSIONS
 
 
+class Standing:
+    """ The reputation of the player: missions validated, wherever """
+
+    def __init__(self) -> None:
+        self.validated = 0
+
+
 def tier(validated: int) -> int:
     """ Reached with that many missions validated, from 1 """
     return sum(validated >= needed for needed in TIER_MISSIONS)

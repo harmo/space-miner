@@ -21,23 +21,40 @@ class Stage:
 
 
 @dataclass(frozen=True)
+class Trade:
+    """ What the market and the missions of an outpost pay """
+    markup: float = 1.        # times what the Earth pays for ore
+    dearer: tuple[tuple[str, float], ...] = ()  # times more for these
+    bonus: float = 1.         # missions pay that much more
+    clients: tuple[str, ...] = ()
+
+    def factor(self, mineral: str) -> float:
+        """ Times what the Earth pays for `mineral` """
+        return self.markup * dict(self.dearer).get(mineral, 1.)
+
+
+@dataclass(frozen=True)
 class Site:
     """ Where an outpost is built, and how """
     name: str                 # shown
     form: Form
     stages: tuple[Stage, ...]
+    trade: Trade = Trade()
 
 
 FUEL = Services(fuel=True)
 DEPOT = replace(FUEL, depot=True)
 TRADE = replace(DEPOT, market=True, missions=True)
 
-# On the farthest planet from the sun
+# On the farthest planet from the sun, far from everything: ore is dearer
+# there, ice most of all as fuel is lacking
 FRONTIER = Site('Base Frontière', 'ground', (
     Stage('Fondations', (('rock', 120),), FUEL),
     Stage('Habitat', (('rock', 160), ('iron', 40)), DEPOT),
     Stage('Comptoir', (('rock', 200), ('iron', 60), ('copper', 30)), TRADE),
-))
+), Trade(1.3, (('ice', 2.),), 1.25, (
+    'Colonie Thulé', 'Relais Éclipse', 'Forge Boréale', 'Halte des Confins',
+)))
 
 
 # By the key they are saved under

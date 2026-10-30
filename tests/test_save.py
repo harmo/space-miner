@@ -27,7 +27,11 @@ SAVE = Save(
     mission_level=3,
     fuel=42.5,
     outposts={
-        'frontier': Progress(1, {'rock': 30, 'iron': 12}, {'ice': 4.5}),
+        'frontier': Progress(
+            3, {}, {'ice': 4.5},
+            [Mission('Colonie des Confins', {'gold': 4}, 700, 2)], [MISSION],
+            2,
+        ),
     },
 )
 

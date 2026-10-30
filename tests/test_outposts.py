@@ -71,3 +71,10 @@ def test_each_stage_tells_what_it_adds() -> None:
     assert unlocked(first, Services()) == ['le plein']
     assert unlocked(second, FUEL) == ['un entrepôt']
     assert unlocked(third, DEPOT) == ['un marché', 'des missions']
+
+
+def test_the_frontier_pays_more_for_ore_ice_most_of_all() -> None:
+    trade = FRONTIER.trade
+    assert trade.factor('iron') == trade.markup > 1
+    assert trade.factor('ice') > trade.factor('iron')
+    assert trade.bonus > 1 and trade.clients
