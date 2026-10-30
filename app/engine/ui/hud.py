@@ -27,4 +27,6 @@ def show_hud(game: 'Game') -> None:
         miner.message, player.tank.gauge, player.hull.warmth,
         player.parking is not None,
     )
-    ids.news_label.text = game.system.events.headline
+    events = game.system.events
+    ids.news_label.text = events.headline
+    ids.news_label.color = (*events.headline_color, 1)

@@ -1,30 +1,26 @@
 """ What happens in the solar system: belts mined out grow back out of the
-sight of the ship, and swarms of rich asteroids pass by now and then """
+sight of the ship, swarms of rich asteroids pass by now and then, and
+the sun flares, see flares.py """
 
 import math
-from dataclasses import dataclass
 from random import Random
 from typing import TYPE_CHECKING
 
+from ...logic.colors import Rgb
+from ...logic.config import FLARE_COLOR, SWARM_COLOR
 from ...logic.world.config import REGROW_AWAY
 from ...logic.world.layout import BeltPlan
 from ...logic.world.regrowth import Regrowth
 from ...logic.world.space import Celestial, Orbit, Vec2
 from ...logic.world.swarms import SwarmClock, plan_swarm
+from .flares import SolarFlares
+from .spots import Spot, spot_of
 
 if TYPE_CHECKING:
     from .solar_system import SolarSystem
 
 NEWS_TIME = 6.                # seconds the end of a swarm is told
 TRIES = 12                    # places looked at, for one out of sight
-SWARM_SIZE = 300.             # around its middle, for its marker
-
-
-@dataclass(frozen=True)
-class Spot:
-    """ Somewhere to point at """
-    pos: Vec2
-    radius: float
 
 
 class SystemEvents:
@@ -34,6 +30,7 @@ class SystemEvents:
         self.rng = rng
         self.regrowths = [Regrowth(belt.full) for belt in system.belt_plans]
         self.clock = SwarmClock(rng)
+        self.flares = SolarFlares(system, rng)
         self.swarm: list[Celestial] = []
         self.news = ''
         self.news_left = 0.       # seconds it is shown still
@@ -55,6 +52,7 @@ class SystemEvents:
         elif change == 'leaves':
             self.leave()
         self.news_left = max(0., self.news_left - dt)
+        self.flares.update(dt)
 
     def grow(self, belt: BeltPlan, ship: Vec2) -> Celestial:
         """ One asteroid back, as far from the ship as can be found """
@@ -90,18 +88,18 @@ class SystemEvents:
 
     @property
     def headline(self) -> str:
-        """ Shown at the top of the screen """
+        """ Shown at the top of the screen, the flares first """
+        if self.flares.headline:
+            return self.flares.headline
         if self.swarm and self.clock.passing:
             minutes, seconds = divmod(int(self.clock.left), 60)
             return f'Essaim riche de passage  ·  {minutes}:{seconds:02d}'
         return self.news if self.news_left > 0 else ''
 
     @property
+    def headline_color(self) -> Rgb:
+        return FLARE_COLOR if self.flares.headline else SWARM_COLOR
+
+    @property
     def swarm_spot(self) -> Spot | None:
-        if not self.swarm:
-            return None
-        count = len(self.swarm)
-        return Spot((
-            sum(asteroid.pos[0] for asteroid in self.swarm) / count,
-            sum(asteroid.pos[1] for asteroid in self.swarm) / count,
-        ), SWARM_SIZE)
+        return spot_of(self.swarm)

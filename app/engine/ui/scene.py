@@ -1,9 +1,11 @@
-""" What is drawn over the game world on each frame: orbits, markers, the
-work of the ship and explosions """
+""" What is drawn over the game world on each frame: orbits, waves of solar
+flares, markers, the work of the ship and explosions """
 
 import math
 
 from ...logic.config import (
+    FLARE_COLOR,
+    HEAT_RANGE,
     HOME_COLOR,
     ORBIT_DOT_SPACING,
     ORBIT_PLANET_GAP,
@@ -32,6 +34,7 @@ def draw_scene(overlay: Overlay, size: Vec2, system: SolarSystem,
     overlay.begin(size)
     if preferences.orbits:
         draw_orbits(overlay, size, system)
+    draw_wave(overlay, system)
     ship.exhaust.draw(overlay)
     ship.gear.draw(overlay, player)
     if playing:
@@ -41,6 +44,15 @@ def draw_scene(overlay: Overlay, size: Vec2, system: SolarSystem,
         draw_work(overlay, player)
     for explosion in player.explosions:
         overlay.explosion(explosion)
+
+
+def draw_wave(overlay: Overlay, system: SolarSystem) -> None:
+    """ Leaving the sun while it flares, fading out as far as it heats """
+    wave = system.events.flares.wave
+    if wave is not None:
+        sun = system.sun
+        overlay.wave(sun.pos, sun.radius + wave * HEAT_RANGE, FLARE_COLOR,
+                     1 - wave)
 
 
 def draw_orbits(overlay: Overlay, size: Vec2, system: SolarSystem) -> None:
@@ -60,12 +72,15 @@ def draw_orbits(overlay: Overlay, size: Vec2, system: SolarSystem) -> None:
 
 
 def draw_markers(overlay: Overlay, system: SolarSystem) -> None:
-    """ Towards the planets, the sun and a swarm passing by, out of the
-    screen """
+    """ Towards the planets, the sun, a swarm passing by and the ejecta of a
+    flare, out of the screen """
     overlay.marker(system.sun, SUN_COLOR)
     swarm = system.events.swarm_spot
     if swarm is not None:
         overlay.marker(swarm, SWARM_COLOR)
+    ejecta = system.events.flares.ejecta_spot
+    if ejecta is not None:
+        overlay.marker(ejecta, FLARE_COLOR)
     for planet in system.planets:
         overlay.marker(
             planet, HOME_COLOR if planet is system.earth else PLANET_COLOR

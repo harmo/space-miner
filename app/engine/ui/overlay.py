@@ -78,6 +78,15 @@ class Overlay:
         self.group.add(Color(*color, MARKER_OPACITY))
         self.group.add(Rectangle(pos=(x, y), size=(bar_width, bar_height)))
 
+    def wave(self, center: Vec2, radius: float, color: Rgb,
+             opacity: float) -> None:
+        """ A ring around `center`, `radius` in the world """
+        x, y = self.to_screen(center)
+        self.group.add(Color(*color, opacity))
+        self.group.add(Line(
+            circle=(x, y, radius / self.camera.camera_scale), width=3,
+        ))
+
     def dots(self, dots: list[Vec2]) -> None:
         """ Faint dots, as in a dotted orbit """
         points: list[float] = []

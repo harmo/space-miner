@@ -1,6 +1,7 @@
 """ The map of the solar system: its orbits, planets and belts, the ship
-with the reach of its scanner and what it finds, lost canisters and the
-swarm passing by. Drawn once when opened, the game standing still. """
+with the reach of its scanner and what it finds, lost canisters, the
+swarm passing by and the ejecta of a flare. Drawn once when opened, the
+game standing still. """
 
 import math
 from typing import Any
@@ -14,6 +15,7 @@ from kivy.uix.widget import Widget
 
 from ...logic.colors import Rgb
 from ...logic.config import (
+    FLARE_COLOR,
     HOME_COLOR,
     PLANET_COLORS,
     RINGED,
@@ -79,6 +81,7 @@ class MapView(Widget):
             self.bodies(system, frame)
             self.lost(player, frame)
             self.swarm(system, frame)
+            self.ejecta(system, frame)
             self.ship(player, frame)
 
     def orbits(self, system: SolarSystem, frame: Chart) -> None:
@@ -146,6 +149,15 @@ class MapView(Widget):
         Color(*SWARM_COLOR, 1)
         Line(circle=(x, y, dp(9)), width=1.4)
         self.label('Essaim', (x, y + dp(18)), SWARM_COLOR)
+
+    def ejecta(self, system: SolarSystem, frame: Chart) -> None:
+        spot = system.events.flares.ejecta_spot
+        if spot is None:
+            return
+        x, y = frame.place(spot.pos)
+        Color(*FLARE_COLOR, 1)
+        Line(circle=(x, y, dp(9)), width=1.4)
+        self.label('Éjectas', (x, y + dp(18)), FLARE_COLOR)
 
     def ship(self, player: Player, frame: Chart) -> None:
         """ Pointing where it heads, within the reach of its scanner """

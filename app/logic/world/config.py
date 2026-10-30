@@ -54,3 +54,15 @@ SWARM_ASTEROIDS = 12
 SWARM_WIDTH = 300.            # across their orbit
 SWARM_SPREAD = 8.             # degrees, along it
 SWARM_RADIUS = (6., 12.)      # of its asteroids, bigger than in belts
+
+# Solar flares: the sun warns, blazes, then leaves ejecta of the rarest ore
+# on low orbits, which fall back into it
+FLARE_EVERY = (360., 600.)    # seconds between them
+FLARE_WARNING = 30.           # seconds told before
+FLARE_BLAZE = 20.             # seconds
+FLARE_SURGE = 4.              # times the heat of the sun, at its height
+EJECTA_STAYS = 180.           # seconds
+EJECTA_ASTEROIDS = 16
+EJECTA_ORBIT = (300., 900.)   # from the sun surface
+EJECTA_SPREAD = 120.          # degrees, along their orbits
+EJECTA_RADIUS = (9., 15.)     # of its asteroids, bigger than in swarms
