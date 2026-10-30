@@ -42,6 +42,9 @@ def comes_back() -> None:
     player = scenario.player
     check(player.ship is not None, 'a new ship comes')
     check(scenario.base.docked, 'landed on the Earth')
+    cargo = scenario.base.ids.missions.cargo
+    check(cargo is player.miner.ore and not cargo,
+          'missions no longer count the ore lost')
     check(len(player.canisters.canisters) > 0,
           'the canisters wait to be picked up')
 

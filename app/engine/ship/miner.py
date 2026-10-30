@@ -98,7 +98,8 @@ class Miner:
 
     def lose_cargo(self) -> dict[str, float]:
         """ Empties the cargo, returns what it held """
-        ore, self.ore = self.ore, {}
+        ore = dict(self.ore)
+        self.ore.clear()                    # the panels hold on to it
         self.release()
         return ore
 
