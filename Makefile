@@ -29,9 +29,10 @@ check:  ## Lint, type-check and test
 scenarios:  ## Play scripted scenarios in windows, PHONE=1 as on phones
 	uv run python -m tests.scenarios.run $(if $(PHONE),--phone)
 
-assets:  ## Recolor the asteroids, paint the planets and the sky, draw ships
+assets:  ## Recolor asteroids, paint planets and sky, draw ships, compose sounds
 	uv run python -m tools.recolor
 	uv run python -m tools.draw_earth
 	uv run python -m tools.draw_planets
 	uv run python -m tools.draw_ship
 	uv run python -m tools.draw_sky
+	uv run python -m tools.compose_sounds
