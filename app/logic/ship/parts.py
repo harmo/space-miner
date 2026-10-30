@@ -21,6 +21,7 @@ class Part:
     laser: int = 0
     scan: float = 0.          # reach of scanners, added to the hull's
     tank: float = 0.          # units of fuel, added to the hull's
+    shield: float = 0.        # part of the heat of the sun stopped
     # Fuel burnt a second at full thrust, added to what the hull burns
     burn: float = 0.
     price: int = 0            # credits
@@ -147,6 +148,15 @@ PARTS = {
         'Grand réservoir', 'internal', (0., 0.), tank=150., price=7000,
         materials=(('iron', 20),), tier=3,
     ),
+    # Plates of regolith, from the refinery, tinting the ship
+    'regolith_shield': Part(
+        'Bouclier de régolithe', 'internal', (0., 0.), shield=.5,
+        price=3000, materials=(('regolith', 30), ('iron', 10)), tier=2,
+    ),
+    'heavy_shield': Part(
+        'Bouclier lourd', 'internal', (0., 0.), shield=.75,
+        price=12000, materials=(('regolith', 80), ('copper', 15)), tier=4,
+    ),
     'scanner': Part(
         'Scanner', 'internal', (0., 0.), scan=3000., price=1200,
     ),
@@ -175,6 +185,7 @@ def effects(part: Part) -> str:
         (part.capacity, 'soute', '{:+.0f}'),
         (part.scan, 'portée de scan', '{:+.0f}'),
         (part.tank, 'réservoir', '{:+.0f}'),
+        (part.shield, 'bouclier thermique', '{:+.0%}'),
         (part.burn, 'consommation', '{:+.1f}'),
     ]
     return ' · '.join(

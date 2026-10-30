@@ -164,6 +164,9 @@ def stat_values(stats: ShipStats) -> list[tuple[str, float, str]]:
         ('Scanner', stats.scan,
          f'{stats.scan:,.0f}'.replace(',', ' ') if stats.scan else 'aucun'),
         ('Réservoir', stats.tank, f'{stats.tank:.0f}'),
+        ('Bouclier', stats.shield,
+         f'{stats.shield:.0%}'.replace('%', ' %') if stats.shield
+         else 'aucun'),
         ('Conso. en vol', stats.burn, f'{stats.burn:.1f} /s'),
         ('Conso. au tir', laser(level).burn, f'{laser(level).burn:.1f} /s'),
     ]

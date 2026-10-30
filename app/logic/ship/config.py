@@ -18,6 +18,7 @@ HEAT_GAIN = .25               # a second at the sun surface, unshielded
 HEAT_COOLING = .05            # a second, always
 HOT = .5                      # the gauge warns above
 OVERHEATING = .8
+REGOLITH_TINT = (.8, .62, .42)  # ships fully shielded take this color
 
 # Landing legs, the ship stands on them on the ground
 LEG_LENGTH = 4.               # behind the rear of the ship

@@ -9,7 +9,13 @@ from kivy.graphics import ClearBuffers, ClearColor, Color, Fbo, Rectangle
 from kivy.graphics.texture import Texture
 
 from ...logic.config import IMAGES
-from ...logic.ship.shipyard import SHIP_PIXELS, Design, design_key, pieces
+from ...logic.ship.shipyard import (
+    SHIP_PIXELS,
+    Design,
+    design_key,
+    pieces,
+    tint,
+)
 
 # By texture name, kept along with their textures
 made: dict[str, Fbo] = {}
@@ -30,7 +36,7 @@ def compose(design: Design, size: tuple[float, float]) -> Fbo:
     with fbo:
         ClearColor(0, 0, 0, 0)
         ClearBuffers()
-        Color(1, 1, 1, 1)
+        Color(*tint(design), 1)
         for image, (x, y, w, h) in pieces(design):
             Rectangle(
                 texture=piece_texture(image),

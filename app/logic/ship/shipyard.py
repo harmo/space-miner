@@ -3,8 +3,15 @@ pixels of the world, ships face +x: their nose points right. """
 
 from dataclasses import dataclass, field, replace
 
+from ..colors import Rgb
 from ..world.space import Vec2
-from .config import HULL_BURN, MIN_SPEED, MIN_THRUST, MIN_TURN_SPEED
+from .config import (
+    HULL_BURN,
+    MIN_SPEED,
+    MIN_THRUST,
+    MIN_TURN_SPEED,
+    REGOLITH_TINT,
+)
 from .hulls import HULLS, Hull, Slot
 from .lasers import BEST
 from .parts import PARTS, Part
@@ -33,6 +40,7 @@ class ShipStats:
     size: Vec2                # length, width
     tank: float = 0.          # units of fuel
     burn: float = 0.          # fuel a second at full thrust
+    shield: float = 0.        # part of the heat of the sun stopped
 
 
 def part_rect(slot: Slot, part: Part) -> Rect:
@@ -123,6 +131,26 @@ def ship_stats(design: Design) -> ShipStats:
         size=ship_size(design),
         tank=hull.tank + sum(p.tank for p in parts),
         burn=max(0., HULL_BURN + sum(p.burn for p in parts)),
+        shield=shielding([p.shield for p in parts]),
+    )
+
+
+def shielding(shields: list[float]) -> float:
+    """ Each stopping its part of what the others let through """
+    through = 1.
+    for shield in shields:
+        through *= 1 - shield
+    return 1 - through
+
+
+def tint(design: Design) -> Rgb:
+    """ Of the whole ship, the more of the color of regolith the better
+    shielded it is """
+    shield = shielding([PARTS[p].shield for p in design.parts.values()])
+    return (
+        1 - (1 - REGOLITH_TINT[0]) * shield,
+        1 - (1 - REGOLITH_TINT[1]) * shield,
+        1 - (1 - REGOLITH_TINT[2]) * shield,
     )
 
 

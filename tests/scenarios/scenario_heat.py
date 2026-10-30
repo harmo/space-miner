@@ -1,10 +1,12 @@
 """ The heat of the sun: close to it the hull heats up as its gauge shows,
-overheating is told, then the ship blows up and comes back cool """
+overheating is told, then the ship blows up and comes back cool. Heavily
+shielded, it stays cool there. """
 
 import pytest
 
 from app.logic.ship.config import HEAT_COOLING, RESPAWN_DELAY
 from app.logic.ship.heat import heating
+from app.logic.ship.shipyard import Design
 
 from .harness import Scenario
 
@@ -57,6 +59,16 @@ def comes_back_cool() -> None:
     player = scenario.player
     check(player.ship is not None and player.hull.heat == 0.,
           'a new ship, cool')
+    player.restart(Design(parts={'internal': 'heavy_shield'}))
+    near_the_sun()
+
+
+@scenario.step(1.5)
+def stays_cool_shielded() -> None:
+    player = scenario.player
+    check(player.stats.shield == .75, 'a heavy shield is fitted')
+    check(player.hull.heat == 0., f'the hull stays cool: {player.hull.heat}')
+    scenario.screenshot('shielded')
 
 
 scenario.run()

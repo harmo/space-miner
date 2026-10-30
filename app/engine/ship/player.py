@@ -246,7 +246,9 @@ class Player:
         x, y = ship.position
         distance = math.dist(ship.position, sun.pos) - sun.radius
         surge = self.system.events.flares.surge
-        self.hull.update(dt, heating(distance, surge=surge))
+        self.hull.update(dt, heating(
+            distance, shield=self.stats.shield, surge=surge,
+        ))
         if self.hull.burnt:
             self.crash = Crash(
                 ship.velocity, math.atan2(y - sun.pos[1], x - sun.pos[0]),
