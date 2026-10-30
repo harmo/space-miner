@@ -43,12 +43,14 @@ from .synth import (
 SOUNDS_DIR = Path(__file__).parent.parent / 'assets' / 'sounds'
 SEED = 5
 
-# Loudness, in decibels: loops stay in the background, sounds of events
-# rise a little above them at their loudest
-LOOP_DB = -26.
-EVENT_DB = -20.
-CLICK_DB = -28.               # heard so often it must stay discreet
-AMBIENT_DB = -32.             # always there, below everything
+# Loudness, in decibels, from the laser, which sounds right in the game:
+# the other loops stay below it, as do sounds of events at their loudest
+LASER_DB = -26.
+LOOP_DB = -32.
+EVENT_DB = -28.
+BREAK_DB = -34.               # heard again and again while mining
+CLICK_DB = -34.               # heard so often it must stay discreet
+AMBIENT_DB = -30.             # always there, its volume set apart
 EVENT_WINDOW = .1             # seconds, their loudness is measured over
 FADE = .4                     # seconds, at their end
 
@@ -640,13 +642,13 @@ def main() -> None:
     SOUNDS_DIR.mkdir(parents=True, exist_ok=True)
     for number, beam in enumerate(BEAMS, start=1):
         save(SOUNDS_DIR / f'laser_{number}.ogg',
-             level(laser(rng, beam), LOOP_DB))
+             level(laser(rng, beam), LASER_DB))
     for name, compose in ENGINES.items():
         sound = compose(rng, length(ENGINE_LOOP))
         save(SOUNDS_DIR / f'engine_{name}.ogg', level(sound, LOOP_DB))
     for name, compose in BREAKS.items():
         save(SOUNDS_DIR / f'break_{name}.ogg',
-             event(rng, BREAKING, compose))
+             event(rng, BREAKING, compose, BREAK_DB))
     for name, (seconds, compose) in SHIP_EVENTS.items():
         save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose))
     save(SOUNDS_DIR / 'unloading.ogg', level(unloading(rng), LOOP_DB))
