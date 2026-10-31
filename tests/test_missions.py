@@ -9,6 +9,7 @@ from app.logic.base.config import (
 )
 from app.logic.base.missions import (
     Board,
+    Contracts,
     Desk,
     Mission,
     Need,
@@ -225,3 +226,22 @@ def test_a_depot_only_counts_for_what_its_desk_wants() -> None:
     assert needs_at([earth, outpost], {}) == [
         Need('iron', 0, 10), Need('gold', 0, 5),
     ]
+
+
+def test_a_board_resumes_its_contracts() -> None:
+    board = Board(Random(10), Wallet())
+    mission = board.offers[0]
+    board.accept(mission)
+    contracts = board.contracts
+    other = Board(Random(11), Wallet())
+    other.resume(contracts)
+    assert other.active == [mission]
+    assert other.offers == board.offers
+    assert other.contracts == contracts
+
+
+def test_a_board_resumes_at_a_level_its_reputation_allows() -> None:
+    board = Board(Random(12), Wallet())
+    board.resume(Contracts(level=4))
+    assert board.level == 1
+    assert len(board.offers) > 0

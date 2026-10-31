@@ -7,7 +7,7 @@ from dataclasses import dataclass, replace
 from random import Random
 
 from ...logic.base.config import PAD_DIRECTION
-from ...logic.base.missions import Board
+from ...logic.base.missions import Board, Contracts
 from ...logic.base.outposts import SITES, Construction, Stage
 from ...logic.base.post import Post, Services
 from ...logic.base.reputation import Standing
@@ -78,9 +78,7 @@ class Outpost:
         board = self.board
         return replace(
             self.construction.progress, stock=dict(self.post.depot.stock),
-            offers=list(board.offers) if board else [],
-            active=list(board.active) if board else [],
-            mission_level=board.level if board else 1,
+            contracts=board.contracts if board else Contracts(),
         )
 
     def deliver(self, cargo: Hold) -> Stage | None:
@@ -95,12 +93,8 @@ class Outpost:
         stock = self.post.depot.stock
         stock.clear()
         stock.update(progress.stock)
-        board = self.board
-        if board is not None:
-            board.level = max(1, min(progress.mission_level, board.tier))
-            board.active[:] = progress.active
-            board.offers[:] = progress.offers
-            board.top_up()
+        if self.board is not None:
+            self.board.resume(progress.contracts)
 
 
 def found_outposts(system: SolarSystem, rng: Random) -> list[Outpost]:

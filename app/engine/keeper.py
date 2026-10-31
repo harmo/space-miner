@@ -1,6 +1,7 @@
 """ Keeps the game saved: takes it from the player and the base, and puts
 it back in them """
 
+from ..logic.base.missions import Contracts
 from ..logic.mining.minerals import MINERALS
 from ..logic.save import EARTH, Landed, Progress, Save, dump
 from ..logic.ship.hulls import HULLS
@@ -36,9 +37,7 @@ class Keeper:
             cargo=dict(self.player.miner.ore) if landed else {},
             validated=board.validated if board else 0,
             seen_tier=base.seen_tier,
-            mission_level=board.level if board else 1,
-            offers=list(board.offers) if board else [],
-            active=list(board.active) if board else [],
+            contracts=board.contracts if board else Contracts(),
             looked_for=[
                 name for name in MINERALS if name in self.player.looked_for
             ],
@@ -88,13 +87,7 @@ class Keeper:
         base.seen_tier = save.seen_tier
         if board is not None:
             board.validated = save.validated
-            board.level = max(1, min(save.mission_level, board.tier))
-            board.active[:] = save.active
-            # Fresh offers rather than none, as many as the reputation
-            # brings
-            if save.offers:
-                board.offers[:] = save.offers
-            board.top_up()
+            board.resume(save.contracts)
         for outpost in self.outposts:
             outpost.restore(save.outposts.get(outpost.key, Progress()))
         landed = save.landed

@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.logic.base.missions import Mission
+from app.logic.base.missions import Contracts, Mission
 from app.logic.preferences import (
     Preferences,
     dump_preferences,
@@ -21,16 +21,18 @@ SAVE = Save(
     stock={'iron': 12.5, 'crystal': 3.},
     cargo={'gold': 4.25},
     validated=7, seen_tier=2,
-    offers=[MISSION, Mission('Comptoir Orion', {'copper': 9}, 300)],
-    active=[Mission('Institut Cassini', {'ruby': 2}, 900)],
+    contracts=Contracts(
+        [MISSION, Mission('Comptoir Orion', {'copper': 9}, 300)],
+        [Mission('Institut Cassini', {'ruby': 2}, 900)], 3,
+    ),
     looked_for=['gold', 'ruby'],
-    mission_level=3,
     fuel=42.5,
     outposts={
         'frontier': Progress(
-            3, {}, {'ice': 4.5},
-            [Mission('Colonie des Confins', {'gold': 4}, 700, 2)], [MISSION],
-            2,
+            3, {}, {'ice': 4.5}, Contracts(
+                [Mission('Colonie des Confins', {'gold': 4}, 700, 2)],
+                [MISSION], 2,
+            ),
         ),
     },
     landed=Landed('frontier', 1.5),
@@ -59,7 +61,7 @@ def test_unknown_parts_and_minerals_are_left_out() -> None:
     assert save.design == Design(parts={'rear': 'engine'})
     assert 'warp_drive' not in save.spares
     assert 'unobtainium' not in save.stock
-    assert save.active == SAVE.active
+    assert save.contracts.active == SAVE.contracts.active
 
 
 @pytest.mark.parametrize('text', [
@@ -132,5 +134,5 @@ def test_older_saves_have_missions_of_the_first_level() -> None:
     for mission in data['offers']:
         del mission['level']
     save = load(json.dumps(data))
-    assert save.mission_level == 1
-    assert all(mission.level == 1 for mission in save.offers)
+    assert save.contracts.level == 1
+    assert all(mission.level == 1 for mission in save.contracts.offers)

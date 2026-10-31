@@ -10,6 +10,7 @@ from app.logic.mining.ore import (
     cargo_total,
     mineral_of,
     ore_in,
+    withdraw,
 )
 from app.logic.ship.config import LASER_RATE
 from app.logic.world.space import Celestial
@@ -122,3 +123,21 @@ def test_mining_stops_when_the_cargo_is_full() -> None:
     assert deposits.mine(target, 1., LASER_RATE, room=.5) == .5
     assert deposits.mine(target, 1., LASER_RATE, room=0.) == 0.
     assert deposits.left(target) == pytest.approx(ore_in(10.) - .5)
+
+
+def test_withdraw_leaves_what_remains() -> None:
+    hold = {'iron': 5.}
+    withdraw(hold, 'iron', 2.)
+    assert hold == {'iron': 3.}
+
+
+def test_withdraw_forgets_what_rounding_left() -> None:
+    hold = {'iron': 5., 'gold': 1.}
+    withdraw(hold, 'iron', 5. - 1e-9)
+    assert hold == {'gold': 1.}
+
+
+def test_withdraw_of_what_is_not_held() -> None:
+    hold: dict[str, float] = {}
+    withdraw(hold, 'iron', 0.)
+    assert hold == {}

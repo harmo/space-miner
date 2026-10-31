@@ -3,7 +3,7 @@ validated, from what was unloaded into the depot """
 
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from random import Random
 
 from ..mining.minerals import MINED, MINERALS
@@ -134,6 +134,14 @@ def make_mission(rng: Random, level: int = 1,
     return Mission(rng.choice(clients), wanted, int(reward), level)
 
 
+@dataclass(frozen=True)
+class Contracts:
+    """ The missions of a board, as they are saved """
+    offers: list[Mission] = field(default_factory=list)
+    active: list[Mission] = field(default_factory=list)
+    level: int = 1                      # of the missions offered
+
+
 class Board:
     """ Missions offered, and those accepted, paid into the wallet. Boards
     share the reputation they make: that of the Earth and those of the
@@ -161,6 +169,18 @@ class Board:
     @validated.setter
     def validated(self, count: int) -> None:
         self.standing.validated = count
+
+    @property
+    def contracts(self) -> Contracts:
+        return Contracts(list(self.offers), list(self.active), self.level)
+
+    def resume(self, contracts: Contracts) -> None:
+        """ As they were, its reputation known: fresh offers rather than
+        none, as many as the reputation brings """
+        self.level = max(1, min(contracts.level, self.tier))
+        self.active[:] = contracts.active
+        self.offers[:] = contracts.offers
+        self.top_up()
 
     def make(self) -> Mission:
         return make_mission(self.rng, self.level, self.clients, self.bonus)

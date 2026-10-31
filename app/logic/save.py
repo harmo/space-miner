@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from .base.missions import Mission
+from .base.missions import Contracts, Mission
 from .mining.minerals import MINERALS
 from .mining.ore import Hold
 from .ship.hulls import HULLS
@@ -27,10 +27,7 @@ class Progress:
     built: int = 0                      # stages
     delivered: dict[str, int] = field(default_factory=dict)
     stock: Hold = field(default_factory=dict)  # of its depot
-    # Its missions
-    offers: list[Mission] = field(default_factory=list)
-    active: list[Mission] = field(default_factory=list)
-    mission_level: int = 1
+    contracts: Contracts = field(default_factory=Contracts)
 
     @property
     def started(self) -> bool:
@@ -58,9 +55,7 @@ class Save:
     cargo: Hold = field(default_factory=dict)
     validated: int = 0
     seen_tier: int = 1
-    offers: list[Mission] = field(default_factory=list)
-    active: list[Mission] = field(default_factory=list)
-    mission_level: int = 1              # of the missions offered
+    contracts: Contracts = field(default_factory=Contracts)
     # What the scanner looks for
     looked_for: list[str] = field(default_factory=lambda: list(LOOKED_FOR))
     fuel: float | None = None           # in the tank, None when full
@@ -125,6 +120,22 @@ def fuel_of(data: Any) -> float | None:
     return None if data is None else max(0., float(data))
 
 
+def contracts_of(data: Any) -> Contracts:
+    """ Of a board, older saves having no level """
+    return Contracts(
+        missions(data.get('offers', [])), missions(data.get('active', [])),
+        max(1, int(data.get('mission_level', 1))),
+    )
+
+
+def contracts_data(contracts: Contracts) -> dict[str, Any]:
+    return {
+        'offers': [mission_data(mission) for mission in contracts.offers],
+        'active': [mission_data(mission) for mission in contracts.active],
+        'mission_level': contracts.level,
+    }
+
+
 def outposts_of(data: Any) -> dict[str, Progress]:
     """ Older saves have none started """
     return {
@@ -136,9 +147,7 @@ def outposts_of(data: Any) -> dict[str, Progress]:
                 if name in MINERALS and int(units) > 0
             },
             ores(progress.get('stock', {})),
-            missions(progress.get('offers', [])),
-            missions(progress.get('active', [])),
-            max(1, int(progress.get('mission_level', 1))),
+            contracts_of(progress),
         )
         for site, progress in dict(data).items()
     }
@@ -163,18 +172,14 @@ def dump(save: Save) -> str:
         'cargo': save.cargo,
         'validated': save.validated,
         'seen_tier': save.seen_tier,
-        'offers': [mission_data(mission) for mission in save.offers],
-        'active': [mission_data(mission) for mission in save.active],
+        **contracts_data(save.contracts),
         'looked_for': save.looked_for,
-        'mission_level': save.mission_level,
         'fuel': save.fuel,
         'outposts': {
             site: {
                 'built': progress.built, 'delivered': progress.delivered,
                 'stock': progress.stock,
-                'offers': [mission_data(m) for m in progress.offers],
-                'active': [mission_data(m) for m in progress.active],
-                'mission_level': progress.mission_level,
+                **contracts_data(progress.contracts),
             }
             for site, progress in save.outposts.items()
         },
@@ -205,9 +210,7 @@ def load(text: str) -> Save:
             cargo=ores(data['cargo']),
             validated=max(0, int(data['validated'])),
             seen_tier=max(1, int(data['seen_tier'])),
-            offers=missions(data['offers']),
-            active=missions(data['active']),
-            mission_level=max(1, int(data.get('mission_level', 1))),
+            contracts=contracts_of(data),
             looked_for=[
                 name for name in MINERALS
                 if name in data.get('looked_for', LOOKED_FOR)
