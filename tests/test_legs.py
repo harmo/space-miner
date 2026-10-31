@@ -3,7 +3,7 @@ import math
 import pytest
 
 from app.logic.ship.config import LEG_DEPLOY_TIME, LEG_LENGTH
-from app.logic.ship.landing import landed_on
+from app.logic.ship.ground import landed_on
 from app.logic.ship.legs import legs, unfold
 from app.logic.world.space import Celestial
 

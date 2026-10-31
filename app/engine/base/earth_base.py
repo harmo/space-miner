@@ -17,7 +17,7 @@ from ...logic.base.reputation import tier
 from ...logic.base.shop import Inventory
 from ...logic.base.unloading import Depot
 from ...logic.base.wallet import Wallet
-from ...logic.ship.landing import surface_distance
+from ...logic.ship.ground import surface_distance
 from ..ship.player import Player
 from ..ui.widgets import (
     PanelButton,  # noqa: F401

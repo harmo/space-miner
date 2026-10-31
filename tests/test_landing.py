@@ -2,11 +2,8 @@ import math
 
 import pytest
 
-from app.logic.ship.landing import (
-    Landing,
-    landed_distance,
-    landed_on,
-)
+from app.logic.ship.ground import landed_distance, landed_on
+from app.logic.ship.landing import Landing
 from app.logic.ship.pose import Pose
 from app.logic.ship.ship import is_crash
 from app.logic.world.space import Celestial, Vec2, angle_diff

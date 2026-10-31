@@ -22,7 +22,7 @@ from app.logic.base.sites import (
     unlocked,
 )
 from app.logic.base.wallet import Wallet
-from app.logic.ship.landing import parking_on
+from app.logic.ship.parking import parking_on
 from app.logic.world.space import Celestial
 
 

@@ -16,25 +16,22 @@ from ...logic.ship.config import (
     TRAIL_LANDING,
 )
 from ...logic.ship.fuel import Tank
-from ...logic.ship.heat import HullHeat
-from ...logic.ship.landing import (
+from ...logic.ship.ground import (
     Ground,
-    Landing,
-    Parking,
-    Shortcut,
     closest_spot,
     is_landed,
     landed_on,
     nearest,
     over_ground,
-    parking_at,
-    parking_on,
-    shortcut,
     surface_distance,
 )
+from ...logic.ship.heat import HullHeat
+from ...logic.ship.landing import Landing
+from ...logic.ship.parking import Parking, parking_at, parking_on
 from ...logic.ship.scanner import LOOKED_FOR
 from ...logic.ship.ship import Ship
 from ...logic.ship.shipyard import Design, ship_stats
+from ...logic.ship.shortcut import Shortcut, shortcut
 from ...logic.world.explosion import Explosion
 from ...logic.world.space import Celestial, Vec2
 from ..entities import GameWorld, create_ship_entity, get_body, move_body

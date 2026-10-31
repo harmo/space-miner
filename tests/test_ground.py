@@ -9,7 +9,7 @@ from app.logic.ship.config import (
     LEG_LENGTH,
     SHORTCUT_RANGE,
 )
-from app.logic.ship.landing import (
+from app.logic.ship.ground import (
     Ground,
     closest_spot,
     ground_gap,
@@ -21,13 +21,11 @@ from app.logic.ship.landing import (
     nearest,
     over_ground,
     pad_edge,
-    parking_at,
-    parking_on,
-    shortcut,
-    shortcut_text,
     surface_distance,
 )
+from app.logic.ship.parking import parking_at, parking_on
 from app.logic.ship.pose import Pose
+from app.logic.ship.shortcut import shortcut, shortcut_text
 from app.logic.world.space import Celestial
 
 from .worlds import SHIP_LENGTH, SHIP_WIDTH, SIZE, around, earth

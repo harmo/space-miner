@@ -8,7 +8,8 @@ from dataclasses import dataclass, field
 from random import Random
 
 from ..mining.ore import Hold, whole_units, withdraw
-from ..ship.landing import Ground, Parking, pad_edge
+from ..ship.ground import Ground, pad_edge
+from ..ship.parking import Parking
 from ..world.space import Celestial, Vec2
 from .config import PAD_DIRECTION
 from .missions import Board, Contracts

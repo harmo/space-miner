@@ -5,8 +5,8 @@ from ..logic.base.missions import Contracts
 from ..logic.base.outposts import Outpost, Progress, open_boards
 from ..logic.mining.minerals import MINERALS
 from ..logic.save import EARTH, Landed, Save, dump
+from ..logic.ship.ground import Ground
 from ..logic.ship.hulls import HULLS
-from ..logic.ship.landing import Ground
 from ..logic.ship.shipyard import Design
 from .base.earth_base import EarthBase
 from .ship.player import Player

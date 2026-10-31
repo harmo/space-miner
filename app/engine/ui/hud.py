@@ -5,7 +5,7 @@ and the messages """
 from typing import TYPE_CHECKING
 
 from ...logic.hud import message
-from ...logic.ship.landing import nearest
+from ...logic.ship.ground import nearest
 from .cargo_panel import show_cargo
 from .gauges import show_fuel, show_heat
 from .land_button import show_shortcut

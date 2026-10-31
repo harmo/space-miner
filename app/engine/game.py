@@ -25,7 +25,7 @@ from ..logic.config import (
     WORLD_SIZE,
 )
 from ..logic.hud import heat_at, is_compact
-from ..logic.ship.landing import Ground
+from ..logic.ship.ground import Ground
 from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
 from .base.outposts import found_outposts

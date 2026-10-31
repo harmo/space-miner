@@ -5,7 +5,8 @@ from kivy.uix.widget import Widget
 
 from ...logic.hud import pulse
 from ...logic.ship.config import SHORTCUT_PULSE
-from ...logic.ship.landing import GroundKind, Shortcut, shortcut_text
+from ...logic.ship.ground import GroundKind
+from ...logic.ship.shortcut import Shortcut, shortcut_text
 
 OPACITY = {'hidden': 0., 'far': .45, 'aside': .45, 'ready': 1.}
 
