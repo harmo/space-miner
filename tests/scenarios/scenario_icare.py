@@ -1,12 +1,14 @@
-""" The Icare station, orbiting the first planet: the ship docks at its
-port, builds it, then is sheltered there from the heat of the sun, and
-sells it the ore of flare ejecta, dearer than anywhere """
+""" The Icare station, orbiting the first planet: a wide ship coming from
+the side away from its port docks all the same, builds it, then is
+sheltered there from the heat of the sun, and sells it the ore of flare
+ejecta, dearer than anywhere """
 
 import math
 from typing import Any
 
 from app.logic.base.market import ore_price
 from app.logic.ship.config import LANDING_DURATION
+from app.logic.ship.shipyard import Design
 
 from .harness import Scenario
 
@@ -29,11 +31,15 @@ def flies_to_the_station() -> None:
     station, system = icare(), scenario.game.system
     check(station.body.orbit.parent is system.planets[0],
           'around the first planet')
-    x, y = station.pos
-    direction = station.direction
+    scenario.player.restart(Design('hauler', {
+        'left_front': 'container', 'left_back': 'container',
+        'right_front': 'container', 'right_back': 'container',
+    }))
+    x, y = station.body.pos
+    away = station.direction + math.pi
     scenario.put_ship(
-        (x + math.cos(direction) * 100, y + math.sin(direction) * 100),
-        station.body.velocity, angle=direction,
+        (x + math.cos(away) * 150, y + math.sin(away) * 150),
+        station.body.velocity, angle=away,
     )
 
 
@@ -49,6 +55,9 @@ def docks() -> None:
 @scenario.step(LANDING_DURATION + .5)
 def is_docked() -> None:
     check(view().docked, 'docked at its port')
+    parking, station = scenario.player.parking, icare()
+    check(abs(parking.direction - station.direction) < 1e-6,
+          'gone around the station')
     check('dock' in played and 'touchdown' not in played,
           f'heard docking: {played}')
     ore = scenario.player.miner.ore

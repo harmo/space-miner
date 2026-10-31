@@ -119,6 +119,7 @@ class Outpost:
             self.body,
             pad_edge(self.body.radius, self.direction, site.pad_width),
             kind='port' if site.form == 'orbit' else 'pad',
+            port=self.direction,
         )
 
     @property

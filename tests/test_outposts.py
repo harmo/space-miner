@@ -133,6 +133,14 @@ def test_an_outpost_serves_ships_parked_on_its_pad_only() -> None:
     assert not outpost.serves(None)
 
 
+def test_a_station_serves_ships_docked_at_its_port() -> None:
+    station = outpost_on('icare')
+    ground = station.ground
+    assert ground.kind == 'port'
+    assert ground.spots(60.) == [station.direction]
+    assert station.serves(parking_on(station.body, station.direction, 60.))
+
+
 def test_only_sites_giving_missions_open_a_board() -> None:
     outposts = [outpost_on('frontier'), outpost_on('ceres')]
     open_boards(outposts, Wallet(), Standing())

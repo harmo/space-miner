@@ -22,7 +22,6 @@ from ...logic.ship.ground import (
     closest_spot,
     is_landed,
     landed_on,
-    over_ground,
     surface_distance,
 )
 from ...logic.ship.heat import HullHeat
@@ -105,7 +104,7 @@ class Player:
         return shortcut(
             surface_distance(position, body),
             is_landed(self.ship.pose, body, self.stats.size),
-            over_ground(direction, self.grounds.spots(ground)),
+            self.grounds.within_reach(ground, direction),
         )
 
     @property

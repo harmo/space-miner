@@ -215,6 +215,32 @@ def test_grounds_tell_their_home_and_what_stands_on_a_body() -> None:
     assert grounds.landable == {home.body.entity_id, 2}
 
 
+def port() -> Ground:
+    up = math.pi / 2
+    return Ground(Celestial(2, 40.), pad_edge(40., up, 40.), 'port', up)
+
+
+@pytest.mark.parametrize('width', [16., 40., 80.])
+def test_ships_of_any_size_dock_at_a_port(width: float) -> None:
+    assert port().spots(width) == [math.pi / 2]
+
+
+@pytest.mark.parametrize('direction', [0., 1.5, 3., -1.5])
+def test_a_port_is_within_reach_from_any_side(direction: float) -> None:
+    ground = port()
+    grounds = Grounds([ground])
+    grounds.fit(40.)
+    assert grounds.within_reach(ground, direction)
+
+
+def test_a_pad_is_only_within_reach_from_above() -> None:
+    pad = Ground(Celestial(2, 100.), pad_edge(100., 0., 60.), 'pad')
+    grounds = Grounds([pad])
+    grounds.fit(SHIP_WIDTH)
+    assert grounds.within_reach(pad, 0.)
+    assert not grounds.within_reach(pad, math.pi)
+
+
 def test_grounds_know_where_a_ship_fits() -> None:
     pad = Ground(Celestial(2, 100.), pad_edge(100., 0., 60.), 'pad')
     grounds = Grounds([pad])

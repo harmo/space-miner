@@ -39,13 +39,17 @@ def landed_on(body: Celestial, direction: float, length: float) -> Vec2:
 @dataclass(frozen=True)
 class Ground:
     """ A body ships can land on, and where: one sample per degree,
-    counterclockwise from the east, true over solid ground """
+    counterclockwise from the east, true over solid ground. Ships of any
+    size dock at a port, wherever they come from. """
     body: Celestial
     edge: tuple[bool, ...]
     kind: GroundKind = 'land'
+    port: float = 0.          # direction of the port, if it is one
 
     def spots(self, width: float) -> list[float]:
         """ Directions where a ship of `width` fits """
+        if self.kind == 'port':
+            return [self.port]
         return ground_spots(self.edge, ground_margin(self.body, width))
 
 
@@ -155,6 +159,12 @@ class Grounds:
 
     def spots(self, ground: Ground) -> list[float]:
         return self.fits[ground.body.entity_id]
+
+    def within_reach(self, ground: Ground, direction: float) -> bool:
+        """ Whether the ship can come down from `direction` on `ground` """
+        return ground.kind == 'port' or over_ground(
+            direction, self.spots(ground),
+        )
 
     def nearest(self, pos: Vec2) -> Ground:
         """ The closest to `pos` """
