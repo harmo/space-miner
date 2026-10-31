@@ -31,17 +31,17 @@ ASIDE: dict[GroundKind, str] = {
 }
 
 
-def landed_distance(planet: Celestial, length: float) -> float:
-    """ From the planet center to a ship of this length landed with its
+def landed_distance(body: Celestial, length: float) -> float:
+    """ From the body center to a ship of this length landed with its
     nose up, standing on its legs """
-    return planet.radius + length / 2 + LEG_LENGTH
+    return body.radius + length / 2 + LEG_LENGTH
 
 
-def landed_on(planet: Celestial, direction: float, length: float) -> Vec2:
-    """ Position of the ship landed on a planet, in `direction` from its
+def landed_on(body: Celestial, direction: float, length: float) -> Vec2:
+    """ Position of the ship landed on a body, in `direction` from its
     center, with its nose pointing the same way """
-    x, y = planet.pos
-    distance = landed_distance(planet, length)
+    x, y = body.pos
+    distance = landed_distance(body, length)
     return (
         x + math.cos(direction) * distance,
         y + math.sin(direction) * distance,
@@ -61,7 +61,8 @@ class Ground:
         return ground_spots(self.edge, ground_margin(self.body, width))
 
 
-def pad(radius: float, direction: float, width: float) -> tuple[bool, ...]:
+def pad_edge(radius: float, direction: float,
+             width: float) -> tuple[bool, ...]:
     """ The ground of an outpost: a pad `width` wide, in `direction` from
     the center of a body of `radius` """
     half = math.degrees(width / 2 / radius)
@@ -97,41 +98,41 @@ class Parking:
         )
 
 
-def parking_on(planet: Celestial, direction: float,
+def parking_on(body: Celestial, direction: float,
                length: float) -> Parking:
     """ Landed in `direction`, with the nose pointing the same way """
     return Parking(
-        planet, direction, landed_distance(planet, length), direction,
+        body, direction, landed_distance(body, length), direction,
     )
 
 
-def parking_at(planet: Celestial, pos: Vec2, angle: float) -> Parking:
+def parking_at(body: Celestial, pos: Vec2, angle: float) -> Parking:
     """ Landed where the ship is, as it is """
-    x, y = planet.pos
+    x, y = body.pos
     return Parking(
-        planet, math.atan2(pos[1] - y, pos[0] - x), math.dist(pos, (x, y)),
+        body, math.atan2(pos[1] - y, pos[0] - x), math.dist(pos, (x, y)),
         angle,
     )
 
 
-def ground_margin(planet: Celestial, width: float) -> int:
+def ground_margin(body: Celestial, width: float) -> int:
     """ Degrees of ground needed on each side of the ship center """
     return (
-        math.ceil(math.degrees(width / 2 / planet.radius))
+        math.ceil(math.degrees(width / 2 / body.radius))
         + GROUND_SAFETY
     )
 
 
-def ground_spots(ground: Sequence[bool], margin: int) -> list[float]:
-    """ Directions where the ship fits on the ground. `ground` holds one
+def ground_spots(edge: Sequence[bool], margin: int) -> list[float]:
+    """ Directions where the ship fits on the ground. `edge` holds one
     sample per degree, counterclockwise from the east, and the ship needs
     `margin` degrees of ground on each side. """
-    count = len(ground)
+    count = len(edge)
     return [
         math.radians(index * 360 / count)
         for index in range(count)
         if all(
-            ground[(index + offset) % count]
+            edge[(index + offset) % count]
             for offset in range(-margin, margin + 1)
         )
     ]
@@ -153,30 +154,30 @@ def over_ground(direction: float, spots: Sequence[float]) -> bool:
     return abs(angle_diff(spot, direction)) <= math.radians(.5) + 1e-9
 
 
-def surface_distance(pos: Vec2, planet: Celestial) -> float:
-    return math.dist(pos, planet.pos) - planet.radius
+def surface_distance(pos: Vec2, body: Celestial) -> float:
+    return math.dist(pos, body.pos) - body.radius
 
 
-def ground_gap(pos: Vec2, angle: float, planet: Celestial,
+def ground_gap(pos: Vec2, angle: float, body: Celestial,
                size: Vec2) -> float:
     """ Between the ground and the ship, a box of `size` turned by
     `angle`: it lies closer to the ground on its side than on its nose """
-    x, y = planet.pos
+    x, y = body.pos
     length, width = size
     tilt = angle - math.atan2(pos[1] - y, pos[0] - x)
     reach = (
         abs(math.cos(tilt)) * length / 2 + abs(math.sin(tilt)) * width / 2
     )
-    return surface_distance(pos, planet) - reach
+    return surface_distance(pos, body) - reach
 
 
 def is_landed(pos: Vec2, velocity: Vec2, angle: float,
-              planet: Celestial, size: Vec2) -> bool:
+              body: Celestial, size: Vec2) -> bool:
     """ Touching the ground, or standing on its legs, at the speed of the
-    planet """
-    vx, vy = planet.velocity
+    body """
+    vx, vy = body.velocity
     return (
-        ground_gap(pos, angle, planet, size) < LEG_LENGTH + LANDED_GAP
+        ground_gap(pos, angle, body, size) < LEG_LENGTH + LANDED_GAP
         and math.hypot(velocity[0] - vx, velocity[1] - vy) < LANDED_SPEED
     )
 
@@ -208,21 +209,21 @@ def ease_slope(progress: float) -> float:
 
 
 class Landing:
-    """ The ship turns its nose away from the planet and comes down to the
-    spot in `end_direction`, going around the planet if needed, where it
-    arrives without speed. Computed relative to the planet, which keeps
+    """ The ship turns its nose away from the body and comes down to the
+    spot in `end_direction`, going around the body if needed, where it
+    arrives without speed. Computed relative to the body, which keeps
     moving meanwhile. """
 
-    def __init__(self, planet: Celestial, start: Vec2, start_angle: float,
+    def __init__(self, body: Celestial, start: Vec2, start_angle: float,
                  end_direction: float, length: float,
                  duration: float = LANDING_DURATION) -> None:
-        self.planet = planet
-        x, y = planet.pos
+        self.body = body
+        x, y = body.pos
         self.start_direction = math.atan2(start[1] - y, start[0] - x)
         self.end_direction = end_direction
         self.around = angle_diff(end_direction, self.start_direction)
         self.start_distance = math.dist(start, (x, y))
-        self.end_distance = landed_distance(planet, length)
+        self.end_distance = landed_distance(body, length)
         self.start_angle = start_angle
         self.duration = duration
         self.age = 0.
@@ -240,19 +241,19 @@ class Landing:
 
     @property
     def direction(self) -> float:
-        """ Of the ship, seen from the planet center """
+        """ Of the ship, seen from the body center """
         return self.start_direction + self.around * ease(self.progress)
 
     @property
     def distance(self) -> float:
-        """ From the planet center """
+        """ From the body center """
         return self.start_distance + (
             self.end_distance - self.start_distance
         ) * ease(self.progress)
 
     @property
     def position(self) -> Vec2:
-        x, y = self.planet.pos
+        x, y = self.body.pos
         return (
             x + math.cos(self.direction) * self.distance,
             y + math.sin(self.direction) * self.distance,
@@ -260,7 +261,7 @@ class Landing:
 
     @property
     def velocity(self) -> Vec2:
-        vx, vy = self.planet.velocity
+        vx, vy = self.body.velocity
         slope = ease_slope(self.progress) / self.duration
         down = (self.end_distance - self.start_distance) * slope
         around = self.distance * self.around * slope

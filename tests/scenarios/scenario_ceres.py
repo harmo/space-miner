@@ -104,7 +104,7 @@ def builds_it() -> None:
 
 @scenario.step(.3)
 def has_no_missions() -> None:
-    check(view().trading and not view().contracting,
+    check(view().has_market and not view().has_missions,
           'a market, but no missions')
     scenario.screenshot('refinery')
     scenario.player.miner.ore['rock'] = 40.
@@ -117,7 +117,7 @@ def unloads_there() -> None:
 
 @scenario.step(.5)
 def is_heard_unloading() -> None:
-    machine = scenario.game.soundtrack.unloading
+    machine = scenario.game.soundtrack.machine
     check(machine.name == 'unloading', f'unloading there: {machine.name}')
 
 
@@ -140,7 +140,7 @@ def into_other_ore() -> None:
     check(stock.get('rock', 0.) < 40. and len(stock) > 1,
           f'the rock is crushed there: {stock}')
     check(not scenario.base.depot.stock, 'not on the Earth')
-    machine = scenario.game.soundtrack.unloading
+    machine = scenario.game.soundtrack.machine
     check(machine.name == 'crushing', f'heard: {machine.name}')
     check(view().ids.market.crushing, 'as the market shows')
 
@@ -148,7 +148,7 @@ def into_other_ore() -> None:
 @scenario.step(40. / CRUSH_RATE)
 def until_it_is_over() -> None:
     check(not view().ids.market.crushing, 'the market shows it is over')
-    check(scenario.game.soundtrack.unloading.name is None, 'falling silent')
+    check(scenario.game.soundtrack.machine.name is None, 'falling silent')
 
 
 scenario.run()

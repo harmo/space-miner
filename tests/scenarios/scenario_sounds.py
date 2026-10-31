@@ -26,7 +26,7 @@ def loops() -> dict[str, Any]:
         'drones': {loop.name for loop in soundtrack.drones} - {None},
         'engine': soundtrack.engine.name,
         'laser': soundtrack.laser.name,
-        'unloading': soundtrack.unloading.name,
+        'machine': soundtrack.machine.name,
     }
 
 
@@ -44,9 +44,9 @@ def hums_landed() -> None:
     ambience = scenario.game.soundtrack.ambience
     check(loops() == {
         'drones': {ambience.current}, 'engine': 'engine_hull',
-        'laser': None, 'unloading': None,
+        'laser': None, 'machine': None,
     }, f'space hums, the engine is ready: {loops()}')
-    check(scenario.game.soundtrack.volume == 0, 'and silent')
+    check(scenario.game.soundtrack.engine_volume == 0, 'and silent')
     check(audio.mixer is not None, 'loops play on the channels of the mixer')
     check(all(drone.playing for drone in scenario.game.soundtrack.drones
               if drone.name), 'space hums for real')
@@ -58,7 +58,7 @@ def hums_landed() -> None:
 def takes_off() -> None:
     remembered['touch'].touch_up()
     check('gear_in' in played, f'the legs fold: {played}')
-    check(scenario.game.soundtrack.volume > .5, 'the engine roars')
+    check(scenario.game.soundtrack.engine_volume > .5, 'the engine roars')
     rock = loneliest(scenario.game.system.asteroids)
     remembered['rock'] = rock
     x, y = rock.pos
@@ -107,7 +107,7 @@ def trades() -> None:
 
 @scenario.step(.5)
 def hears_the_base() -> None:
-    check(loops()['unloading'] == 'unloading', f'ore unloads: {loops()}')
+    check(loops()['machine'] == 'unloading', f'ore unloads: {loops()}')
     check('sale' in played, f'the rock is sold: {played}')
     ambience = scenario.game.soundtrack.ambience
     remembered['drones'] = ambience.current, ambience.upcoming

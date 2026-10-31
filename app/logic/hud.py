@@ -21,7 +21,7 @@ from .config import (
     MARKER_NEAR,
     MOBILE_PLATFORMS,
 )
-from .ship.fuel import Gauge
+from .ship.fuel import FuelState
 from .ship.heat import Warmth, sun_heat
 from .world.space import Round, Vec2
 
@@ -128,20 +128,20 @@ def cargo_color(fill: float) -> Rgb:
     return CARGO_COLOR
 
 
-def fuel_color(gauge: Gauge) -> Rgb:
+def fuel_color(state: FuelState) -> Rgb:
     """ Of the fuel gauge: warns when low, then when almost empty """
-    if gauge in ('critical', 'empty'):
+    if state in ('critical', 'empty'):
         return CARGO_FULL_COLOR
-    return CARGO_ALMOST_FULL_COLOR if gauge == 'low' else FUEL_COLOR
+    return CARGO_ALMOST_FULL_COLOR if state == 'low' else FUEL_COLOR
 
 
-def fuel_message(gauge: Gauge, docked: bool) -> str:
+def fuel_message(state: FuelState, docked: bool) -> str:
     """ Out in space: the base fills the tank of docked ships """
     if docked:
         return ''
-    if gauge == 'empty':
+    if state == 'empty':
         return 'Panne sèche'
-    return 'Carburant bas' if gauge == 'critical' else ''
+    return 'Carburant bas' if state == 'critical' else ''
 
 
 def heat_color(warmth: Warmth) -> Rgb:
@@ -151,13 +151,14 @@ def heat_color(warmth: Warmth) -> Rgb:
     return CARGO_ALMOST_FULL_COLOR if warmth == 'hot' else HEAT_GAUGE_COLOR
 
 
-def message(work: str, gauge: Gauge, warmth: Warmth, docked: bool) -> str:
+def message(work: str, fuel: FuelState, warmth: Warmth,
+            docked: bool) -> str:
     """ What matters most: blowing up, then the work of the ship, its
     fuel, its heat """
     if warmth == 'overheating':
         return 'Surchauffe !'
     hot = 'Coque brûlante' if warmth == 'hot' else ''
-    return work or fuel_message(gauge, docked) or hot
+    return work or fuel_message(fuel, docked) or hot
 
 
 def pulse(time: float, period: float) -> float:

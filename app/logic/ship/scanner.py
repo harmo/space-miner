@@ -11,7 +11,7 @@ from ..world.space import Celestial, Vec2
 LOOKED_FOR = [name for name in MINED if name != 'rock']
 
 
-def mineral_of(asteroid: Celestial) -> str:
+def mineral_name(asteroid: Celestial) -> str:
     return asteroid.mineral or 'rock'
 
 
@@ -30,7 +30,7 @@ def found(asteroids: Sequence[Celestial], pos: Vec2, reach: float,
     """ The `count` closest of the minerals looked for """
     return [
         asteroid for asteroid in within(asteroids, pos, reach)
-        if mineral_of(asteroid) in looked_for
+        if mineral_name(asteroid) in looked_for
     ][:count]
 
 
@@ -39,5 +39,5 @@ def counts(asteroids: Sequence[Celestial], pos: Vec2,
     """ Asteroids within reach, by mineral """
     counted = dict.fromkeys(MINED, 0)
     for asteroid in within(asteroids, pos, reach):
-        counted[mineral_of(asteroid)] += 1
+        counted[mineral_name(asteroid)] += 1
     return counted

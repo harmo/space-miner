@@ -20,7 +20,7 @@ from app.logic.ship.landing import (
     landed_on,
     nearest,
     over_ground,
-    pad,
+    pad_edge,
     parking_at,
     parking_on,
     shortcut,
@@ -180,7 +180,7 @@ def test_the_nearest_ground_is_that_of_the_closest_surface() -> None:
 
 
 def test_a_pad_is_ground_around_its_direction_only() -> None:
-    edge = pad(200., math.radians(90), 100.)
+    edge = pad_edge(200., math.radians(90), 100.)
     half = math.degrees(50. / 200.)
     assert edge[90] and edge[90 + int(half)] and edge[90 - int(half)]
     assert not edge[90 + int(half) + 1] and not edge[270]
@@ -188,7 +188,7 @@ def test_a_pad_is_ground_around_its_direction_only() -> None:
 
 
 def test_a_pad_across_the_east() -> None:
-    edge = pad(100., 0., 60.)
+    edge = pad_edge(100., 0., 60.)
     assert edge[0] and edge[359] and edge[10] and not edge[180]
 
 

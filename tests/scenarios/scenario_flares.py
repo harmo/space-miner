@@ -54,7 +54,7 @@ def heats_much_more() -> None:
     check('flare' in played, f'heard blazing: {played}')
     check(flares().surge > 3., f'the heat surges: {flares().surge:.1f}')
     check(flares().wave is not None, 'in waves')
-    heat = scenario.player.hull.heat
+    heat = scenario.player.heat.level
     check(heat > .15, f'the hull heats up fast: {heat:.2f}')
     scenario.screenshot('waves')
     # Back to the Earth, away from the heat

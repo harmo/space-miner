@@ -65,12 +65,12 @@ def builds_its_frame() -> None:
         ore.update({name: float(units) for name, units in stage.materials})
         icare().deliver(ore)
     check(icare().construction.built == 3, 'built up to its trading post')
-    scenario.player.hull.heat = .7
+    scenario.player.heat.level = .7
 
 
 @scenario.step(1.)
 def shelters_the_ship() -> None:
-    heat = scenario.player.hull.heat
+    heat = scenario.player.heat.level
     check(heat < .5, f'the hull cools down, docked: {heat:.2f}')
     scenario.screenshot('station')
     icare().post.depot.stock['stellarium'] = 2.
@@ -84,7 +84,7 @@ def buys_ejecta_dearer() -> None:
     check(price > ore_price('stellarium') * 1.5,
           f'stellarium is dearer here: {price}')
     check(market.price('iron') == ore_price('iron'), 'iron is not')
-    check(not view().contracting, 'and no missions')
+    check(not view().has_missions, 'and no missions')
 
 
 scenario.run()

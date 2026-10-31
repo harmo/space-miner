@@ -1,10 +1,10 @@
 from random import Random
 
 from app.logic.base.missions import Board, Mission
-from app.logic.base.post import EVERYTHING, Docked, Post, Services
+from app.logic.base.post import Docked, Post, Services, home_post
 from app.logic.base.wallet import Wallet
 from app.logic.ship.fuel import Tank
-from app.logic.ship.heat import Hull
+from app.logic.ship.heat import HullHeat
 
 
 def empty_tank() -> Tank:
@@ -14,29 +14,29 @@ def empty_tank() -> Tank:
 
 
 def test_a_post_fills_the_tank_of_a_ship_landed_there() -> None:
-    post = Post('Terre', EVERYTHING, Random(1))
+    post = home_post(Random(1))
     tank = empty_tank()
-    post.update(.1, Docked({}, tank, Hull()), Wallet(1000))
+    post.update(.1, Docked({}, tank, HullHeat()), Wallet(1000))
     assert tank.share == 1.
 
 
 def test_unless_it_offers_no_fuel() -> None:
-    post = Post('Chantier', Services(depot=True), Random(2))
+    post = Post(Services(depot=True), Random(2))
     tank = empty_tank()
-    post.update(.1, Docked({}, tank, Hull()), Wallet(1000))
+    post.update(.1, Docked({}, tank, HullHeat()), Wallet(1000))
     assert tank.empty
 
 
 def test_it_takes_the_cargo_into_its_depot() -> None:
-    post = Post('Terre', EVERYTHING, Random(3))
+    post = home_post(Random(3))
     ore = {'iron': 5.}
     post.depot.start(ore)
-    post.update(10., Docked(ore, Tank(100.), Hull()), Wallet())
+    post.update(10., Docked(ore, Tank(100.), HullHeat()), Wallet())
     assert ore == {} and post.depot.stock == {'iron': 5.}
 
 
 def test_its_refinery_crushes_rock_with_no_ship_there() -> None:
-    post = Post('Terre', EVERYTHING, Random(4))
+    post = home_post(Random(4))
     post.depot.stock['rock'] = 100.
     post.crusher.start(post.depot.stock)
     found = post.update(1., None, Wallet())
@@ -44,7 +44,7 @@ def test_its_refinery_crushes_rock_with_no_ship_there() -> None:
 
 
 def test_none_without_a_refinery() -> None:
-    post = Post('Chantier', Services(depot=True), Random(5))
+    post = Post(Services(depot=True), Random(5))
     post.depot.stock['rock'] = 100.
     post.crusher.start(post.depot.stock)
     assert post.update(1., None, Wallet()) == []
@@ -52,24 +52,24 @@ def test_none_without_a_refinery() -> None:
 
 
 def test_a_shelter_cools_the_hull_down() -> None:
-    post = Post('Station', Services(shelter=True), Random(6))
-    hull = Hull()
-    hull.heat = .9
+    post = Post(Services(shelter=True), Random(6))
+    hull = HullHeat()
+    hull.level = .9
     post.update(1., Docked({}, Tank(100.), hull), Wallet())
-    assert hull.heat < .9
+    assert hull.level < .9
 
 
 def test_a_post_tells_a_cargo_can_unload_where_it_has_a_depot() -> None:
-    assert Post('Terre', EVERYTHING, Random(7)).status(
+    assert home_post(Random(7)).status(
         {'iron': 5.}, None,
     ).can_unload
-    assert not Post('Site', Services(), Random(8)).status(
+    assert not Post(Services(), Random(8)).status(
         {'iron': 5.}, None,
     ).can_unload
 
 
 def test_a_mission_can_be_validated_from_the_depot_and_the_cargo() -> None:
-    post = Post('Terre', EVERYTHING, Random(9))
+    post = home_post(Random(9))
     board = Board(Random(10), Wallet())
     board.active.append(Mission('Institut Cassini', {'iron': 10}, 100))
     post.depot.stock['iron'] = 6.

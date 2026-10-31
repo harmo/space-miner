@@ -16,7 +16,7 @@ from ...logic.ship.config import (
     TRAIL_LANDING,
 )
 from ...logic.ship.fuel import Tank
-from ...logic.ship.heat import Hull
+from ...logic.ship.heat import HullHeat
 from ...logic.ship.landing import (
     Ground,
     Landing,
@@ -96,19 +96,19 @@ class Player:
     def spawn(self, direction: float, ground: Ground | None = None) -> None:
         """ Landed home, or on `ground`, as close to `direction` as it can """
         ground = ground or self.home
-        home = ground.body
+        body = ground.body
         direction = closest_spot(direction, self.spots(ground))
         length = self.stats.size[0]
-        pos = landed_on(home, direction, length)
+        pos = landed_on(body, direction, length)
         entity_id = create_ship_entity(
-            self.gameworld, pos, home.velocity, direction,
+            self.gameworld, pos, body.velocity, direction,
             ship_texture(self.design, self.stats.size), self.stats.size,
         )
-        body = get_body(self.gameworld, entity_id)
-        self.ship = Ship(entity_id, body, self.stats)
+        ship_body = get_body(self.gameworld, entity_id)
+        self.ship = Ship(entity_id, ship_body, self.stats)
         self.spawned += 1
-        self.condition.hull.cool()
-        self.parking = parking_on(home, direction, length)
+        self.condition.heat.reset()
+        self.parking = parking_on(body, direction, length)
         self.anchor = pos
         self.camera.look_at(pos)
         self.camera.entity_to_focus = entity_id
@@ -151,7 +151,7 @@ class Player:
     @property
     def served(self) -> Docked:
         """ As the post it is landed at sees it """
-        return Docked(self.miner.ore, self.tank, self.hull)
+        return Docked(self.miner.ore, self.tank, self.heat)
 
     def docked_on(self, body: Celestial) -> bool:
         return self.docked and self.parking is not None and (
@@ -164,7 +164,7 @@ class Player:
         if self.parking is not None:
             return self.parking.body
         if self.landing is not None:
-            return self.landing.planet
+            return self.landing.body
         return nearest(self.grounds, self.anchor).body
 
     def refit(self, design: Design) -> None:
@@ -215,8 +215,8 @@ class Player:
         return self.condition.tank
 
     @property
-    def hull(self) -> Hull:
-        return self.condition.hull
+    def heat(self) -> HullHeat:
+        return self.condition.heat
 
     def thrust(self, heading: float | None) -> float:
         """ From 0 to 1: full while flying towards `heading`, weaker while
@@ -290,7 +290,7 @@ class Player:
         if landing.done:
             self.landing = None
             self.parking = parking_on(
-                landing.planet, landing.end_direction, self.stats.size[0]
+                landing.body, landing.end_direction, self.stats.size[0]
             )
 
     def on_contact(self, space: Any, arbiter: Any) -> bool:

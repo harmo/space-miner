@@ -60,8 +60,8 @@
         x:
             root.center_x - self.width / 2 \
             + root.slot_width * (root.market_slot + root.row_shift)
-        opacity: 1 if root.shown and root.trading else 0
-        disabled: not root.shown or not root.trading
+        opacity: 1 if root.shown and root.has_market else 0
+        disabled: not root.shown or not root.has_market
         on_release: root.open('market')
 
     BaseButton:
@@ -72,8 +72,8 @@
         x:
             root.center_x - self.width / 2 \
             + root.slot_width * (root.missions_slot + root.row_shift)
-        opacity: 1 if root.shown and root.contracting else 0
-        disabled: not root.shown or not root.contracting
+        opacity: 1 if root.shown and root.has_missions else 0
+        disabled: not root.shown or not root.has_missions
         on_release: root.open('missions')
 
     Layer:

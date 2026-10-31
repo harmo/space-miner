@@ -152,7 +152,7 @@ def trades() -> None:
 
 @scenario.step(.3)
 def opens_its_market() -> None:
-    check(view().trading, 'it has a market and missions')
+    check(view().has_market, 'it has a market and missions')
     remembered['credits'] = scenario.base.wallet.credits
     scenario.press(view().ids.market_button)
 

@@ -49,7 +49,7 @@ class MarketPanel(BoxLayout):
     empty = BooleanProperty(True)
     rock = NumericProperty(0)           # units in the depot
     crushing = BooleanProperty(False)
-    refinery = BooleanProperty(True)    # at the base on the Earth only
+    refinery = BooleanProperty(True)    # if the post has one
 
     def __init__(self, **kwargs: Any) -> None:
         self.register_event_type('on_close')

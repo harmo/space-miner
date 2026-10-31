@@ -29,9 +29,9 @@ def show_hud(game: 'Game') -> None:
         nearest(player.grounds, player.anchor).kind, game.time,
     )
     show_fuel(ids.fuel, player.tank)
-    show_heat(ids.heat, player.hull)
+    show_heat(ids.heat, player.heat)
     ids.message_label.text = message(
-        miner.message, player.tank.gauge, player.hull.warmth,
+        miner.message, player.tank.state, player.heat.warmth,
         player.parking is not None,
     )
     events = game.system.events

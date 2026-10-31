@@ -4,7 +4,7 @@ from app.logic.base.outposts import (
     FRONTIER,
     FUEL,
     ICARE,
-    TRADE,
+    TRADING_POST,
     Construction,
     unlocked,
 )
@@ -44,7 +44,7 @@ def test_each_stage_offers_more() -> None:
         outpost.deliver({name: float(units) for name, units in
                          stage.materials})
         offered.append(outpost.services)
-    assert offered == [FUEL, DEPOT, TRADE]
+    assert offered == [FUEL, DEPOT, TRADING_POST]
     assert outpost.stage is None and outpost.needed == {}
     assert outpost.deliver({'rock': 50.}) is None
 
@@ -83,13 +83,13 @@ def test_the_frontier_pays_more_for_ore_ice_most_of_all() -> None:
 
 
 def test_ceres_refines_but_gives_no_missions() -> None:
-    assert FRONTIER.contracts and not CERES.contracts
+    assert FRONTIER.gives_missions and not CERES.gives_missions
     assert CERES.stages[-1].services.refinery
-    assert CERES.pad < FRONTIER.pad
+    assert CERES.pad_width < FRONTIER.pad_width
 
 
 def test_icare_shelters_and_buys_ejecta_dearer() -> None:
-    assert ICARE.form == 'orbit' and not ICARE.contracts
+    assert ICARE.form == 'orbit' and not ICARE.gives_missions
     assert ICARE.stages[0].services.shelter
     assert ICARE.trade.factor('antimatter') > 1.5
     assert ICARE.trade.factor('iron') == 1.

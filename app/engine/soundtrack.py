@@ -31,8 +31,8 @@ class Soundtrack:
         self.drones = [Loop(audio), Loop(audio)]    # fading into each other
         self.engine = Loop(audio)
         self.laser = Loop(audio)
-        self.unloading = Loop(audio)
-        self.volume = 0.                    # of the engine
+        self.machine = Loop(audio)            # of the post
+        self.engine_volume = 0.
         self.moment: Moment | None = None   # on the previous frame
         miner = player.miner
         miner.on_mined_out.append(lambda name: audio.play(break_sound(name)))
@@ -52,19 +52,21 @@ class Soundtrack:
         if running:
             self.work(game, dt, heading, sounds)
         else:
-            self.volume = 0.
-            for loop in (self.engine, self.laser, self.unloading):
+            self.engine_volume = 0.
+            for loop in (self.engine, self.laser, self.machine):
                 loop.stop()
 
     def work(self, game: 'Game', dt: float, heading: float | None,
              volume: float) -> None:
         """ The engine following the thrust, the laser firing, and the
-        machines of the base """
+        machine of the post """
         player, stop = game.player, game.stop
-        self.volume = toward(self.volume, player.thrust(heading), dt)
+        self.engine_volume = toward(
+            self.engine_volume, player.thrust(heading), dt,
+        )
         self.engine.play(
             engine_sound(player.design) if player.ship else None,
-            self.volume * volume,
+            self.engine_volume * volume,
         )
         firing = player.miner.firing
         self.laser.play(
@@ -74,7 +76,7 @@ class Soundtrack:
         machine = None
         if stop is not None and (stop.unloading or stop.crushing):
             machine = 'unloading' if stop.unloading else 'crushing'
-        self.unloading.play(machine, volume)
+        self.machine.play(machine, volume)
 
     def hum(self, volume: float, dt: float, playing: bool) -> None:
         """ The drones of the ambience, the next one decoded aside before
@@ -123,9 +125,9 @@ def moment_of(game: 'Game') -> Moment:
         validated=base.board.validated if base.board else 0,
         swarm=bool(events.swarm),
         fuel=player.tank.level,
-        gauge=player.tank.gauge,
+        fuel_state=player.tank.state,
         stranded=player.stranded,
-        warmth=player.hull.warmth,
+        warmth=player.heat.warmth,
         flare=events.flares.clock.phase,
         port=player.parking is not None and any(
             ground.kind == 'port' and ground.body is player.parking.body

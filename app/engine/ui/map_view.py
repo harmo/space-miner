@@ -25,7 +25,7 @@ from ...logic.config import (
     SWARM_COLOR,
 )
 from ...logic.mining.minerals import MINERALS
-from ...logic.ship.scanner import found, mineral_of
+from ...logic.ship.scanner import found, mineral_name
 from ...logic.world.chart import ZOOMS, Chart, chart, zoomed
 from ...logic.world.space import Vec2
 from ..base.outposts import Outpost
@@ -121,7 +121,7 @@ class MapView(Widget):
         )
         for name, mineral in MINERALS.items():
             points = [
-                value for asteroid in spotted if mineral_of(asteroid) == name
+                value for asteroid in spotted if mineral_name(asteroid) == name
                 for value in frame.place(asteroid.pos)
             ]
             if points:

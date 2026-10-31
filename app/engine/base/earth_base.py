@@ -11,7 +11,7 @@ from kivy.uix.widget import Widget
 
 from ...logic.base.crushing import Crusher
 from ...logic.base.missions import Board
-from ...logic.base.post import EVERYTHING, Post
+from ...logic.base.post import Post, home_post
 from ...logic.base.refuel import tow, tow_price
 from ...logic.base.reputation import tier
 from ...logic.base.shop import Inventory
@@ -41,20 +41,20 @@ class EarthBase(PostView):
         self.wallet = Wallet()
         self.inventory = Inventory()        # parts in the hangar
         self.rng = Random()
-        self.home = Post('Terre', EVERYTHING, self.rng)
+        self.home = home_post(self.rng)
         self.board: Board | None = None
         self.seen_tier = 1                  # in the hangar
 
     def setup(self, player: Player, rng: Random) -> None:
         self.player, self.rng = player, rng
-        self.home = Post('Terre', EVERYTHING, rng)
+        self.home = home_post(rng)
         self.connect()
 
     def reset(self) -> None:
         """ For a new game """
         self.wallet = Wallet()
         self.inventory = Inventory()
-        self.home = Post('Terre', EVERYTHING, self.rng)
+        self.home = home_post(self.rng)
         self.seen_tier = 1
         self.panel = ''
         self.connect()

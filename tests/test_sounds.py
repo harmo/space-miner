@@ -137,10 +137,10 @@ def test_a_swarm_is_heard_arriving_not_leaving() -> None:
 
 
 def test_the_tank_running_low_then_dry_is_heard() -> None:
-    low = replace(FLYING, gauge='critical', fuel=5.)
-    assert heard(replace(FLYING, gauge='low'), low) == ['low_fuel']
+    low = replace(FLYING, fuel_state='critical', fuel=5.)
+    assert heard(replace(FLYING, fuel_state='low'), low) == ['low_fuel']
     assert heard(low, low) == []
-    dry = replace(FLYING, gauge='empty', stranded=True)
+    dry = replace(FLYING, fuel_state='empty', stranded=True)
     assert heard(low, dry) == ['fuel_out']
 
 
@@ -151,12 +151,12 @@ def test_filling_the_tank_is_heard_rather_than_what_it_costs() -> None:
 
 
 def test_towing_is_heard_rather_than_what_it_costs() -> None:
-    dry = replace(FLYING, gauge='empty', stranded=True)
+    dry = replace(FLYING, fuel_state='empty', stranded=True)
     back = replace(
         FLYING, ship=8, parked=True, legs_out=True, credits=700, fuel=0.,
     )
     assert heard(dry, back) == ['tow']
-    filled = replace(back, fuel=100., gauge='full')
+    filled = replace(back, fuel=100., fuel_state='full')
     assert heard(dry, filled) == ['tow', 'refuel']
 
 

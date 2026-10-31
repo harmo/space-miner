@@ -41,17 +41,17 @@ class Site:
     form: Form
     stages: tuple[Stage, ...]
     trade: Trade = Trade()
-    pad: float = PAD_WIDTH    # pixels, where ships land
+    pad_width: float = PAD_WIDTH  # pixels, where ships land
 
     @property
-    def contracts(self) -> bool:
+    def gives_missions(self) -> bool:
         """ Whether it gives missions, once built far enough """
         return any(stage.services.missions for stage in self.stages)
 
 
 FUEL = Services(fuel=True)
 DEPOT = replace(FUEL, depot=True)
-TRADE = replace(DEPOT, market=True, missions=True)
+TRADING_POST = replace(DEPOT, market=True, missions=True)
 REFINING = replace(DEPOT, market=True, refinery=True)
 SHELTER = replace(FUEL, shelter=True)
 
@@ -60,7 +60,8 @@ SHELTER = replace(FUEL, shelter=True)
 FRONTIER = Site('Base Frontière', 'ground', (
     Stage('Fondations', (('rock', 120),), FUEL),
     Stage('Habitat', (('rock', 160), ('iron', 40)), DEPOT),
-    Stage('Comptoir', (('rock', 200), ('iron', 60), ('copper', 30)), TRADE),
+    Stage('Comptoir', (('rock', 200), ('iron', 60), ('copper', 30)),
+          TRADING_POST),
 ), Trade(1.3, (('ice', 2.),), 1.25, (
     'Colonie Thulé', 'Relais Éclipse', 'Forge Boréale', 'Halte des Confins',
 )))
@@ -73,7 +74,7 @@ CERES = Site('Comptoir de Cérès', 'ground', (
     Stage('Entrepôt', (('rock', 120), ('iron', 30)), DEPOT),
     Stage('Raffinerie', (('rock', 150), ('iron', 40), ('copper', 20)),
           REFINING),
-), pad=60.)
+), pad_width=60.)
 
 # Orbiting the first planet, close to the sun: a refuge to mine the ejecta
 # of flares, paying well for them
@@ -84,7 +85,7 @@ ICARE = Site('Station Icare', 'orbit', (
     Stage('Comptoir', (('rock', 150), ('iron', 60), ('copper', 30)),
           replace(_RING, market=True)),
 ), Trade(dearer=(('nebulite', 1.6), ('stellarium', 1.6),
-                 ('antimatter', 1.6))), pad=40.)
+                 ('antimatter', 1.6))), pad_width=40.)
 
 # By the key they are saved under
 SITES = {'frontier': FRONTIER, 'ceres': CERES, 'icare': ICARE}

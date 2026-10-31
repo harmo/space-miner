@@ -1,4 +1,4 @@
-""" Unloading the cargo into the depot on the Earth, where the ship lands
+""" Unloading the cargo into the depot of a post, where the ship lands
 to empty it, and loading it back from there """
 
 from ..mining.minerals import MINERALS
@@ -38,7 +38,7 @@ def load(stock: dict[str, float], ore: dict[str, float], mineral: str,
 
 
 class Depot:
-    """ The stock on the Earth, filled from the cargo of the ship landed
+    """ The stock of a post, filled from the cargo of the ship landed
     there, a bit at a time """
 
     def __init__(self) -> None:

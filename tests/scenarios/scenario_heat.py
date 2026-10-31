@@ -31,13 +31,13 @@ def flies_close_to_the_sun() -> None:
 
 @scenario.step(1.5)
 def heats_up() -> None:
-    heat = scenario.player.hull.heat
+    heat = scenario.player.heat.level
     expected = 1.5 * (heating(DISTANCE) - HEAT_COOLING)
     check(heat == pytest.approx(expected, rel=.3),
           f'the hull heats up: {heat:.3f}, {expected:.3f} expected')
     check(scenario.game.ids.heat.opacity == 1, 'as its gauge shows')
     near_the_sun()
-    scenario.player.hull.heat = .85
+    scenario.player.heat.level = .85
 
 
 @scenario.step(.2)
@@ -46,7 +46,7 @@ def overheats() -> None:
     check(message == 'Surchauffe !', f'overheating is told: {message!r}')
     check('overheat' in played, f'and heard: {played}')
     scenario.screenshot('overheating')
-    scenario.player.hull.heat = .999
+    scenario.player.heat.level = .999
 
 
 @scenario.step(.5)
@@ -59,7 +59,7 @@ def blows_up() -> None:
 @scenario.step(RESPAWN_DELAY + .5)
 def comes_back_cool() -> None:
     player = scenario.player
-    check(player.ship is not None and player.hull.heat == 0.,
+    check(player.ship is not None and player.heat.level == 0.,
           'a new ship, cool')
     player.restart(Design(parts={'internal': 'heavy_shield'}))
     near_the_sun()
@@ -69,7 +69,7 @@ def comes_back_cool() -> None:
 def stays_cool_shielded() -> None:
     player = scenario.player
     check(player.stats.shield == .75, 'a heavy shield is fitted')
-    check(player.hull.heat == 0., f'the hull stays cool: {player.hull.heat}')
+    check(player.heat.level == 0., f'the hull stays cool: {player.heat.level}')
     scenario.screenshot('shielded')
 
 

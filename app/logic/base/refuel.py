@@ -1,4 +1,4 @@
-""" Fuel on the Earth: the tank of the ship landed there is filled with
+""" Fuel at a post: the tank of the ship landed there is filled with
 ice first, from its cargo then from the depot, then with credits, as far
 as they go, and up to a small reserve for free. A ship out of fuel far
 away is towed back, for a price growing with the distance. """

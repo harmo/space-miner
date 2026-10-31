@@ -31,7 +31,7 @@ class CargoRow(BoxLayout):
 
 class CargoPanel(BoxLayout):
     """ How full the cargo is, then only what it holds, or "Vide". Also
-    shows the depot on the Earth, without the bar. """
+    shows the depot of a post, without the bar. """
 
     title = StringProperty('SOUTE')
     bar = BooleanProperty(True)                # how full it is

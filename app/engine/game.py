@@ -27,7 +27,7 @@ from ..logic.hud import heat_at, is_compact
 from ..logic.ship.landing import Ground
 from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
-from .base.outposts import Outpost, found, open_trades
+from .base.outposts import Outpost, found_outposts, open_boards
 from .base.post_view import PostView
 from .entities import setup_collisions, setup_state, step_systems
 from .keeper import Keeper
@@ -108,7 +108,7 @@ class Game(Widget):
             self.gameworld, plan_system(Random(seed)),
             center=(WORLD_SIZE / 2, WORLD_SIZE / 2), rng=self.rng,
         )
-        self.outposts = found(self.system, self.rng)
+        self.outposts = found_outposts(self.system, self.rng)
         self.player = Player(
             self.gameworld, self.system, self.camera, self.rng,
             [
@@ -122,7 +122,7 @@ class Game(Widget):
         self.ids.outpost.setup(self.player, self.outposts, self.ids.base)
         base = self.ids.base
         if base.board is not None:
-            open_trades(self.outposts, base.wallet, base.board.standing)
+            open_boards(self.outposts, base.wallet, base.board.standing)
         self.ids.scanner.setup(self.player, self.system, lambda: self.desks)
         self.keeper = Keeper(seed, self.player, self.ids.base, self.outposts)
         if save is not None:

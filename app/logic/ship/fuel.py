@@ -1,5 +1,5 @@
 """ Fuel of the ship, in a single tank: burnt by thrusting, as much as the
-thrusters push, and by the laser while it fires. Filled on the Earth. """
+thrusters push, and by the laser while it fires. Filled at posts. """
 
 from typing import Literal
 
@@ -7,7 +7,7 @@ from .config import CRITICAL_FUEL, LOW_FUEL
 from .lasers import laser
 from .shipyard import ShipStats
 
-Gauge = Literal['full', 'low', 'critical', 'empty']
+FuelState = Literal['full', 'low', 'critical', 'empty']
 
 
 def burn_rate(stats: ShipStats, thrust: float, firing: bool) -> float:
@@ -35,7 +35,7 @@ class Tank:
         return self.capacity - self.level
 
     @property
-    def gauge(self) -> Gauge:
+    def state(self) -> FuelState:
         if self.empty:
             return 'empty'
         if self.share < CRITICAL_FUEL:

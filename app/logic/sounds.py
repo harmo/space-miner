@@ -4,7 +4,7 @@ next. Sounds are named after their files in SOUNDS. """
 
 from dataclasses import dataclass
 
-from .ship.fuel import Gauge
+from .ship.fuel import FuelState
 from .ship.heat import Warmth
 from .ship.hulls import HULLS
 from .ship.lasers import BEST
@@ -65,14 +65,14 @@ def toward(volume: float, target: float, dt: float) -> float:
 class Moment:
     """ What can be heard changing, on a frame """
     ship: int | None          # which one, None while exploded
-    parked: bool              # on the Earth
+    parked: bool              # on any ground
     legs_out: bool
     cargo_full: bool
     credits: int
     validated: int            # missions
     swarm: bool               # passing through the solar system
     fuel: float = 0.          # in the tank
-    gauge: Gauge = 'full'
+    fuel_state: FuelState = 'full'
     stranded: bool = False    # out of fuel away from the Earth
     warmth: Warmth = 'cool'   # of the hull
     flare: Phase = 'quiet'    # of the sun
@@ -102,20 +102,20 @@ def heard_of_ships(before: Moment, now: Moment, towed: bool) -> list[str]:
     if towed:
         sounds.append('tow')
     if before.ship is not None and now.ship == before.ship:
-        sounds += heard_of_ship(before, now)
+        sounds += heard_of_same_ship(before, now)
     return sounds
 
 
-def heard_of_ship(before: Moment, now: Moment) -> list[str]:
+def heard_of_same_ship(before: Moment, now: Moment) -> list[str]:
     sounds = []
     if now.legs_out != before.legs_out:
         sounds.append('gear_out' if now.legs_out else 'gear_in')
     if now.parked and not before.parked:
         sounds.append('dock' if now.port else 'touchdown')
-    if now.gauge != before.gauge:
-        if now.gauge == 'critical' and before.gauge != 'empty':
+    if now.fuel_state != before.fuel_state:
+        if now.fuel_state == 'critical' and before.fuel_state != 'empty':
             sounds.append('low_fuel')
-        elif now.gauge == 'empty':
+        elif now.fuel_state == 'empty':
             sounds.append('fuel_out')
     if now.warmth == 'overheating' != before.warmth:
         sounds.append('overheat')

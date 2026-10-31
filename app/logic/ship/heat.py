@@ -45,28 +45,28 @@ class Sunlight:
         return math.dist(pos, self.pos) - self.radius
 
 
-class Hull:
+class HullHeat:
 
     def __init__(self) -> None:
-        self.heat = 0.                      # from cool to blowing up
+        self.level = 0.                      # from cool to blowing up
 
     @property
     def burnt(self) -> bool:
-        return self.heat >= 1.
+        return self.level >= 1.
 
     @property
     def warmth(self) -> Warmth:
-        if self.heat >= OVERHEATING:
+        if self.level >= OVERHEATING:
             return 'overheating'
-        return 'hot' if self.heat >= HOT else 'cool'
+        return 'hot' if self.level >= HOT else 'cool'
 
-    def update(self, dt: float, heating: float) -> None:
-        self.heat = min(1., max(0., self.heat + (heating - HEAT_COOLING) * dt))
+    def update(self, dt: float, gain: float) -> None:
+        self.level = min(1., max(0., self.level + (gain - HEAT_COOLING) * dt))
 
     def shelter(self, dt: float) -> None:
         """ Out of the heat, cooling down fast """
-        self.heat = max(0., self.heat - SHELTER_COOLING * dt)
+        self.level = max(0., self.level - SHELTER_COOLING * dt)
 
-    def cool(self) -> None:
+    def reset(self) -> None:
         """ A new ship """
-        self.heat = 0.
+        self.level = 0.

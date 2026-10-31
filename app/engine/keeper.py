@@ -7,7 +7,7 @@ from ..logic.ship.hulls import HULLS
 from ..logic.ship.landing import Ground
 from ..logic.ship.shipyard import Design
 from .base.earth_base import EarthBase
-from .base.outposts import Outpost, open_trades
+from .base.outposts import Outpost, open_boards
 from .ship.player import Player
 from .storage import delete_save, write_save
 
@@ -130,7 +130,7 @@ class Keeper:
         player.miner.ore.clear()
         self.base.reset()
         if self.base.board is not None:
-            open_trades(
+            open_boards(
                 self.outposts, self.base.wallet, self.base.board.standing,
             )
         for outpost in self.outposts:

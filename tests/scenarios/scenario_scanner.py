@@ -5,7 +5,7 @@ import math
 from typing import Any
 
 from app.logic.ship.parts import PARTS
-from app.logic.ship.scanner import counts, mineral_of
+from app.logic.ship.scanner import counts, mineral_name
 
 from .harness import Scenario
 
@@ -128,7 +128,7 @@ def counts_them() -> None:
 @scenario.step(.3)
 def looks_for_one() -> None:
     check(scenario.player.looked_for == set(), 'nothing looked for')
-    mineral = mineral_of(remembered['asteroid'])
+    mineral = mineral_name(remembered['asteroid'])
     scenario.press(panel().rows[mineral])
     remembered['mineral'] = mineral
 

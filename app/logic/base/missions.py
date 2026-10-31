@@ -1,4 +1,4 @@
-""" Missions given on the Earth: bring back some rare ore, for money once
+""" Missions given at posts: bring back some rare ore, for money once
 validated, from what was unloaded into the depot """
 
 import math

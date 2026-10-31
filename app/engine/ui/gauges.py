@@ -6,7 +6,7 @@ from kivy.uix.boxlayout import BoxLayout
 
 from ...logic.hud import fuel_color, heat_color
 from ...logic.ship.fuel import Tank
-from ...logic.ship.heat import Hull
+from ...logic.ship.heat import HullHeat
 from .widgets import load_style
 
 
@@ -25,13 +25,13 @@ def percent(share: float) -> str:
 def show_fuel(gauge: Gauge, tank: Tank) -> None:
     gauge.fill = tank.share
     gauge.amount = percent(tank.share)
-    gauge.color = list(fuel_color(tank.gauge))
+    gauge.color = list(fuel_color(tank.state))
 
 
-def show_heat(gauge: Gauge, hull: Hull) -> None:
-    gauge.fill = hull.heat
-    gauge.amount = percent(hull.heat)
-    gauge.color = list(heat_color(hull.warmth))
+def show_heat(gauge: Gauge, heat: HullHeat) -> None:
+    gauge.fill = heat.level
+    gauge.amount = percent(heat.level)
+    gauge.color = list(heat_color(heat.warmth))
 
 
 load_style(__file__)

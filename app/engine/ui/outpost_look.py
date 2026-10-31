@@ -65,7 +65,7 @@ def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
         return
     frame = Frame(outpost)
     built = outpost.construction.built
-    half = outpost.construction.site.pad / 2
+    half = outpost.construction.site.pad_width / 2
     if built == 0:
         corners(overlay, frame, half)
     else:

@@ -52,10 +52,10 @@ def test_fuel_burns_as_much_as_the_ship_thrusts_and_fires() -> None:
 def test_a_tank_empties_and_fills_within_its_capacity() -> None:
     tank = Tank(100.)
     assert tank.share == 1.
-    gauges = [tank.gauge]
+    gauges = [tank.state]
     for amount in (80., 15., 50.):
         tank.burn(amount)
-        gauges.append(tank.gauge)
+        gauges.append(tank.state)
     assert gauges == ['full', 'low', 'critical', 'empty']
     assert tank.empty and tank.level == 0. and tank.missing == 100.
     tank.fill(300.)

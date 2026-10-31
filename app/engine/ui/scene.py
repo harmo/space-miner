@@ -19,7 +19,7 @@ from ...logic.hud import chevron_look, orbit_dots
 from ...logic.mining.minerals import MINERALS
 from ...logic.preferences import Preferences
 from ...logic.ship.lasers import laser
-from ...logic.ship.scanner import found, mineral_of
+from ...logic.ship.scanner import found, mineral_name
 from ...logic.world.space import Vec2
 from ..base.outposts import Outpost
 from ..ship.looks import ShipLooks
@@ -109,7 +109,7 @@ def draw_scan(overlay: Overlay, system: SolarSystem, player: Player) -> None:
         system.asteroids, pos, reach, player.looked_for, SCAN_ARROWS
     ):
         overlay.chevron(
-            asteroid, MINERALS[mineral_of(asteroid)].color,
+            asteroid, MINERALS[mineral_name(asteroid)].color,
             *chevron_look(math.dist(pos, asteroid.pos), reach),
         )
 

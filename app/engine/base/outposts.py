@@ -13,7 +13,7 @@ from ...logic.base.post import Post, Services
 from ...logic.base.reputation import Standing
 from ...logic.base.wallet import Wallet
 from ...logic.save import Progress
-from ...logic.ship.landing import Ground, Parking, pad
+from ...logic.ship.landing import Ground, Parking, pad_edge
 from ...logic.world.layout import plan_ceres, plan_station
 from ...logic.world.space import Celestial, Vec2
 from ..world.solar_system import SolarSystem
@@ -29,11 +29,11 @@ class Outpost:
     rng: Random
     board: Board | None = None          # its missions, once it can trade
 
-    def open_trade(self, wallet: Wallet, standing: Standing) -> None:
+    def open_board(self, wallet: Wallet, standing: Standing) -> None:
         """ Its missions, paid into `wallet`, making the same reputation
         as those of the Earth: none for sites giving none """
         site = self.construction.site
-        if not site.contracts:
+        if not site.gives_missions:
             self.board = None
             return
         trade = site.trade
@@ -49,7 +49,8 @@ class Outpost:
     def ground(self) -> Ground:
         site = self.construction.site
         return Ground(
-            self.body, pad(self.body.radius, self.direction, site.pad),
+            self.body,
+            pad_edge(self.body.radius, self.direction, site.pad_width),
             kind='port' if site.form == 'orbit' else 'pad',
         )
 
@@ -101,7 +102,7 @@ class Outpost:
             board.top_up()
 
 
-def found(system: SolarSystem, rng: Random) -> list[Outpost]:
+def found_outposts(system: SolarSystem, rng: Random) -> list[Outpost]:
     """ On their sites, nothing built yet: the Frontier on the farthest
     planet, Cérès in the belt around the sun, and Icare orbiting the
     first planet, both added to the system """
@@ -112,24 +113,24 @@ def found(system: SolarSystem, rng: Random) -> list[Outpost]:
     first = system.planets[0]
     icare = system.add_body(plan_station(first.radius), first)
     return [
-        outpost(key, body, rng) for key, body in (
+        bare_outpost(key, body, rng) for key, body in (
             ('frontier', system.planets[-1]), ('ceres', ceres),
             ('icare', icare),
         )
     ]
 
 
-def outpost(key: str, body: Celestial, rng: Random) -> Outpost:
+def bare_outpost(key: str, body: Celestial, rng: Random) -> Outpost:
     """ On its site, nothing built """
     site = SITES[key]
     return Outpost(
         key, body, math.radians(PAD_DIRECTION), Construction(site),
-        Post(site.name, Services(), rng), rng,
+        Post(Services(), rng), rng,
     )
 
 
-def open_trades(outposts: list[Outpost], wallet: Wallet,
+def open_boards(outposts: list[Outpost], wallet: Wallet,
                 standing: Standing) -> None:
     """ For a game, new or saved """
     for outpost in outposts:
-        outpost.open_trade(wallet, standing)
+        outpost.open_board(wallet, standing)

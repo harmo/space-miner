@@ -88,8 +88,8 @@ class OutpostView(PostView):
 
     building = BooleanProperty(False)   # stages are left to build
     has_depot = BooleanProperty(False)
-    trading = BooleanProperty(False)    # a market
-    contracting = BooleanProperty(False)  # missions
+    has_market = BooleanProperty(False)
+    has_missions = BooleanProperty(False)
     # Where its buttons stand in the row, those shown from the left
     site_slot = NumericProperty(0)
     unload_slot = NumericProperty(0)
@@ -140,8 +140,8 @@ class OutpostView(PostView):
         services = current.post.services
         self.building = current.construction.stage is not None
         self.has_depot = services.depot
-        self.trading = services.market
-        self.contracting = services.missions and current.board is not None
+        self.has_market = services.market
+        self.has_missions = services.missions and current.board is not None
         self.arrange()
         self.show_post(current.post, found, current.board, base.wallet)
 
@@ -150,7 +150,7 @@ class OutpostView(PostView):
         slot = -2
         for name, shown in (
             ('site', self.building), ('unload', self.has_depot),
-            ('market', self.trading), ('missions', self.contracting),
+            ('market', self.has_market), ('missions', self.has_missions),
         ):
             if shown:
                 setattr(self, f'{name}_slot', slot)
