@@ -65,6 +65,9 @@ class MarketPanel(BoxLayout):
         self.prices = Trade()               # those of the Earth
         self.depot: Depot | None = None     # holding the stock
         self.miner: Miner | None = None     # of the ship, for its cargo
+        # Made once, as they are slow to make and refreshed as ore is found
+        self.ore_rows: dict[str, OreRow] = {}
+        self.listed: list[str] = []         # the minerals shown
 
     def on_close(self) -> None:
         """ The close button was pressed """
@@ -73,30 +76,42 @@ class MarketPanel(BoxLayout):
         self.money = credits_text(self.wallet.credits)
         missions = self.board.active if self.board else []
         wanted = {need.mineral: need.wanted for need in needs(missions)}
+        held = {
+            name: whole_units(self.stock.get(name, 0.)) for name in MINERALS
+        }
+        listed = [name for name, units in held.items() if units > 0]
         rows = self.ids.rows
-        rows.clear_widgets()
-        for name, mineral in MINERALS.items():
-            units = whole_units(self.stock.get(name, 0.))
-            if units <= 0:
-                continue
-            texture = asteroid_texture(name, ICON_SHAPE)
-            rows.add_widget(OreRow(
-                panel=self, mineral=name, name=mineral.name,
-                icon=f'{IMAGES}/asteroids/minerals/{texture}.png',
-                units=str(units),
-                price=f'{credits_text(self.price(name))} / u',
-                wanted=f'missions : {wanted[name]}' if name in wanted else '',
-                batch=f'Vendre {min(BATCH, units)}',
-                can_batch=units > BATCH,
-                can_load=self.room >= 1,
-                selling=self.selling,
-            ))
-        self.empty = not rows.children
+        if listed != self.listed:
+            rows.clear_widgets()
+            for name in listed:
+                rows.add_widget(self.row(name))
+            self.listed = listed
+        for name in listed:
+            units, row = held[name], self.ore_rows[name]
+            row.units = str(units)
+            row.price = f'{credits_text(self.price(name))} / u'
+            row.wanted = (
+                f'missions : {wanted[name]}' if name in wanted else ''
+            )
+            row.batch = f'Vendre {min(BATCH, units)}'
+            row.can_batch = units > BATCH
+            row.can_load = self.room >= 1
+            row.selling = self.selling
+        self.empty = not listed
         self.rock = whole_units(self.stock.get('rock', 0.))
         self.refinery = self.crusher is not None
         if self.crusher is not None:
             self.refinery_told = self.crusher.refinery.told
         self.crushing = self.crusher is not None and self.crusher.crushing
+
+    def row(self, mineral: str) -> OreRow:
+        if mineral not in self.ore_rows:
+            texture = asteroid_texture(mineral, ICON_SHAPE)
+            self.ore_rows[mineral] = OreRow(
+                panel=self, mineral=mineral, name=MINERALS[mineral].name,
+                icon=f'{IMAGES}/asteroids/minerals/{texture}.png',
+            )
+        return self.ore_rows[mineral]
 
     @property
     def room(self) -> float:

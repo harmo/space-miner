@@ -141,7 +141,9 @@ def opens_its_depot_alone() -> None:
 def loads_it_back() -> None:
     check(scenario.player.miner.ore == {'gold': 3.}, 'back in the cargo')
     check(not frontier().post.depot.stock, 'out of the depot')
-    scenario.press(scenario.button(view().ids.market, 'Fermer'))
+    market = view().ids.market
+    check(market.empty and not market.ids.rows.children, 'its row is gone')
+    scenario.press(scenario.button(market, 'Fermer'))
 
 
 @scenario.step(.3)
