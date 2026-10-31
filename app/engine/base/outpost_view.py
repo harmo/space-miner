@@ -1,7 +1,7 @@
-""" An outpost, shown while the ship is parked on its pad: its depot and
-the credits, its construction, delivered to from the cargo, its post
-serving the ship, and once it trades its market and missions. Styled in
-outpost_view.kv. """
+""" An outpost, shown while the ship is parked on its pad: its depot, ore
+loading back from there, and the credits, its construction, delivered to
+from the cargo, its post serving the ship, and once it trades its market
+and missions. Styled in outpost_view.kv. """
 
 from typing import TYPE_CHECKING
 
@@ -83,8 +83,8 @@ class SitePanel(BoxLayout):
 
 
 class OutpostView(PostView):
-    """ Docked on the pad of an outpost. Its panel: "site", "market",
-    "missions" or none """
+    """ Docked on the pad of an outpost. Its panel: "site", "market", the
+    depot alone without a market, "missions" or none """
 
     building = BooleanProperty(False)   # stages are left to build
     has_depot = BooleanProperty(False)
@@ -150,7 +150,7 @@ class OutpostView(PostView):
         slot = -2
         for name, shown in (
             ('site', self.building), ('unload', self.has_depot),
-            ('market', self.has_market), ('missions', self.has_missions),
+            ('market', self.has_depot), ('missions', self.has_missions),
         ):
             if shown:
                 setattr(self, f'{name}_slot', slot)
@@ -175,6 +175,7 @@ class OutpostView(PostView):
             self.ids.site.show(current, ore)
         elif panel == 'market':
             market = self.ids.market
+            market.selling = current.post.services.market
             market.wallet, market.stock = base.wallet, depot.stock
             market.depot, market.miner = depot, player.miner
             refinery = current.post.services.refinery

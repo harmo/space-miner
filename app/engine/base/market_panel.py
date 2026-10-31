@@ -1,6 +1,7 @@
-""" The market of the base, buying ore from the depot, for less than the
+""" The market of a post, buying ore from the depot, for less than the
 missions pay, loading it back into the ship, and its refinery, crushing
-the rock of the depot. Styled in market_panel.kv. """
+the rock of the depot. At a post with no market, the depot alone, to load
+ore back. Styled in market_panel.kv. """
 
 from typing import Any
 
@@ -41,6 +42,7 @@ class OreRow(BoxLayout):
     batch_units = NumericProperty(BATCH)
     can_batch = BooleanProperty(False)
     can_load = BooleanProperty(False)   # the cargo has room
+    selling = BooleanProperty(True)     # with a market
 
 
 class MarketPanel(BoxLayout):
@@ -50,6 +52,7 @@ class MarketPanel(BoxLayout):
     rock = NumericProperty(0)           # units in the depot
     crushing = BooleanProperty(False)
     refinery = BooleanProperty(True)    # if the post has one
+    selling = BooleanProperty(True)     # or the depot alone
 
     def __init__(self, **kwargs: Any) -> None:
         self.register_event_type('on_close')
@@ -85,6 +88,7 @@ class MarketPanel(BoxLayout):
                 batch=f'Vendre {min(BATCH, units)}',
                 can_batch=units > BATCH,
                 can_load=self.room >= 1,
+                selling=self.selling,
             ))
         self.empty = not rows.children
         self.rock = whole_units(self.stock.get('rock', 0.))

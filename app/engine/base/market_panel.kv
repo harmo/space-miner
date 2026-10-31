@@ -1,10 +1,10 @@
 # The market, see market_panel.py
 
-# The ore of the depot, and what the market pays for it
+# The ore of the depot, and what the market pays for it if there is one
 <MarketPanel>:
     orientation: 'vertical'
     size_hint: None, None
-    size: dp(600), self.minimum_height
+    size: (dp(600) if root.selling else dp(420)), self.minimum_height
     padding: dp(18), dp(14), dp(18), dp(16)
     spacing: dp(8)
     canvas.before:
@@ -20,7 +20,9 @@
             rounded_rectangle: self.x, self.y, self.width, self.height, dp(12)
             width: dp(1.2)
     PanelTitle:
-        text: "MARCHÉ  ·  minerai de l'entrepôt"
+        text:
+            "MARCHÉ  ·  minerai de l'entrepôt" if root.selling \
+            else 'ENTREPÔT  ·  minerai stocké'
     Label:
         text: "L'entrepôt est vide"
         font_size: '14sp'
@@ -43,7 +45,9 @@
             height: self.minimum_height
             spacing: dp(4)
     Label:
-        text: 'Les missions paient bien mieux que le marché'
+        text:
+            'Les missions paient bien mieux que le marché' if root.selling \
+            else 'Rechargé dans la soute, il peut être livré au chantier'
         font_size: '12sp'
         color: 1, 1, 1, .4
         size_hint_y: None
@@ -84,7 +88,7 @@
         height: dp(40)
         spacing: dp(20)
         Label:
-            text: f'Crédits  {root.money}'
+            text: f'Crédits  {root.money}' if root.selling else ''
             font_size: '15sp'
             bold: True
             color: (*MONEY_COLOR, 1)
@@ -137,35 +141,42 @@
         # As wide as it needs, the depot holds no end of ore
         size_hint_x: None
         width: max(dp(40), self.texture_size[0])
-    Label:
-        text: root.price
-        font_size: '12sp'
-        color: (*MONEY_COLOR, 1)
+    # What the market pays, if there is one
+    BoxLayout:
         size_hint_x: None
-        width: dp(64)
-        text_size: self.size
-        halign: 'right'
-        valign: 'middle'
-    PanelButton:
-        text: root.batch
-        bold: False
-        font_size: '12sp'
-        corner: 8
-        glow: .5
-        size_hint_x: None
-        width: dp(84)
-        opacity: 1 if root.can_batch else 0
-        disabled: not root.can_batch
-        on_release: root.panel.sell(root.mineral, root.batch_units)
-    PanelButton:
-        text: 'Tout vendre'
-        bold: False
-        font_size: '12sp'
-        corner: 8
-        glow: .5
-        size_hint_x: None
-        width: dp(92)
-        on_release: root.panel.sell(root.mineral)
+        width: self.minimum_width if root.selling else 0
+        opacity: 1 if root.selling else 0
+        disabled: not root.selling
+        spacing: dp(10)
+        Label:
+            text: root.price
+            font_size: '12sp'
+            color: (*MONEY_COLOR, 1)
+            size_hint_x: None
+            width: dp(64)
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+        PanelButton:
+            text: root.batch
+            bold: False
+            font_size: '12sp'
+            corner: 8
+            glow: .5
+            size_hint_x: None
+            width: dp(84)
+            opacity: 1 if root.can_batch else 0
+            disabled: not root.can_batch
+            on_release: root.panel.sell(root.mineral, root.batch_units)
+        PanelButton:
+            text: 'Tout vendre'
+            bold: False
+            font_size: '12sp'
+            corner: 8
+            glow: .5
+            size_hint_x: None
+            width: dp(92)
+            on_release: root.panel.sell(root.mineral)
     PanelButton:
         text: 'Charger'
         bold: False

@@ -1,9 +1,9 @@
 """ Outposts: the site of the Frontier on the farthest planet, where the
 ship lands on its pad. Ore delivered from the cargo builds it stage after
 stage: its foundations fill the tank, its habitat keeps ore unloaded in a
-depot of its own, all of it saved, and its trading post buys ore dearer
-than the Earth and gives missions of its own, making the same
-reputation. """
+depot of its own, from where it loads back, all of it saved, and its
+trading post buys ore dearer than the Earth and gives missions of its
+own, making the same reputation. """
 
 import json
 import math
@@ -123,6 +123,36 @@ def into_its_own_depot() -> None:
     check(stock == {'gold': 3.}, f'the gold is unloaded there: {stock}')
     check('gold' not in scenario.base.depot.stock, 'not on the Earth')
     scenario.screenshot('depot')
+    button = view().ids.market_button
+    check(button.text == 'Entrepôt', f'no market yet: {button.text}')
+    scenario.press(button)
+
+
+@scenario.step(.3)
+def opens_its_depot_alone() -> None:
+    market = view().ids.market
+    check(view().panel == 'market' and not market.selling, 'nothing to sell')
+    check(market.ids.rows.children[0].selling is False, 'nor any price')
+    scenario.screenshot('depot_panel')
+    scenario.press(scenario.button(market, 'Charger'))
+
+
+@scenario.step(.3)
+def loads_it_back() -> None:
+    check(scenario.player.miner.ore == {'gold': 3.}, 'back in the cargo')
+    check(not frontier().post.depot.stock, 'out of the depot')
+    scenario.press(scenario.button(view().ids.market, 'Fermer'))
+
+
+@scenario.step(.3)
+def unloads_it_again() -> None:
+    scenario.press(view().ids.unload_button)
+
+
+@scenario.step(1.)
+def is_back_in_the_depot() -> None:
+    stock = frontier().post.depot.stock
+    check(stock == {'gold': 3.}, f'unloaded again: {stock}')
     scenario.game.save()
 
 
@@ -153,6 +183,8 @@ def trades() -> None:
 @scenario.step(.3)
 def opens_its_market() -> None:
     check(view().has_market, 'it has a market and missions')
+    button = view().ids.market_button
+    check(button.text == 'Marché', f'as told: {button.text}')
     remembered['credits'] = scenario.base.wallet.credits
     scenario.press(view().ids.market_button)
 
@@ -160,6 +192,7 @@ def opens_its_market() -> None:
 @scenario.step(.3)
 def sells_dearer_than_the_earth() -> None:
     market = view().ids.market
+    check(market.selling, 'selling now')
     price = market.price('gold')
     check(price > ore_price('gold'), f'gold is dearer: {price}')
     market.sell('gold')

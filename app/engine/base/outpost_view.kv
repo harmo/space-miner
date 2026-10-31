@@ -55,13 +55,13 @@
 
     BaseButton:
         id: market_button
-        text: 'Marché'
+        text: 'Marché' if root.has_market else 'Entrepôt'
         glow: .6
         x:
             root.center_x - self.width / 2 \
             + root.slot_width * (root.market_slot + root.row_shift)
-        opacity: 1 if root.shown and root.has_market else 0
-        disabled: not root.shown or not root.has_market
+        opacity: 1 if root.shown and root.has_depot else 0
+        disabled: not root.shown or not root.has_depot
         on_release: root.open('market')
 
     BaseButton:
