@@ -2,6 +2,7 @@
 which minerals it looks for. Opened in flight, the game going on behind.
 Styled in scanner_panel.kv. """
 
+from collections.abc import Callable
 from typing import Any
 
 from kivy.clock import Clock, ClockEvent
@@ -14,10 +15,10 @@ from kivy.properties import (
 )
 from kivy.uix.boxlayout import BoxLayout
 
+from ...logic.base.missions import Desk
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINED, MINERALS, asteroid_texture
 from ...logic.ship.scanner import counts
-from ..base.earth_base import EarthBase
 from ..ship.player import Player
 from ..world.solar_system import SolarSystem
 from .cargo_panel import ICON_SHAPE
@@ -52,13 +53,13 @@ class ScannerPanel(BoxLayout):
         super().__init__(**kwargs)
         self.player: Player | None = None
         self.system: SolarSystem | None = None
-        self.base: EarthBase | None = None  # its missions
+        self.desks: Callable[[], list[Desk]] = list  # with the missions
         self.scans: ClockEvent | None = None
         self.rows: dict[str, ScanRow] = {}
 
     def setup(self, player: Player, system: SolarSystem,
-              base: EarthBase) -> None:
-        self.player, self.system, self.base = player, system, base
+              desks: Callable[[], list[Desk]]) -> None:
+        self.player, self.system, self.desks = player, system, desks
         rows = self.ids.rows
         for name in MINED:
             mineral = MINERALS[name]
@@ -113,12 +114,11 @@ class ScannerPanel(BoxLayout):
         self.look_for(set())
 
     def for_missions(self) -> None:
-        """ What the missions under way want """
-        board = self.base.board if self.base else None
-        if board is not None:
-            self.look_for({
-                name for mission in board.active for name in mission.wanted
-            })
+        """ What the missions under way want, wherever they are """
+        self.look_for({
+            name for desk in self.desks() for mission in desk.missions
+            for name in mission.wanted
+        })
 
 
 load_style(__file__)

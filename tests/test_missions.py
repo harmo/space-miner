@@ -9,10 +9,12 @@ from app.logic.base.config import (
 )
 from app.logic.base.missions import (
     Board,
+    Desk,
     Mission,
     Need,
     make_mission,
     needs,
+    needs_at,
 )
 from app.logic.base.wallet import Wallet
 from app.logic.mining.minerals import MINERALS
@@ -204,3 +206,22 @@ def test_boards_share_the_reputation_they_make() -> None:
     outpost.validate(mission, stock)
     assert outpost.validated == earth.validated == 1
     assert wallet.credits == mission.reward
+
+
+def test_needs_add_up_across_desks_each_with_its_depot() -> None:
+    earth = Desk([Mission('Institut Cassini', {'iron': 10}, 100)],
+                 {'iron': 3., 'gold': 9.})
+    outpost = Desk([Mission('Colonie Thulé', {'iron': 5, 'ruby': 2}, 100)],
+                   {'iron': 4.})
+    assert needs_at([earth, outpost], {'iron': 1.}) == [
+        Need('iron', 8, 15), Need('ruby', 0, 2),
+    ]
+
+
+def test_a_depot_only_counts_for_what_its_desk_wants() -> None:
+    earth = Desk([Mission('Institut Cassini', {'iron': 10}, 100)],
+                 {'gold': 9.})
+    outpost = Desk([Mission('Colonie Thulé', {'gold': 5}, 100)], {'iron': 4.})
+    assert needs_at([earth, outpost], {}) == [
+        Need('iron', 0, 10), Need('gold', 0, 5),
+    ]

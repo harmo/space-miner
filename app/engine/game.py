@@ -15,6 +15,7 @@ from kivy.properties import BooleanProperty, NumericProperty, ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.utils import platform
 
+from ..logic.base.missions import Desk
 from ..logic.config import (
     AUTOSAVE_PERIOD,
     MAX_FRAME_TIME,
@@ -122,7 +123,7 @@ class Game(Widget):
         base = self.ids.base
         if base.board is not None:
             open_trades(self.outposts, base.wallet, base.board.standing)
-        self.ids.scanner.setup(self.player, self.system, self.ids.base)
+        self.ids.scanner.setup(self.player, self.system, lambda: self.desks)
         self.keeper = Keeper(seed, self.player, self.ids.base, self.outposts)
         if save is not None:
             self.keeper.restore(save)
@@ -148,6 +149,19 @@ class Game(Widget):
             if view.docked:
                 return cast(PostView, view)
         return None
+
+    @property
+    def desks(self) -> list[Desk]:
+        """ Where missions are validated, the Earth first """
+        base = self.ids.base
+        boards = [(base.board, base.depot.stock)] + [
+            (outpost.board, outpost.post.depot.stock)
+            for outpost in self.outposts
+        ]
+        return [
+            Desk(board.active, stock) for board, stock in boards
+            if board is not None
+        ]
 
     # Game loop
 

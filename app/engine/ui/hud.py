@@ -23,7 +23,7 @@ def show_hud(game: 'Game') -> None:
     unloaded = post.depot.mineral if post else None
     load = show_cargo(ids.cargo, miner, miner.mining or unloaded)
     ids.cargo_button.text = f'Soute  {load}'
-    show_needs(ids.tracker, ids.base, player)
+    show_needs(ids.tracker, game.desks, player)
     game.land_glow = show_shortcut(
         ids.land_button, player.shortcut,
         nearest(player.grounds, player.anchor).kind, game.time,

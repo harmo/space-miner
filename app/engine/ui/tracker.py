@@ -8,10 +8,9 @@ from kivy.properties import (
 )
 from kivy.uix.boxlayout import BoxLayout
 
-from ...logic.base.missions import Need, needs
+from ...logic.base.missions import Desk, Need, needs_at
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
-from ..base.earth_base import EarthBase
 from ..ship.player import Player
 from .cargo_panel import ICON_SHAPE
 from .widgets import load_style
@@ -49,12 +48,10 @@ class MissionTracker(BoxLayout):
             row.laser = str(mineral.laser) if too_weak else ''
 
 
-def show_needs(tracker: MissionTracker, base: EarthBase,
+def show_needs(tracker: MissionTracker, desks: list[Desk],
                player: Player) -> None:
-    """ Of the missions of the base, against the cargo and the depot """
-    if base.board is not None:
-        wanted = needs(base.board.active, player.miner.ore, base.depot.stock)
-        tracker.show(wanted, player.stats.laser)
+    """ Of the missions under way wherever they are """
+    tracker.show(needs_at(desks, player.miner.ore), player.stats.laser)
 
 
 load_style(__file__)

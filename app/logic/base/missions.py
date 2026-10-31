@@ -81,6 +81,30 @@ def needs(missions: list[Mission],
     ]
 
 
+@dataclass(frozen=True)
+class Desk:
+    """ Where missions are validated, the Earth or an outpost """
+    missions: list[Mission]   # under way there
+    stock: dict[str, float]   # of its depot
+
+
+def needs_at(desks: Sequence[Desk],
+             cargo: dict[str, float]) -> list[Need]:
+    """ Wanted at all the desks, against the cargo and the depots of those
+    wanting each mineral, in the order of the minerals table """
+    wanted: dict[str, int] = {}
+    holds: dict[str, list[dict[str, float]]] = {}
+    for desk in desks:
+        for need in needs(desk.missions):
+            name = need.mineral
+            wanted[name] = wanted.get(name, 0) + need.wanted
+            holds.setdefault(name, [cargo]).append(desk.stock)
+    return [
+        Need(name, held(name, holds[name]), wanted[name])
+        for name in MINERALS if name in wanted
+    ]
+
+
 def make_mission(rng: Random, level: int = 1,
                  clients: Sequence[str] = CLIENTS,
                  bonus: float = 1.) -> Mission:

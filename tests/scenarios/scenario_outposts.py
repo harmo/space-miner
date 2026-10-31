@@ -193,6 +193,12 @@ def takes_a_mission_of_its_own() -> None:
 @scenario.step(.3)
 def validates_it_there() -> None:
     mission = remembered['mission']
+    tracker = scenario.game.ids.tracker
+    check(tracker.shown, 'the mission is tracked, wherever it was taken')
+    scanner = scenario.game.ids.scanner
+    scanner.for_missions()
+    check(scenario.player.looked_for == set(mission.wanted),
+          'and looked for by the scanner')
     before = scenario.base.board.validated
     card = next(
         card for card in view().ids.missions.ids.active.children
