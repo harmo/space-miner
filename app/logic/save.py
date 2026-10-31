@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .base.missions import Contracts, Mission
+from .base.outposts import Progress
 from .mining.minerals import MINERALS
 from .mining.ore import Hold
 from .ship.hulls import HULLS
@@ -19,19 +20,6 @@ VERSION = 1
 
 class SaveError(ValueError):
     """ Not a saved game of this version """
-
-
-@dataclass(frozen=True)
-class Progress:
-    """ Of an outpost being built, and trading once it can """
-    built: int = 0                      # stages
-    delivered: dict[str, int] = field(default_factory=dict)
-    stock: Hold = field(default_factory=dict)  # of its depot
-    contracts: Contracts = field(default_factory=Contracts)
-
-    @property
-    def started(self) -> bool:
-        return bool(self.built or self.delivered or self.stock)
 
 
 @dataclass(frozen=True)

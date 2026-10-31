@@ -2,13 +2,13 @@
 it back in them """
 
 from ..logic.base.missions import Contracts
+from ..logic.base.outposts import Outpost, Progress, open_boards
 from ..logic.mining.minerals import MINERALS
-from ..logic.save import EARTH, Landed, Progress, Save, dump
+from ..logic.save import EARTH, Landed, Save, dump
 from ..logic.ship.hulls import HULLS
 from ..logic.ship.landing import Ground
 from ..logic.ship.shipyard import Design
 from .base.earth_base import EarthBase
-from .base.outposts import Outpost, open_boards
 from .ship.player import Player
 from .storage import delete_save, write_save
 

@@ -1,109 +1,34 @@
 """ Outposts, built where their site lies by delivering ore from the cargo
-of ships landed there, stage after stage. Each stage built offers more to
-the ships landing there: fuel, a depot, then a market and missions. """
+of ships landed there, stage after stage: each on a body, in the direction
+of the pad ships land on, with the post serving them once built far
+enough """
 
-from dataclasses import dataclass, replace
-from typing import Literal
+import math
+from dataclasses import dataclass, field
+from random import Random
 
 from ..mining.ore import Hold, whole_units, withdraw
-from ..save import Progress
-from .config import PAD_WIDTH
-from .post import Services
-
-Form = Literal['ground', 'orbit']    # landed on, or docked to
-
-
-@dataclass(frozen=True)
-class Stage:
-    """ A step of building an outpost """
-    name: str                 # shown
-    materials: tuple[tuple[str, int], ...]  # units to deliver, by mineral
-    services: Services        # offered once built, those before included
+from ..ship.landing import Ground, Parking, pad_edge
+from ..world.space import Celestial, Vec2
+from .config import PAD_DIRECTION
+from .missions import Board, Contracts
+from .post import Post, Services
+from .reputation import Standing
+from .sites import SITES, Site, Stage
+from .wallet import Wallet
 
 
 @dataclass(frozen=True)
-class Trade:
-    """ What the market and the missions of an outpost pay """
-    markup: float = 1.        # times what the Earth pays for ore
-    dearer: tuple[tuple[str, float], ...] = ()  # times more for these
-    bonus: float = 1.         # missions pay that much more
-    clients: tuple[str, ...] = ()
-
-    def factor(self, mineral: str) -> float:
-        """ Times what the Earth pays for `mineral` """
-        return self.markup * dict(self.dearer).get(mineral, 1.)
-
-
-@dataclass(frozen=True)
-class Site:
-    """ Where an outpost is built, and how """
-    name: str                 # shown
-    form: Form
-    stages: tuple[Stage, ...]
-    trade: Trade = Trade()
-    pad_width: float = PAD_WIDTH  # pixels, where ships land
+class Progress:
+    """ Of an outpost being built, and trading once it can """
+    built: int = 0                      # stages
+    delivered: dict[str, int] = field(default_factory=dict)
+    stock: Hold = field(default_factory=dict)  # of its depot
+    contracts: Contracts = field(default_factory=Contracts)
 
     @property
-    def gives_missions(self) -> bool:
-        """ Whether it gives missions, once built far enough """
-        return any(stage.services.missions for stage in self.stages)
-
-
-FUEL = Services(fuel=True)
-DEPOT = replace(FUEL, depot=True)
-TRADING_POST = replace(DEPOT, market=True, missions=True)
-REFINING = replace(DEPOT, market=True, refinery=True)
-SHELTER = replace(FUEL, shelter=True)
-
-# On the farthest planet from the sun, far from everything: ore is dearer
-# there, ice most of all as fuel is lacking
-FRONTIER = Site('Base Frontière', 'ground', (
-    Stage('Fondations', (('rock', 120),), FUEL),
-    Stage('Habitat', (('rock', 160), ('iron', 40)), DEPOT),
-    Stage('Comptoir', (('rock', 200), ('iron', 60), ('copper', 30)),
-          TRADING_POST),
-), Trade(1.3, (('ice', 2.),), 1.25, (
-    'Colonie Thulé', 'Relais Éclipse', 'Forge Boréale', 'Halte des Confins',
-)))
-
-
-# In the middle of the belt around the sun: a relay to mine, keep and
-# crush ore there, without missions. Its pad is small, as it is.
-CERES = Site('Comptoir de Cérès', 'ground', (
-    Stage('Fondations', (('rock', 80),), FUEL),
-    Stage('Entrepôt', (('rock', 120), ('iron', 30)), DEPOT),
-    Stage('Raffinerie', (('rock', 150), ('iron', 40), ('copper', 20)),
-          REFINING),
-), pad_width=60.)
-
-# Orbiting the first planet, close to the sun: a refuge to mine the ejecta
-# of flares, paying well for them
-_RING = replace(SHELTER, depot=True)
-ICARE = Site('Station Icare', 'orbit', (
-    Stage('Armature', (('rock', 100),), SHELTER),
-    Stage('Anneau habitable', (('rock', 120), ('iron', 50)), _RING),
-    Stage('Comptoir', (('rock', 150), ('iron', 60), ('copper', 30)),
-          replace(_RING, market=True)),
-), Trade(dearer=(('nebulite', 1.6), ('stellarium', 1.6),
-                 ('antimatter', 1.6))), pad_width=40.)
-
-# By the key they are saved under
-SITES = {'frontier': FRONTIER, 'ceres': CERES, 'icare': ICARE}
-
-# As told to the player
-OFFERED = (
-    ('fuel', 'le plein'), ('depot', 'un entrepôt'), ('market', 'un marché'),
-    ('missions', 'des missions'), ('refinery', 'une raffinerie'),
-    ('shelter', 'un abri contre la chaleur'),
-)
-
-
-def unlocked(stage: Stage, before: Services) -> list[str]:
-    """ What building `stage` adds to what was offered `before` """
-    return [
-        told for name, told in OFFERED
-        if getattr(stage.services, name) and not getattr(before, name)
-    ]
+    def started(self) -> bool:
+        return bool(self.built or self.delivered or self.stock)
 
 
 class Construction:
@@ -114,10 +39,6 @@ class Construction:
         self.site = site
         self.built = 0                      # stages
         self.delivered: dict[str, int] = {}  # for the next stage
-
-    @property
-    def progress(self) -> Progress:
-        return Progress(self.built, dict(self.delivered))
 
     def restore(self, progress: Progress) -> None:
         self.built = min(progress.built, len(self.site.stages))
@@ -162,3 +83,97 @@ class Construction:
         self.built += 1
         self.delivered = {}
         return stage
+
+
+@dataclass
+class Outpost:
+    key: str                  # saved under it
+    body: Celestial
+    direction: float          # of the pad, from the body center
+    construction: Construction
+    post: Post
+    rng: Random
+    board: Board | None = None          # its missions, once it can trade
+
+    def open_board(self, wallet: Wallet, standing: Standing) -> None:
+        """ Its missions, paid into `wallet`, making the same reputation
+        as those of the Earth: none for sites giving none """
+        site = self.construction.site
+        if not site.gives_missions:
+            self.board = None
+            return
+        trade = site.trade
+        self.board = Board(
+            self.rng, wallet, standing, trade.clients, trade.bonus,
+        )
+
+    @property
+    def name(self) -> str:
+        return self.construction.site.name
+
+    @property
+    def ground(self) -> Ground:
+        site = self.construction.site
+        return Ground(
+            self.body,
+            pad_edge(self.body.radius, self.direction, site.pad_width),
+            kind='port' if site.form == 'orbit' else 'pad',
+        )
+
+    @property
+    def pos(self) -> Vec2:
+        """ Of the middle of the pad, on the surface """
+        x, y = self.body.pos
+        radius = self.body.radius
+        return (
+            x + math.cos(self.direction) * radius,
+            y + math.sin(self.direction) * radius,
+        )
+
+    def serves(self, parking: Parking | None) -> bool:
+        """ Ships parked on its pad """
+        if parking is None or parking.body is not self.body:
+            return False
+        return self.ground.edge[round(math.degrees(parking.direction)) % 360]
+
+    @property
+    def progress(self) -> Progress:
+        """ Of its construction, with what its depot holds, and its
+        missions """
+        board, construction = self.board, self.construction
+        return Progress(
+            construction.built, dict(construction.delivered),
+            dict(self.post.depot.stock),
+            board.contracts if board else Contracts(),
+        )
+
+    def deliver(self, cargo: Hold) -> Stage | None:
+        """ What is needed from `cargo`: the stage built by it, if so """
+        built = self.construction.deliver(cargo)
+        self.post.services = self.construction.services
+        return built
+
+    def restore(self, progress: Progress) -> None:
+        self.construction.restore(progress)
+        self.post.services = self.construction.services
+        stock = self.post.depot.stock
+        stock.clear()
+        stock.update(progress.stock)
+        if self.board is not None:
+            self.board.resume(progress.contracts)
+
+
+def bare_outpost(key: str, body: Celestial, rng: Random) -> Outpost:
+    """ On its site, nothing built """
+    site = SITES[key]
+    return Outpost(
+        key, body, math.radians(PAD_DIRECTION), Construction(site),
+        Post(Services(), rng), rng,
+    )
+
+
+def open_boards(outposts: list[Outpost], wallet: Wallet,
+                standing: Standing) -> None:
+    """ For a game, new or saved """
+    for outpost in outposts:
+        outpost.open_board(wallet, standing)

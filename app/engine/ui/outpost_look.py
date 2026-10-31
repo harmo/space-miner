@@ -6,9 +6,9 @@ beacon, then a ring around a hub with its port, lit, solar panels. """
 import math
 import time
 
+from ...logic.base.outposts import Outpost
 from ...logic.config import OUTPOST_COLOR
 from ...logic.world.space import Vec2
-from ..base.outposts import Outpost
 from .overlay import Overlay
 
 STEEL = (.42, .47, .54)

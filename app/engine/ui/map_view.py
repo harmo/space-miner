@@ -14,6 +14,7 @@ from kivy.metrics import dp
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
 
+from ...logic.base.outposts import Outpost
 from ...logic.colors import Rgb
 from ...logic.config import (
     FLARE_COLOR,
@@ -28,7 +29,6 @@ from ...logic.mining.minerals import MINERALS
 from ...logic.ship.scanner import found, mineral_name
 from ...logic.world.chart import ZOOMS, Chart, chart, zoomed
 from ...logic.world.space import Vec2
-from ..base.outposts import Outpost
 from ..ship.player import Player
 from ..world.solar_system import SolarSystem
 

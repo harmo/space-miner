@@ -3,12 +3,13 @@ import json
 import pytest
 
 from app.logic.base.missions import Contracts, Mission
+from app.logic.base.outposts import Progress
 from app.logic.preferences import (
     Preferences,
     dump_preferences,
     load_preferences,
 )
-from app.logic.save import Landed, Progress, Save, SaveError, dump, load
+from app.logic.save import Landed, Save, SaveError, dump, load
 from app.logic.ship.scanner import LOOKED_FOR
 from app.logic.ship.shipyard import Design
 

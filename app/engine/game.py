@@ -16,6 +16,7 @@ from kivy.uix.widget import Widget
 from kivy.utils import platform
 
 from ..logic.base.missions import Desk
+from ..logic.base.outposts import Outpost, open_boards
 from ..logic.config import (
     AUTOSAVE_PERIOD,
     MAX_FRAME_TIME,
@@ -27,7 +28,7 @@ from ..logic.hud import heat_at, is_compact
 from ..logic.ship.landing import Ground
 from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
-from .base.outposts import Outpost, found_outposts, open_boards
+from .base.outposts import found_outposts
 from .base.post_view import PostView
 from .entities import setup_collisions, setup_state, step_systems
 from .keeper import Keeper

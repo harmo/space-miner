@@ -3,6 +3,7 @@ flares, outposts, markers, the work of the ship and explosions """
 
 import math
 
+from ...logic.base.outposts import Outpost
 from ...logic.config import (
     FLARE_COLOR,
     HEAT_RANGE,
@@ -21,7 +22,6 @@ from ...logic.preferences import Preferences
 from ...logic.ship.lasers import laser
 from ...logic.ship.scanner import found, mineral_name
 from ...logic.world.space import Vec2
-from ..base.outposts import Outpost
 from ..ship.looks import ShipLooks
 from ..ship.player import Player
 from ..world.solar_system import SolarSystem

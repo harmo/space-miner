@@ -14,8 +14,9 @@ from kivy.properties import (
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 
-from ...logic.base.outposts import unlocked
+from ...logic.base.outposts import Outpost
 from ...logic.base.post import Post
+from ...logic.base.sites import unlocked
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
 from ...logic.mining.ore import Hold, whole_units
@@ -25,7 +26,6 @@ from ..ui.cargo_panel import ICON_SHAPE
 from ..ui.widgets import load_style
 from .market_panel import MarketPanel  # noqa: F401
 from .missions_panel import MissionsPanel  # noqa: F401
-from .outposts import Outpost
 from .post_view import PostView
 
 if TYPE_CHECKING:

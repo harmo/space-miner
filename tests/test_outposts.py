@@ -1,15 +1,29 @@
+import math
+from random import Random
+
+from app.logic.base.config import PAD_DIRECTION
+from app.logic.base.missions import Board, Contracts
 from app.logic.base.outposts import (
+    Construction,
+    Outpost,
+    Progress,
+    bare_outpost,
+    open_boards,
+)
+from app.logic.base.post import Services
+from app.logic.base.reputation import Standing
+from app.logic.base.sites import (
     CERES,
     DEPOT,
     FRONTIER,
     FUEL,
     ICARE,
     TRADING_POST,
-    Construction,
     unlocked,
 )
-from app.logic.base.post import Services
-from app.logic.save import Progress
+from app.logic.base.wallet import Wallet
+from app.logic.ship.landing import parking_on
+from app.logic.world.space import Celestial
 
 
 def test_an_outpost_starts_as_a_bare_site() -> None:
@@ -62,8 +76,9 @@ def test_how_far_it_was_built_comes_back() -> None:
     outpost.deliver(cargo)
     outpost.deliver(cargo)
     again = Construction(FRONTIER)
-    again.restore(outpost.progress)
-    assert again.progress == Progress(1, {'rock': 30, 'iron': 12})
+    again.restore(Progress(outpost.built, outpost.delivered))
+    assert again.built == 1
+    assert again.delivered == {'rock': 30, 'iron': 12}
     again.restore(Progress(99, {}))
     assert again.built == len(FRONTIER.stages)
 
@@ -93,3 +108,50 @@ def test_icare_shelters_and_buys_ejecta_dearer() -> None:
     assert ICARE.stages[0].services.shelter
     assert ICARE.trade.factor('antimatter') > 1.5
     assert ICARE.trade.factor('iron') == 1.
+
+
+def outpost_on(key: str) -> Outpost:
+    return bare_outpost(key, Celestial(1, 200.), Random(1))
+
+
+def test_an_outpost_offers_what_its_stages_built() -> None:
+    outpost = outpost_on('frontier')
+    assert outpost.post.services == Services()
+    outpost.deliver({'rock': 120.})
+    assert outpost.post.services == FUEL
+
+
+def test_an_outpost_serves_ships_parked_on_its_pad_only() -> None:
+    outpost = outpost_on('frontier')
+    pad = math.radians(PAD_DIRECTION)
+    parked = parking_on(outpost.body, pad, 40.)
+    aside = parking_on(outpost.body, pad + math.pi, 40.)
+    elsewhere = parking_on(Celestial(2, 200.), pad, 40.)
+    assert outpost.serves(parked)
+    assert not outpost.serves(aside)
+    assert not outpost.serves(elsewhere)
+    assert not outpost.serves(None)
+
+
+def test_only_sites_giving_missions_open_a_board() -> None:
+    outposts = [outpost_on('frontier'), outpost_on('ceres')]
+    open_boards(outposts, Wallet(), Standing())
+    assert isinstance(outposts[0].board, Board)
+    assert outposts[1].board is None
+
+
+def test_the_progress_of_an_outpost_comes_back() -> None:
+    outpost = outpost_on('frontier')
+    open_boards([outpost], Wallet(), Standing())
+    outpost.deliver({'rock': 150.})
+    outpost.post.depot.stock['gold'] = 2.
+    again = outpost_on('frontier')
+    open_boards([again], Wallet(), Standing())
+    again.restore(outpost.progress)
+    assert again.progress == outpost.progress
+    assert again.post.services == FUEL
+    assert again.progress.started
+
+
+def test_an_outpost_without_board_has_no_contracts() -> None:
+    assert outpost_on('ceres').progress.contracts == Contracts()
