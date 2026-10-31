@@ -72,17 +72,16 @@ def flow_velocity(pos: Vec2, center: Vec2, center_velocity: Vec2,
     )
 
 
-def orbit_flow(pos: Vec2, velocity: Vec2, body: Celestial, dt: float) -> Vec2:
+def orbit_flow(pos: Vec2, body: Celestial, dt: float) -> Vec2:
     """ Velocity of the circular orbit around `body` through pos, at the
-    speed its pull allows there, turning the way the canister already
-    goes, and rising when too low to be picked up """
+    speed its pull allows there, and rising when too low to be picked up.
+    All turn the same way: canisters are deadly, and would cross head-on
+    otherwise. """
     dx, dy = pos[0] - body.pos[0], pos[1] - body.pos[1]
     distance = math.hypot(dx, dy)
-    vx, vy = velocity[0] - body.velocity[0], velocity[1] - body.velocity[1]
     angular_speed = math.sqrt(math.hypot(*body.pull(*pos)) / distance)
     flow_x, flow_y = flow_velocity(
-        pos, body.pos, body.velocity,
-        math.copysign(angular_speed, dx * vy - dy * vx), dt,
+        pos, body.pos, body.velocity, angular_speed, dt,
     )
     too_low = body.radius + CANISTER_ORBIT_ALTITUDE - distance
     climb = max(0., too_low) * CANISTER_CLIMB / distance
@@ -109,5 +108,5 @@ def settle(pos: Vec2, velocity: Vec2, body: Celestial, dt: float) -> Vec2:
     turn = ((dx * vy - dy * vx) / square) ** 2 * dt
     return drift(
         (velocity[0] - dx * turn, velocity[1] - dy * turn),
-        orbit_flow(pos, velocity, body, dt), dt, CANISTER_ORBIT_DRAG,
+        orbit_flow(pos, body, dt), dt, CANISTER_ORBIT_DRAG,
     )

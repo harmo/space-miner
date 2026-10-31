@@ -125,13 +125,12 @@ def test_canisters_settle_progressively() -> None:
     assert 0. < math.hypot(*early) < orbit / 3
 
 
-def test_canisters_orbit_the_way_they_were_going() -> None:
+def test_canisters_all_orbit_the_same_way() -> None:
     body = planet()
-    _, up = settled(body, (1500., 500.), (0., 60.), 30.)
-    pos, down = settled(body, (1500., 500.), (0., -60.), 30.)
-    dx, dy = pos[0] - 1000., pos[1] - 500.
-    assert dx * down[1] - dy * down[0] < 0
-    assert math.hypot(*up) == pytest.approx(math.hypot(*down), rel=1e-2)
+    for thrown in (60., -60.):
+        pos, velocity = settled(body, (1500., 500.), (0., thrown), 30.)
+        dx, dy = pos[0] - 1000., pos[1] - 500.
+        assert dx * velocity[1] - dy * velocity[0] > 0
 
 
 def test_canisters_rise_above_the_surface() -> None:

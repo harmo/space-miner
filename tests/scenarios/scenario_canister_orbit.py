@@ -12,7 +12,13 @@ remembered: dict[str, Any] = {}
 
 
 def planet() -> Any:
-    return scenario.game.system.planets[-1]
+    """ With no asteroids of its own, which canisters would turn with """
+    system = scenario.game.system
+    ringed = {asteroid.orbit.parent for asteroid in system.asteroids}
+    return next(
+        body for body in reversed(system.planets)
+        if body not in ringed and body is not system.earth
+    )
 
 
 def canisters() -> Any:
@@ -93,6 +99,8 @@ def picks_one_up() -> None:
     check(len(canisters()) < remembered['count'], 'one is picked up')
     check(scenario.player.miner.ore, f'cargo: {scenario.player.miner.ore}')
     check(scenario.player.ship is not None, 'flying around safely')
+    spins = [x * vy - y * vx for x, y, vx, vy in map(relative, canisters())]
+    check(all(spin > 0 for spin in spins), 'all turning the same way')
 
 
 scenario.run()
