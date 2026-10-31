@@ -60,7 +60,7 @@ class Soundtrack:
              volume: float) -> None:
         """ The engine following the thrust, the laser firing, and the
         machines of the base """
-        player, base = game.player, game.ids.base
+        player, stop = game.player, game.stop
         self.volume = toward(self.volume, player.thrust(heading), dt)
         self.engine.play(
             engine_sound(player.design) if player.ship else None,
@@ -70,10 +70,10 @@ class Soundtrack:
         self.laser.play(
             laser_sound(player.stats.laser) if firing else None, volume,
         )
-        # One machine of the base at a time, unloading first
-        machine = 'unloading' if base.unloading else (
-            'crushing' if base.crushing and base.docked else None
-        )
+        # One machine of the post at a time, unloading first
+        machine = None
+        if stop is not None and (stop.unloading or stop.crushing):
+            machine = 'unloading' if stop.unloading else 'crushing'
         self.unloading.play(machine, volume)
 
     def hum(self, volume: float, dt: float, playing: bool) -> None:

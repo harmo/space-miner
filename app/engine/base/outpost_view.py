@@ -15,17 +15,18 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 
 from ...logic.base.outposts import unlocked
-from ...logic.base.post import Docked
+from ...logic.base.post import Post
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
-from ...logic.mining.ore import cargo_total, whole_units
+from ...logic.mining.ore import whole_units
 from ..audio import audio
 from ..ship.player import Player
-from ..ui.cargo_panel import ICON_SHAPE, show_depot
+from ..ui.cargo_panel import ICON_SHAPE
 from ..ui.widgets import load_style
 from .market_panel import MarketPanel  # noqa: F401
-from .missions_panel import MissionsPanel, credits_text  # noqa: F401
+from .missions_panel import MissionsPanel  # noqa: F401
 from .outposts import Outpost
+from .post_view import PostView
 
 if TYPE_CHECKING:
     from .earth_base import EarthBase
@@ -81,21 +82,14 @@ class SitePanel(BoxLayout):
         )
 
 
-class OutpostView(Widget):
+class OutpostView(PostView):
+    """ Docked on the pad of an outpost. Its panel: "site", "market",
+    "missions" or none """
 
-    docked = BooleanProperty(False)     # on the pad of an outpost
-    # Open: "site", "market", "missions" or none
-    panel = StringProperty('')
-    shown = BooleanProperty(False)      # its buttons, with no panel open
     building = BooleanProperty(False)   # stages are left to build
     has_depot = BooleanProperty(False)
     trading = BooleanProperty(False)    # a market
     contracting = BooleanProperty(False)  # missions
-    can_unload = BooleanProperty(False)
-    unloading = BooleanProperty(False)
-    to_validate = BooleanProperty(False)  # one of its missions can be
-    money = StringProperty('')
-    full_row = BooleanProperty(False)   # the scanner button ends its row
     # Where its buttons stand in the row, those shown from the left
     site_slot = NumericProperty(0)
     unload_slot = NumericProperty(0)
@@ -104,7 +98,6 @@ class OutpostView(Widget):
 
     def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
-        self.player: Player | None = None
         self.outposts: list[Outpost] = []
         self.base: EarthBase | None = None  # its credits
         self.current: Outpost | None = None  # where the ship is parked
@@ -112,6 +105,10 @@ class OutpostView(Widget):
     def setup(self, player: Player, outposts: list[Outpost],
               base: 'EarthBase') -> None:
         self.player, self.outposts, self.base = player, outposts, base
+
+    @property
+    def post(self) -> Post | None:
+        return self.current.post if self.current else None
 
     @property
     def buttons(self) -> list[Widget]:
@@ -125,38 +122,28 @@ class OutpostView(Widget):
         player, base = self.player, self.base
         if player is None or base is None:
             return
-        ore = player.miner.ore
         self.current = None
+        found: list[str] = []
         for outpost in self.outposts:
             served = player.docked and outpost.serves(player.parking)
-            if served:
-                self.current = outpost
-            outpost.post.update(
-                dt, Docked(ore, player.tank, player.hull) if served else None,
-                base.wallet,
+            finds = outpost.post.update(
+                dt, player.served if served else None, base.wallet,
             )
+            if served:
+                self.current, found = outpost, finds
         current = self.current
         self.docked = current is not None
         if current is None:
             self.panel = ''
+            self.unloading = self.crushing = False
             return
-        depot = current.post.depot
         services = current.post.services
         self.building = current.construction.stage is not None
         self.has_depot = services.depot
         self.trading = services.market
         self.contracting = services.missions and current.board is not None
         self.arrange()
-        self.unloading = depot.unloading
-        board = current.board
-        self.to_validate = self.contracting and board is not None and any(
-            mission.can_validate(depot.stock, ore) for mission in board.active
-        )
-        self.can_unload = (
-            self.has_depot and not self.unloading and cargo_total(ore) > 0
-        )
-        self.money = credits_text(base.wallet.credits)
-        show_depot(self.ids.depot, depot, False)
+        self.show_post(current.post, found, current.board, base.wallet)
 
     def arrange(self) -> None:
         """ The buttons shown, side by side from the left of the row """
@@ -177,10 +164,6 @@ class OutpostView(Widget):
         panel = self.ids.site
         panel.news = f'{built.name} construit' if built else ''
         panel.show(self.current, self.player.miner.ore)
-
-    def unload(self) -> None:
-        if self.current is not None and self.player is not None:
-            self.current.post.depot.start(self.player.miner.ore)
 
     def open(self, panel: str) -> None:
         current, player, base = self.current, self.player, self.base
@@ -208,11 +191,6 @@ class OutpostView(Widget):
             missions.refresh()
         self.panel = panel
 
-    def close(self) -> None:
-        self.panel = ''
-
-    def on_panel(self, instance: Widget, panel: str) -> None:
-        self.ids.missions.watch(panel == 'missions')
 
 
 load_style(__file__)

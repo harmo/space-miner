@@ -18,7 +18,10 @@ if TYPE_CHECKING:
 def show_hud(game: 'Game') -> None:
     ids, player = game.ids, game.player
     miner = player.miner
-    load = show_cargo(ids.cargo, miner, miner.mining or ids.base.depot.mineral)
+    stop = game.stop
+    post = stop.post if stop else None
+    unloaded = post.depot.mineral if post else None
+    load = show_cargo(ids.cargo, miner, miner.mining or unloaded)
     ids.cargo_button.text = f'Soute  {load}'
     show_needs(ids.tracker, ids.base, player)
     game.land_glow = show_shortcut(

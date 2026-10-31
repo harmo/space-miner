@@ -11,16 +11,14 @@ from kivy.uix.widget import Widget
 
 from ...logic.base.crushing import Crusher
 from ...logic.base.missions import Board
-from ...logic.base.post import EVERYTHING, Docked, Post
+from ...logic.base.post import EVERYTHING, Post
 from ...logic.base.refuel import tow, tow_price
 from ...logic.base.reputation import tier
 from ...logic.base.shop import Inventory
 from ...logic.base.unloading import Depot
 from ...logic.base.wallet import Wallet
-from ...logic.mining.ore import cargo_total
 from ...logic.ship.landing import surface_distance
 from ..ship.player import Player
-from ..ui.cargo_panel import show_depot
 from ..ui.widgets import (
     PanelButton,  # noqa: F401
     load_style,
@@ -28,21 +26,13 @@ from ..ui.widgets import (
 from .hangar import HangarPanel  # noqa: F401
 from .market_panel import MarketPanel  # noqa: F401
 from .missions_panel import MissionsPanel, credits_text  # noqa: F401
+from .post_view import PostView
 
 
-class EarthBase(Widget):
+class EarthBase(PostView):
+    """ Its panel: "market", "missions", "hangar" or none """
 
-    docked = BooleanProperty(False)
-    # Open: "market", "missions", "hangar" or none
-    panel = StringProperty('')
-    shown = BooleanProperty(False)      # its buttons, with no panel open
-    can_unload = BooleanProperty(False)
-    unloading = BooleanProperty(False)
-    crushing = BooleanProperty(False)   # rock, at the refinery
-    money = StringProperty('')
-    to_validate = BooleanProperty(False)  # a mission can be validated
     new_parts = BooleanProperty(False)  # a tier reached, not seen yet
-    full_row = BooleanProperty(False)   # the scanner button ends its row
     stranded = BooleanProperty(False)   # the ship, out of fuel
     tow_cost = StringProperty('')
 
@@ -50,7 +40,6 @@ class EarthBase(Widget):
         super().__init__(**kwargs)
         self.wallet = Wallet()
         self.inventory = Inventory()        # parts in the hangar
-        self.player: Player | None = None
         self.rng = Random()
         self.home = Post('Terre', EVERYTHING, self.rng)
         self.board: Board | None = None
@@ -91,6 +80,10 @@ class EarthBase(Widget):
             market.miner = player.miner
 
     @property
+    def post(self) -> Post:
+        return self.home
+
+    @property
     def depot(self) -> Depot:
         return self.home.depot
 
@@ -110,34 +103,17 @@ class EarthBase(Widget):
         if self.player is None or self.board is None:
             return
         player = self.player
-        ore, stock = player.miner.ore, self.depot.stock
         self.docked = player.docked_on(player.system.earth)
         self.stranded = player.stranded
         if self.stranded:
             self.tow_cost = credits_text(self.tow_price)
         found = self.home.update(
-            dt, Docked(ore, player.tank, player.hull) if self.docked else None,
-            self.wallet,
+            dt, player.served if self.docked else None, self.wallet,
         )
-        # The market shows what was found, and when it is over
-        if self.panel == 'market' and (
-            found or self.crushing != self.crusher.crushing
-        ):
-            self.ids.market.refresh()
-        self.crushing = self.crusher.crushing
+        self.show_post(self.home, found, self.board, self.wallet)
         if not self.docked:
             self.panel = ''
-        self.unloading = self.depot.unloading
-        self.can_unload = (
-            self.docked and not self.unloading and cargo_total(ore) > 0
-        )
-        self.money = credits_text(self.wallet.credits)
-        self.to_validate = any(
-            mission.can_validate(stock) for mission in self.board.active
-        )
         self.new_parts = tier(self.board.validated) > self.seen_tier
-        if self.docked:
-            show_depot(self.ids.depot, self.depot, self.crushing)
 
     @property
     def tow_price(self) -> int:
@@ -156,10 +132,6 @@ class EarthBase(Widget):
             tow(self.tow_price, self.wallet)
             player.restart(player.design)
 
-    def unload(self) -> None:
-        if self.player is not None and self.player.docked:
-            self.depot.start(self.player.miner.ore)
-
     def open(self, panel: str) -> None:
         if self.player is None or not self.player.docked:
             return
@@ -173,12 +145,6 @@ class EarthBase(Widget):
             self.ids.missions.laser = self.player.stats.laser
             self.ids.missions.refresh()
         self.panel = panel
-
-    def close(self) -> None:
-        self.panel = ''
-
-    def on_panel(self, instance: Widget, panel: str) -> None:
-        self.ids.missions.watch(panel == 'missions')
 
 
 load_style(__file__)

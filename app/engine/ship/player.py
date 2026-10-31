@@ -6,6 +6,7 @@ import math
 from random import Random
 from typing import Any
 
+from ...logic.base.post import Docked
 from ...logic.config import EXPLOSION_FRAGMENTS, EXPLOSION_SPEED, SHIP_COLOR
 from ...logic.mining.canisters import eject_cargo
 from ...logic.ship.config import (
@@ -146,6 +147,11 @@ class Player:
             self.ship is not None and self.parking is not None
             and self.landing is None and not self.miner.busy
         )
+
+    @property
+    def served(self) -> Docked:
+        """ As the post it is landed at sees it """
+        return Docked(self.miner.ore, self.tank, self.hull)
 
     def docked_on(self, body: Celestial) -> bool:
         return self.docked and self.parking is not None and (

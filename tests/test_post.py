@@ -1,5 +1,6 @@
 from random import Random
 
+from app.logic.base.missions import Board, Mission
 from app.logic.base.post import EVERYTHING, Docked, Post, Services
 from app.logic.base.wallet import Wallet
 from app.logic.ship.fuel import Tank
@@ -56,3 +57,22 @@ def test_a_shelter_cools_the_hull_down() -> None:
     hull.heat = .9
     post.update(1., Docked({}, Tank(100.), hull), Wallet())
     assert hull.heat < .9
+
+
+def test_a_post_tells_a_cargo_can_unload_where_it_has_a_depot() -> None:
+    assert Post('Terre', EVERYTHING, Random(7)).status(
+        {'iron': 5.}, None,
+    ).can_unload
+    assert not Post('Site', Services(), Random(8)).status(
+        {'iron': 5.}, None,
+    ).can_unload
+
+
+def test_a_mission_can_be_validated_from_the_depot_and_the_cargo() -> None:
+    post = Post('Terre', EVERYTHING, Random(9))
+    board = Board(Random(10), Wallet())
+    board.active.append(Mission('Institut Cassini', {'iron': 10}, 100))
+    post.depot.stock['iron'] = 6.
+    assert not post.status({}, board).to_validate
+    assert post.status({'iron': 4.}, board).to_validate
+    assert not post.status({'iron': 4.}, None).to_validate

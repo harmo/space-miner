@@ -4,9 +4,11 @@ offers, its depot, and its work on each frame """
 from dataclasses import dataclass
 from random import Random
 
+from ..mining.ore import cargo_total
 from ..ship.fuel import Tank
 from ..ship.heat import Hull
 from .crushing import Crusher
+from .missions import Board
 from .refuel import fill
 from .unloading import Depot
 from .wallet import Wallet
@@ -35,6 +37,15 @@ class Docked:
     hull: Hull
 
 
+@dataclass(frozen=True)
+class PostStatus:
+    """ What a post tells, right now """
+    unloading: bool
+    crushing: bool
+    can_unload: bool          # a cargo into its depot
+    to_validate: bool         # a mission, from its depot and the cargo
+
+
 class Post:
 
     def __init__(self, name: str, services: Services, rng: Random) -> None:
@@ -42,6 +53,20 @@ class Post:
         self.services = services
         self.depot = Depot()
         self.crusher = Crusher(rng)
+
+    def status(self, cargo: dict[str, float],
+               board: Board | None) -> PostStatus:
+        """ `board` holding its missions, if it gives any """
+        depot = self.depot
+        return PostStatus(
+            depot.unloading, self.crusher.crushing,
+            self.services.depot and not depot.unloading
+            and cargo_total(cargo) > 0,
+            board is not None and any(
+                mission.can_validate(depot.stock, cargo)
+                for mission in board.active
+            ),
+        )
 
     def update(self, dt: float, ship: Docked | None,
                wallet: Wallet) -> list[str]:

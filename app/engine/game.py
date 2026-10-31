@@ -2,7 +2,7 @@
 
 import os
 from random import Random
-from typing import Any
+from typing import Any, cast
 
 # Imported for their side effect: they register the widgets of the kv file
 import kivent_core  # noqa: F401
@@ -27,6 +27,7 @@ from ..logic.ship.landing import Ground
 from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
 from .base.outposts import Outpost, found, open_trades
+from .base.post_view import PostView
 from .entities import setup_collisions, setup_state, step_systems
 from .keeper import Keeper
 from .ship.looks import ShipLooks
@@ -139,6 +140,14 @@ class Game(Widget):
     @property
     def camera(self) -> Any:
         return self.gameworld.system_manager['camera1']
+
+    @property
+    def stop(self) -> PostView | None:
+        """ The view of the post where the ship is landed, if any """
+        for view in (self.ids.base, self.ids.outpost):
+            if view.docked:
+                return cast(PostView, view)
+        return None
 
     # Game loop
 

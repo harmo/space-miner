@@ -6,6 +6,7 @@ rock of its depot there, with no missions. """
 import math
 from typing import Any
 
+from app.logic.base.config import CRUSH_RATE
 from app.logic.ship.config import LANDING_DURATION
 from app.logic.world.layout import sun_belt_orbit
 
@@ -106,7 +107,23 @@ def has_no_missions() -> None:
     check(view().trading and not view().contracting,
           'a market, but no missions')
     scenario.screenshot('refinery')
-    ceres().post.depot.stock['rock'] = 40.
+    scenario.player.miner.ore['rock'] = 40.
+
+
+@scenario.step(.2)
+def unloads_there() -> None:
+    scenario.press(view().ids.unload_button)
+
+
+@scenario.step(.5)
+def is_heard_unloading() -> None:
+    machine = scenario.game.soundtrack.unloading
+    check(machine.name == 'unloading', f'unloading there: {machine.name}')
+
+
+@scenario.step(3.)
+def opens_the_market() -> None:
+    check(ceres().post.depot.stock.get('rock') == 40., 'all of it unloaded')
     scenario.press(view().ids.market_button)
 
 
@@ -123,6 +140,15 @@ def into_other_ore() -> None:
     check(stock.get('rock', 0.) < 40. and len(stock) > 1,
           f'the rock is crushed there: {stock}')
     check(not scenario.base.depot.stock, 'not on the Earth')
+    machine = scenario.game.soundtrack.unloading
+    check(machine.name == 'crushing', f'heard: {machine.name}')
+    check(view().ids.market.crushing, 'as the market shows')
+
+
+@scenario.step(40. / CRUSH_RATE)
+def until_it_is_over() -> None:
+    check(not view().ids.market.crushing, 'the market shows it is over')
+    check(scenario.game.soundtrack.unloading.name is None, 'falling silent')
 
 
 scenario.run()
