@@ -150,11 +150,11 @@ PARTS = {
     ),
     # Plates of regolith, from the refinery, tinting the ship
     'regolith_shield': Part(
-        'Bouclier de régolithe', 'internal', (0., 0.), shield=.5,
+        'Bouclier de régolithe', 'internal', (0., 0.), shield=.35,
         price=3000, materials=(('regolith', 30), ('iron', 10)), tier=2,
     ),
     'heavy_shield': Part(
-        'Bouclier lourd', 'internal', (0., 0.), shield=.75,
+        'Bouclier lourd', 'internal', (0., 0.), shield=.6,
         price=12000, materials=(('regolith', 80), ('copper', 15)), tier=4,
     ),
     'scanner': Part(

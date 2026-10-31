@@ -1,8 +1,10 @@
 import pytest
 
-from app.logic.ship.config import REGOLITH_TINT
+from app.logic.ship.config import HEAT_COOLING, MAX_SHIELD, REGOLITH_TINT
+from app.logic.ship.heat import heating
 from app.logic.ship.parts import PARTS, effects
 from app.logic.ship.shipyard import Design, shielding, ship_stats, tint
+from app.logic.world.config import FLARE_BLAZE, FLARE_SURGE
 
 
 def test_no_shield_lets_all_the_heat_through() -> None:
@@ -16,11 +18,29 @@ def test_a_shield_stops_its_part_of_the_heat() -> None:
 
 
 def test_shields_stop_what_the_others_let_through() -> None:
-    assert shielding([.5, .75]) == pytest.approx(1 - .5 * .25)
+    assert shielding([.5, .4]) == pytest.approx(1 - .5 * .6)
     design = Design('hauler', {
         'internal_1': 'regolith_shield', 'internal_2': 'heavy_shield',
     })
-    assert ship_stats(design).shield == pytest.approx(.875)
+    assert ship_stats(design).shield == pytest.approx(1 - .65 * .4)
+
+
+def test_no_shield_stops_more_than_the_most_there_is() -> None:
+    assert shielding([.6, .6, .6]) == MAX_SHIELD
+    design = Design('cruiser', dict.fromkeys(
+        ('internal_1', 'internal_2', 'internal_3'), 'heavy_shield',
+    ))
+    assert ship_stats(design).shield == MAX_SHIELD
+
+
+def test_one_heavy_shield_still_heats_up_near_the_sun() -> None:
+    shield = PARTS['heavy_shield'].shield
+    assert heating(900., shield) > HEAT_COOLING
+
+
+def test_flares_stay_deadly_through_the_best_shields() -> None:
+    best = heating(900., MAX_SHIELD, FLARE_SURGE) - HEAT_COOLING
+    assert 1 / best < FLARE_BLAZE
 
 
 def test_shielded_ships_take_the_color_of_regolith() -> None:
@@ -34,4 +54,4 @@ def test_shielded_ships_take_the_color_of_regolith() -> None:
 def test_shields_are_made_of_regolith() -> None:
     for part in ('regolith_shield', 'heavy_shield'):
         assert dict(PARTS[part].materials)['regolith'] > 0
-    assert effects(PARTS['regolith_shield']) == '+50% bouclier thermique'
+    assert effects(PARTS['regolith_shield']) == '+35% bouclier thermique'

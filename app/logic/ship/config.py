@@ -22,6 +22,8 @@ HOT = .5                      # the gauge warns above
 OVERHEATING = .8
 REGOLITH_TINT = (.8, .62, .42)  # ships fully shielded take this color
 SHELTER_COOLING = .3          # a second, docked to a sheltering station
+# Of the heat, at most: flares stay deadly, and stations a refuge from them
+MAX_SHIELD = .8
 
 # Landing legs, the ship stands on them on the ground
 LEG_LENGTH = 4.               # behind the rear of the ship

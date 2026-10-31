@@ -6,6 +6,7 @@ from dataclasses import dataclass, field, replace
 from ..colors import Rgb
 from ..world.space import Vec2
 from .config import (
+    MAX_SHIELD,
     MIN_BURN,
     MIN_SPEED,
     MIN_THRUST,
@@ -140,11 +141,12 @@ def ship_stats(design: Design) -> ShipStats:
 
 
 def shielding(shields: list[float]) -> float:
-    """ Each stopping its part of what the others let through """
+    """ Each stopping its part of what the others let through, up to the
+    most any can stop """
     through = 1.
     for shield in shields:
         through *= 1 - shield
-    return 1 - through
+    return min(MAX_SHIELD, 1 - through)
 
 
 def tint(design: Design) -> Rgb:
