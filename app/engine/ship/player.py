@@ -84,7 +84,7 @@ class Player:
 
     def fit(self) -> None:
         """ Where the ship fits on each ground, for its width """
-        width = self.stats.size[1]
+        width = self.stats.size.width
         self.fits = {
             ground.body.entity_id: ground.spots(width)
             for ground in self.grounds
@@ -98,7 +98,7 @@ class Player:
         ground = ground or self.home
         body = ground.body
         direction = closest_spot(direction, self.spots(ground))
-        length = self.stats.size[0]
+        length = self.stats.size.length
         pos = landed_on(body, direction, length)
         entity_id = create_ship_entity(
             self.gameworld, pos, body.velocity, direction,
@@ -124,10 +124,7 @@ class Player:
         direction = math.atan2(y - body.pos[1], x - body.pos[0])
         return shortcut(
             surface_distance(position, body),
-            is_landed(
-                position, self.ship.velocity, self.ship.body.angle, body,
-                self.stats.size,
-            ),
+            is_landed(self.ship.pose, body, self.stats.size),
             over_ground(direction, self.spots(ground)),
         )
 
@@ -206,8 +203,8 @@ class Player:
         x, y = self.ship.position
         approach = math.atan2(y - body.pos[1], x - body.pos[0])
         self.landing = Landing(
-            body, (x, y), self.ship.body.angle,
-            closest_spot(approach, self.spots(ground)), self.stats.size[0],
+            body, self.ship.pose, closest_spot(approach, self.spots(ground)),
+            self.stats.size.length,
         )
 
     @property
@@ -268,29 +265,23 @@ class Player:
             self.parking = None
             self.miner.work(ship, dt, self.system.attractors)
         elif self.parking is not None and heading is None:
-            parking = self.parking
-            ship.place(
-                parking.position, parking.body.velocity, parking.angle,
-            )
+            ship.place(self.parking.pose)
         else:
             self.parking = None
             ship.update(dt, heading, self.system.attractors)
             body = nearest(self.grounds, ship.position).body
             if heading is None and is_landed(
-                ship.position, ship.velocity, ship.body.angle, body,
-                self.stats.size,
+                ship.pose, body, self.stats.size,
             ):
-                self.parking = parking_at(
-                    body, ship.position, ship.body.angle
-                )
+                self.parking = parking_at(body, ship.pose)
 
     def follow(self, ship: Ship, landing: Landing, dt: float) -> None:
         landing.advance(dt)
-        ship.place(landing.position, landing.velocity, landing.angle)
+        ship.place(landing.pose)
         if landing.done:
             self.landing = None
             self.parking = parking_on(
-                landing.body, landing.end_direction, self.stats.size[0]
+                landing.body, landing.end_direction, self.stats.size.length
             )
 
     def on_contact(self, space: Any, arbiter: Any) -> bool:

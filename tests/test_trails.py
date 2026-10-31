@@ -14,7 +14,7 @@ DT = 1 / 60
 def test_a_bare_hull_has_its_own_nozzle_at_the_back() -> None:
     [((x, y), style)] = nozzles(Design())
     assert style == NOZZLE
-    assert x == pytest.approx(-ship_size(Design())[0] / 2)
+    assert x == pytest.approx(-ship_size(Design()).length / 2)
     assert y == pytest.approx(0.)
 
 
@@ -22,7 +22,7 @@ def test_an_engine_moves_the_nozzle_back() -> None:
     design = Design(parts={'rear': 'engine'})
     [((x, _), style)] = nozzles(design)
     assert style == 'engine'
-    assert x == pytest.approx(-ship_size(design)[0] / 2)
+    assert x == pytest.approx(-ship_size(design).length / 2)
 
 
 def test_some_engines_have_two_nozzles() -> None:

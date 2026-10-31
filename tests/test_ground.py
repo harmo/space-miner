@@ -27,6 +27,7 @@ from app.logic.ship.landing import (
     shortcut_text,
     surface_distance,
 )
+from app.logic.ship.pose import Pose
 from app.logic.world.space import Celestial
 
 from .worlds import SHIP_LENGTH, SHIP_WIDTH, SIZE, around, earth
@@ -103,13 +104,13 @@ def test_landed_ship() -> None:
     direction = 1.
     position = landed_on(planet, direction, SHIP_LENGTH)
     assert surface_distance(position, planet) < SHIP_LENGTH
-    assert is_landed(position, planet.velocity, direction, planet, SIZE)
+    assert is_landed(Pose(position, planet.velocity, direction), planet, SIZE)
     vx, vy = planet.velocity
     assert not is_landed(
-        position, (vx, vy + LANDED_SPEED * 2), direction, planet, SIZE
+        Pose(position, (vx, vy + LANDED_SPEED * 2), direction), planet, SIZE
     )
     assert not is_landed(
-        around(planet, 0, 1000.), planet.velocity, 0., planet, SIZE
+        Pose(around(planet, 0, 1000.), planet.velocity, 0.), planet, SIZE
     )
 
 
@@ -117,7 +118,7 @@ def test_hovering_ship_is_not_landed() -> None:
     planet = earth()
     position = around(planet, 90, landed_distance(planet, SHIP_LENGTH) + 13.)
     assert not is_landed(
-        position, planet.velocity, math.pi / 2, planet, SIZE
+        Pose(position, planet.velocity, math.pi / 2), planet, SIZE
     )
 
 
@@ -156,9 +157,10 @@ def test_parked_ship_knows_what_it_is_parked_on() -> None:
 def test_parked_ship_keeps_how_it_landed() -> None:
     planet = earth()
     pos = around(planet, 200, 215.)          # lying on its side
-    parking = parking_at(planet, pos, angle=1.)
+    parking = parking_at(planet, Pose(pos, (0., 0.), 1.))
     assert parking.position == pytest.approx(pos)
     assert parking.angle == 1.
+    assert parking.pose.velocity == planet.velocity
 
 
 # Grounds, of the bodies ships land on

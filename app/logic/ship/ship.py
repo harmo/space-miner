@@ -13,6 +13,7 @@ from ..world.space import (
     strongest,
 )
 from .config import HOLD_GAIN, HOLD_RESPONSE, LANDING_MAX_SPEED, SHIP_DRAG
+from .pose import Pose
 from .shipyard import ShipStats
 
 
@@ -67,20 +68,24 @@ class Ship:
         return self.body.velocity.x, self.body.velocity.y
 
     @property
+    def pose(self) -> Pose:
+        return Pose(self.position, self.velocity, self.body.angle)
+
+    @property
     def nose(self) -> Vec2:
         x, y = self.position
-        half_length = self.stats.size[0] / 2
+        half_length = self.stats.size.length / 2
         return (
             x + math.cos(self.body.angle) * half_length,
             y + math.sin(self.body.angle) * half_length,
         )
 
-    def place(self, position: Vec2, velocity: Vec2, angle: float) -> None:
+    def place(self, pose: Pose) -> None:
         """ Move the ship by hand, for animations """
         body = self.body
-        body.position = position
-        body.velocity = velocity
-        body.angle = angle
+        body.position = pose.position
+        body.velocity = pose.velocity
+        body.angle = pose.angle
         body.angular_velocity = 0
 
     def update(self, dt: float, heading: float | None,

@@ -37,7 +37,7 @@ def standing() -> float:
     player = scenario.player
     earth = scenario.game.system.earth
     distance = math.dist(player.ship.position, earth.pos)
-    return float(distance - earth.radius - player.stats.size[0] / 2)
+    return float(distance - earth.radius - player.stats.size.length / 2)
 
 
 @scenario.step(1.)
@@ -63,7 +63,7 @@ def buys_the_hauler() -> None:
     scenario.screenshot('hulls')
     check(set(rows()) == set(HULLS), f'every hull is sold: {set(rows())}')
     check(rows()['scout'].action == 'fitted', 'on the scout')
-    remembered['length'] = scenario.player.stats.size[0]
+    remembered['length'] = scenario.player.stats.size.length
     scenario.press(scenario.button(rows()['hauler'], 'Acheter'))
 
 
@@ -74,7 +74,7 @@ def moved_onto_it() -> None:
     check(sorted(player.design.parts.values()) == ['fins', 'fins', 'laser'],
           'with its parts')
     check(player.stats.capacity >= HULLS['hauler'].capacity, 'roomier')
-    check(player.stats.size[0] > remembered['length'], 'bigger')
+    check(player.stats.size.length > remembered['length'], 'bigger')
     check(standing() == pytest.approx(LEG_LENGTH, abs=.5),
           f'standing on its legs: {standing():.1f}')
     scenario.press(scenario.button(rows()['cruiser'], 'Acheter'))

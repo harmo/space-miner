@@ -7,6 +7,7 @@ from app.logic.ship.landing import (
     landed_distance,
     landed_on,
 )
+from app.logic.ship.pose import Pose
 from app.logic.ship.ship import is_crash
 from app.logic.world.space import Celestial, Vec2, angle_diff
 
@@ -14,6 +15,10 @@ from .worlds import SHIP_LENGTH, around, earth
 
 DURATION = 3.
 STEPS = 300
+
+
+def flying(position: Vec2, angle: float = 0.) -> Pose:
+    return Pose(position, (0., 0.), angle)
 
 
 def fly_landing(planet: Celestial, landing: Landing) -> list[float]:
@@ -38,9 +43,12 @@ def test_landing_starts_where_the_ship_is() -> None:
     planet = earth()
     start = around(planet, 30, 600.)
     landing = Landing(
-        planet, start, 0., math.radians(30), SHIP_LENGTH, DURATION
+        planet, flying(start), math.radians(30), SHIP_LENGTH, DURATION
     )
     assert landing.position == pytest.approx(start)
+    assert landing.pose == Pose(
+        landing.position, landing.velocity, landing.angle,
+    )
 
 
 @pytest.mark.parametrize('start_degrees, spot_degrees', [
@@ -51,7 +59,7 @@ def test_landing_ends_on_the_spot(start_degrees: float,
     planet = earth()
     spot = math.radians(spot_degrees)
     landing = Landing(
-        planet, around(planet, start_degrees, 600.), 0., spot,
+        planet, flying(around(planet, start_degrees, 600.)), spot,
         SHIP_LENGTH, DURATION,
     )
     fly_landing(planet, landing)
@@ -64,7 +72,7 @@ def test_landing_ends_on_the_spot(start_degrees: float,
 def test_landing_comes_down_steadily_and_never_inside() -> None:
     planet = earth()
     distances = fly_landing(planet, Landing(
-        planet, around(planet, 90, 900.), 0., math.radians(-20),
+        planet, flying(around(planet, 90, 900.)), math.radians(-20),
         SHIP_LENGTH, DURATION,
     ))
     assert distances == sorted(distances, reverse=True)
@@ -74,7 +82,7 @@ def test_landing_comes_down_steadily_and_never_inside() -> None:
 def test_landing_goes_around_the_short_way() -> None:
     planet = earth()
     landing = Landing(
-        planet, around(planet, 170, 500.), 0., math.radians(-170),
+        planet, flying(around(planet, 170, 500.)), math.radians(-170),
         SHIP_LENGTH, DURATION,
     )
     directions = []
@@ -88,7 +96,7 @@ def test_landing_goes_around_the_short_way() -> None:
 def test_landing_touches_down_softly() -> None:
     planet = earth()
     landing = Landing(
-        planet, around(planet, 180, 800.), 0., math.radians(120),
+        planet, flying(around(planet, 180, 800.)), math.radians(120),
         SHIP_LENGTH, DURATION,
     )
     fly_landing(planet, landing)
@@ -103,7 +111,7 @@ def test_landing_velocity_matches_its_motion() -> None:
     planet = earth()
     assert planet.orbit
     landing = Landing(
-        planet, around(planet, -20, 540.), 0., math.radians(60),
+        planet, flying(around(planet, -20, 540.)), math.radians(60),
         SHIP_LENGTH, DURATION,
     )
     landing.advance(1.)
@@ -121,7 +129,7 @@ def test_nose_turns_the_short_way() -> None:
     planet = earth()
     # Nose up from slightly right of up: turning left would be the long way
     landing = Landing(
-        planet, around(planet, 90, 600.), math.pi / 2 - .2,
+        planet, flying(around(planet, 90, 600.), math.pi / 2 - .2),
         math.pi / 2, SHIP_LENGTH, DURATION,
     )
     angles = []

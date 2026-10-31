@@ -15,6 +15,7 @@ from .config import (
 from .hulls import HULLS, Hull, Slot
 from .lasers import BEST
 from .parts import PARTS, Part
+from .pose import ShipSize
 
 # Lower left corner, width and height
 Rect = tuple[float, float, float, float]
@@ -37,7 +38,7 @@ class ShipStats:
     capacity: float
     laser: int
     scan: float               # reach of the scanners
-    size: Vec2                # length, width
+    size: ShipSize
     tank: float = 0.          # units of fuel
     burn: float = 0.          # fuel a second at full thrust
     shield: float = 0.        # part of the heat of the sun stopped
@@ -102,10 +103,10 @@ def pieces(design: Design) -> list[tuple[str, Rect]]:
     ]
 
 
-def ship_size(design: Design) -> Vec2:
+def ship_size(design: Design) -> ShipSize:
     """ Length and width of the whole ship """
     _, _, length, width = bounds([rect for _, rect in pieces(design)])
-    return length, width
+    return ShipSize(length, width)
 
 
 def scan_reach(hull: float, parts: list[float]) -> float:

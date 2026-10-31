@@ -8,6 +8,7 @@ from app.logic.ship.config import (
     MINING_DISTANCE,
     SHIP_DRAG,
 )
+from app.logic.ship.pose import Pose, ShipSize
 from app.logic.ship.ship import Ship, is_crash
 from app.logic.ship.shipyard import ShipStats
 from app.logic.world.config import (
@@ -25,7 +26,7 @@ SHIP_LENGTH = 40.
 SHIP_MAX_SPEED = 500.
 STATS = ShipStats(
     max_speed=SHIP_MAX_SPEED, thrust=1.5, turn_speed=8., capacity=60.,
-    laser=1, scan=0., size=(SHIP_LENGTH, 25.),
+    laser=1, scan=0., size=ShipSize(SHIP_LENGTH, 25.),
 )
 
 
@@ -230,3 +231,10 @@ def test_locked_ship_stays_in_laser_range() -> None:
     )
     hold(ship, body, 6., system)
     assert math.dist(ship.nose, asteroid.pos) < LASER_RANGE
+
+
+def test_a_ship_placed_stands_as_told() -> None:
+    ship = Ship(1, FakeBody(), STATS)
+    pose = Pose((10., 20.), (3., 4.), 1.)
+    ship.place(pose)
+    assert ship.pose == pose

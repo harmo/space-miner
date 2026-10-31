@@ -2,11 +2,12 @@
 
 import math
 
+from app.logic.ship.pose import ShipSize
 from app.logic.world.space import Celestial, Orbit, Vec2
 
 SHIP_LENGTH = 40.
 SHIP_WIDTH = 25.
-SIZE = (SHIP_LENGTH, SHIP_WIDTH)
+SIZE = ShipSize(SHIP_LENGTH, SHIP_WIDTH)
 
 
 def earth() -> Celestial:

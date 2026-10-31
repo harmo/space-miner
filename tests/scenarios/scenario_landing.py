@@ -20,7 +20,7 @@ def rear_above_ground() -> float:
     player = scenario.player
     earth = scenario.game.system.earth
     distance = math.dist(player.ship.position, earth.pos)
-    return float(distance - earth.radius - player.stats.size[0] / 2)
+    return float(distance - earth.radius - player.stats.size.length / 2)
 
 
 def hover(direction: float) -> None:

@@ -16,6 +16,7 @@ from .config import (
     LEG_LENGTH,
     SHORTCUT_RANGE,
 )
+from .pose import Pose, ShipSize
 
 # Hidden, shown but too far to be used, close enough but not above where
 # the ship can land,
@@ -97,6 +98,10 @@ class Parking:
             y + math.sin(self.direction) * self.distance,
         )
 
+    @property
+    def pose(self) -> Pose:
+        return Pose(self.position, self.body.velocity, self.angle)
+
 
 def parking_on(body: Celestial, direction: float,
                length: float) -> Parking:
@@ -106,12 +111,13 @@ def parking_on(body: Celestial, direction: float,
     )
 
 
-def parking_at(body: Celestial, pos: Vec2, angle: float) -> Parking:
+def parking_at(body: Celestial, pose: Pose) -> Parking:
     """ Landed where the ship is, as it is """
     x, y = body.pos
+    px, py = pose.position
     return Parking(
-        body, math.atan2(pos[1] - y, pos[0] - x), math.dist(pos, (x, y)),
-        angle,
+        body, math.atan2(py - y, px - x), math.dist((px, py), (x, y)),
+        pose.angle,
     )
 
 
@@ -159,26 +165,27 @@ def surface_distance(pos: Vec2, body: Celestial) -> float:
 
 
 def ground_gap(pos: Vec2, angle: float, body: Celestial,
-               size: Vec2) -> float:
+               size: ShipSize) -> float:
     """ Between the ground and the ship, a box of `size` turned by
     `angle`: it lies closer to the ground on its side than on its nose """
     x, y = body.pos
-    length, width = size
     tilt = angle - math.atan2(pos[1] - y, pos[0] - x)
     reach = (
-        abs(math.cos(tilt)) * length / 2 + abs(math.sin(tilt)) * width / 2
+        abs(math.cos(tilt)) * size.length / 2
+        + abs(math.sin(tilt)) * size.width / 2
     )
     return surface_distance(pos, body) - reach
 
 
-def is_landed(pos: Vec2, velocity: Vec2, angle: float,
-              body: Celestial, size: Vec2) -> bool:
+def is_landed(pose: Pose, body: Celestial, size: ShipSize) -> bool:
     """ Touching the ground, or standing on its legs, at the speed of the
     body """
     vx, vy = body.velocity
+    ship_vx, ship_vy = pose.velocity
     return (
-        ground_gap(pos, angle, body, size) < LEG_LENGTH + LANDED_GAP
-        and math.hypot(velocity[0] - vx, velocity[1] - vy) < LANDED_SPEED
+        ground_gap(pose.position, pose.angle, body, size)
+        < LEG_LENGTH + LANDED_GAP
+        and math.hypot(ship_vx - vx, ship_vy - vy) < LANDED_SPEED
     )
 
 
@@ -214,17 +221,18 @@ class Landing:
     arrives without speed. Computed relative to the body, which keeps
     moving meanwhile. """
 
-    def __init__(self, body: Celestial, start: Vec2, start_angle: float,
+    def __init__(self, body: Celestial, start: Pose,
                  end_direction: float, length: float,
                  duration: float = LANDING_DURATION) -> None:
         self.body = body
         x, y = body.pos
-        self.start_direction = math.atan2(start[1] - y, start[0] - x)
+        start_x, start_y = start.position
+        self.start_direction = math.atan2(start_y - y, start_x - x)
         self.end_direction = end_direction
         self.around = angle_diff(end_direction, self.start_direction)
-        self.start_distance = math.dist(start, (x, y))
+        self.start_distance = math.dist(start.position, (x, y))
         self.end_distance = landed_distance(body, length)
-        self.start_angle = start_angle
+        self.start_angle = start.angle
         self.duration = duration
         self.age = 0.
 
@@ -276,3 +284,7 @@ class Landing:
         """ The nose turns towards space during the first half """
         turn = angle_diff(self.end_direction, self.start_angle)
         return self.start_angle + turn * ease(min(1., 2 * self.progress))
+
+    @property
+    def pose(self) -> Pose:
+        return Pose(self.position, self.velocity, self.angle)
