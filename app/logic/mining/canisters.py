@@ -7,8 +7,9 @@ from random import Random
 
 from ..world.space import Celestial, Vec2
 from .config import (
-    CANISTER_CLIMB,
     CANISTER_DRAG,
+    CANISTER_GATHER,
+    CANISTER_GATHER_SPEED,
     CANISTER_ORBIT_ALTITUDE,
     CANISTER_ORBIT_DRAG,
     CANISTER_SPEED,
@@ -27,6 +28,7 @@ class CanisterPlan:
     velocity: Vec2
     angle: float
     spin: float               # radians/s
+    altitude: float           # of its orbit, around a planet
 
 
 def canister_texture(mineral: str) -> str:
@@ -55,6 +57,7 @@ def eject_cargo(rng: Random, ore: Hold, pos: Vec2,
                 ),
                 angle=rng.uniform(0, 2 * math.pi),
                 spin=math.radians(rng.uniform(-CANISTER_SPIN, CANISTER_SPIN)),
+                altitude=rng.uniform(*CANISTER_ORBIT_ALTITUDE),
             ))
     return plans
 
@@ -72,20 +75,21 @@ def flow_velocity(pos: Vec2, center: Vec2, center_velocity: Vec2,
     )
 
 
-def orbit_flow(pos: Vec2, body: Celestial, dt: float) -> Vec2:
-    """ Velocity of the circular orbit around `body` through pos, at the
-    speed its pull allows there, and rising when too low to be picked up.
-    All turn the same way: canisters are deadly, and would cross head-on
-    otherwise. """
+def orbit_flow(pos: Vec2, body: Celestial, altitude: float,
+               dt: float) -> Vec2:
+    """ Velocity turning around `body`, at the speed its pull allows, and
+    closing in on the orbit at `altitude` above its surface. All turn the
+    same way: canisters are deadly, and would cross head-on otherwise. """
     dx, dy = pos[0] - body.pos[0], pos[1] - body.pos[1]
     distance = math.hypot(dx, dy)
     angular_speed = math.sqrt(math.hypot(*body.pull(*pos)) / distance)
     flow_x, flow_y = flow_velocity(
         pos, body.pos, body.velocity, angular_speed, dt,
     )
-    too_low = body.radius + CANISTER_ORBIT_ALTITUDE - distance
-    climb = max(0., too_low) * CANISTER_CLIMB / distance
-    return flow_x + dx * climb, flow_y + dy * climb
+    away = (body.radius + altitude - distance) * CANISTER_GATHER
+    limit = CANISTER_GATHER_SPEED
+    gather = max(-limit, min(limit, away)) / distance
+    return flow_x + dx * gather, flow_y + dy * gather
 
 
 def drift(velocity: Vec2, flow: Vec2, dt: float,
@@ -98,7 +102,8 @@ def drift(velocity: Vec2, flow: Vec2, dt: float,
     )
 
 
-def settle(pos: Vec2, velocity: Vec2, body: Celestial, dt: float) -> Vec2:
+def settle(pos: Vec2, velocity: Vec2, body: Celestial, altitude: float,
+           dt: float) -> Vec2:
     """ Turning around `body` as fast as the canister goes, not to fly off
     or fall in while it picks up speed, what departs from the orbit fading
     away """
@@ -108,5 +113,5 @@ def settle(pos: Vec2, velocity: Vec2, body: Celestial, dt: float) -> Vec2:
     turn = ((dx * vy - dy * vx) / square) ** 2 * dt
     return drift(
         (velocity[0] - dx * turn, velocity[1] - dy * turn),
-        orbit_flow(pos, body, dt), dt, CANISTER_ORBIT_DRAG,
+        orbit_flow(pos, body, altitude, dt), dt, CANISTER_ORBIT_DRAG,
     )

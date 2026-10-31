@@ -10,6 +10,7 @@ from app.logic.world.space import (
     Station,
     Vec2,
     angle_diff,
+    closest_pulling,
     closest_to,
     nearest,
     strongest,
@@ -220,3 +221,14 @@ def test_closest_thing_under_a_click() -> None:
     assert closest_to((115., 0.), [small, big], 40.) is big
     assert closest_to((90., 0.), [small, big], 40.) is small
     assert closest_to((0., 500.), [small, big], 40.) is None
+
+
+def test_the_closest_pulling_body_is_not_the_strongest() -> None:
+    sun = Celestial(0, 600., pos=(0., 0.), gravity=400.)
+    small = Celestial(1, 100., orbit=Orbit(sun, 1500., 0., 0.), gravity=125.)
+    big = Celestial(2, 300., orbit=Orbit(sun, 3000., 0., 0.), gravity=375.)
+    attractors = [sun, small, big]
+    assert closest_pulling((1700., 0.), attractors) is small
+    assert closest_pulling((2800., 0.), attractors) is big
+    assert closest_pulling((0., 900.), attractors) is None
+    assert closest_pulling((20000., 0.), attractors) is None

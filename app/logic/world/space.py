@@ -198,6 +198,19 @@ def nearest(pos: Vec2, bodies: Iterable[Celestial],
     return closest
 
 
+def closest_pulling(pos: Vec2,
+                    attractors: Sequence[Celestial]) -> Celestial | None:
+    """ The closest body on an orbit whose gravity reaches pos: the sun is
+    not one """
+    pulling = [
+        body for body in attractors
+        if body.orbit is not None and any(body.pull(*pos))
+    ]
+    return min(
+        pulling, key=lambda body: math.dist(pos, body.pos), default=None,
+    )
+
+
 def strongest(pos: Vec2, attractors: Sequence[Celestial]) -> Celestial | None:
     """ The body pulling the most at pos """
     best, best_pull = None, 0.

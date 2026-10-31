@@ -91,6 +91,7 @@ def test_drift_fades_towards_the_flow() -> None:
 # Settling on an orbit around a planet
 
 DT = 1 / 60
+ALTITUDE = 150.
 
 
 def planet() -> Celestial:
@@ -101,7 +102,7 @@ def settled(body: Celestial, pos: Vec2, velocity: Vec2,
             seconds: float) -> tuple[Vec2, Vec2]:
     """ Where a canister thrown from pos ends up, and how fast """
     for _ in range(round(seconds / DT)):
-        velocity = settle(pos, velocity, body, DT)
+        velocity = settle(pos, velocity, body, ALTITUDE, DT)
         pos = (pos[0] + velocity[0] * DT, pos[1] + velocity[1] * DT)
     return pos, velocity
 
@@ -133,17 +134,28 @@ def test_canisters_all_orbit_the_same_way() -> None:
         assert dx * velocity[1] - dy * velocity[0] > 0
 
 
-def test_canisters_rise_above_the_surface() -> None:
+@pytest.mark.parametrize('distance, thrown', [
+    (210., (-50., 0.)), (500., (0., 0.)), (1100., (80., 40.)),
+])
+def test_canisters_gather_at_their_height(distance: float,
+                                          thrown: Vec2) -> None:
     body = planet()
-    low = (1000. + body.radius + 10., 500.)
-    pos, _ = settled(body, low, (-50., 0.), 60.)
-    altitude = math.dist(pos, body.pos) - body.radius
-    assert CANISTER_ORBIT_ALTITUDE <= altitude < 2 * CANISTER_ORBIT_ALTITUDE
+    pos, _ = settled(body, (1000. + distance, 500.), thrown, 40.)
+    assert math.dist(pos, body.pos) - body.radius == pytest.approx(
+        ALTITUDE, abs=8.,
+    )
+
+
+def test_canisters_are_thrown_for_orbits_of_their_own() -> None:
+    plans = eject_cargo(Random(4), {'rock': 100.}, (0., 0.), (0., 0.), 0.)
+    low, high = CANISTER_ORBIT_ALTITUDE
+    assert all(low <= plan.altitude <= high for plan in plans)
+    assert len({plan.altitude for plan in plans}) == len(plans)
 
 
 def test_orbits_hold_for_as_long_as_a_game() -> None:
     body = planet()
-    pos, velocity = settled(body, (1500., 500.), (0., 0.), 20.)
+    pos, velocity = settled(body, (1500., 500.), (0., 0.), 40.)
     distance = math.dist(pos, body.pos)
     pos, _ = settled(body, pos, velocity, 600.)
     assert math.dist(pos, body.pos) == pytest.approx(distance, rel=.01)
@@ -154,9 +166,11 @@ def test_canisters_keep_up_with_a_moving_planet() -> None:
     body = Celestial(1, 200., orbit=Orbit(sun, 5000., 25., 0.), gravity=250.)
     pos = (body.pos[0] + 500., body.pos[1])
     velocity = body.velocity
-    for _ in range(round(30 / DT)):
-        velocity = settle(pos, velocity, body, DT)
+    for _ in range(round(40 / DT)):
+        velocity = settle(pos, velocity, body, ALTITUDE, DT)
         pos = (pos[0] + velocity[0] * DT, pos[1] + velocity[1] * DT)
         assert body.orbit is not None
         body.orbit.advance(DT)
-    assert math.dist(pos, body.pos) == pytest.approx(500., rel=.05)
+    assert math.dist(pos, body.pos) == pytest.approx(
+        body.radius + ALTITUDE, rel=.05,
+    )

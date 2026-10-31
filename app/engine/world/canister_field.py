@@ -20,6 +20,7 @@ from ...logic.world.space import (
     Celestial,
     Orbit,
     Vec2,
+    closest_pulling,
     closest_to,
     nearest,
     strongest,
@@ -34,6 +35,7 @@ class Canister:
     amount: float
     entity_id: int
     body: Any                 # cymunk Body
+    altitude: float           # of its orbit, around a planet
     # Asteroid it turns with, looked for again from time to time
     neighbor: Celestial | None = field(default=None, repr=False)
 
@@ -66,7 +68,7 @@ class CanisterField:
             entity_id = create_canister_entity(self.gameworld, plan)
             self.canisters.append(Canister(
                 plan.mineral, plan.amount, entity_id,
-                get_body(self.gameworld, entity_id),
+                get_body(self.gameworld, entity_id), plan.altitude,
             ))
         while len(self.canisters) > CANISTER_MAX:
             self.remove(self.canisters[0])
@@ -80,10 +82,9 @@ class CanisterField:
 
     def update(self, dt: float, asteroids: Sequence[Celestial],
                attractors: Sequence[Celestial]) -> None:
-        """ Canisters settle on an orbit around the planet pulling them,
-        unless they turn with its own asteroids. Away from planets, they
-        slow down relative to the asteroids around them and turn with
-        them, or stop along with the sun. """
+        """ Canisters gather on an orbit around the closest planet in
+        reach. Away from planets, they slow down relative to the asteroids
+        around them and turn with them, or stop along with the sun. """
         self.neighbors_in -= dt
         if self.neighbors_in <= 0:
             self.neighbors_in = CANISTER_NEIGHBOR_PERIOD
@@ -95,18 +96,20 @@ class CanisterField:
 
         for canister in self.canisters:
             pos, velocity = canister.pos, canister.velocity
-            attractor = strongest(pos, attractors)
-            planet = attractor if attractor and attractor.orbit else None
+            planet = closest_pulling(pos, attractors)
             neighbor = canister.neighbor
             orbit = neighbor.orbit if neighbor in alive and neighbor else None
-            if orbit is not None and planet in (None, orbit.parent):
+            if planet is not None:
+                canister.body.velocity = settle(
+                    pos, velocity, planet, canister.altitude, dt,
+                )
+            elif orbit is not None:
                 parent = orbit.parent
                 canister.body.velocity = drift(velocity, flow_velocity(
                     pos, parent.pos, parent.velocity, orbit.angular_speed, dt,
                 ), dt)
-            elif planet is not None:
-                canister.body.velocity = settle(pos, velocity, planet, dt)
             else:
+                attractor = strongest(pos, attractors)
                 flow = attractor.velocity if attractor else (0., 0.)
                 canister.body.velocity = drift(velocity, flow, dt)
 

@@ -1,8 +1,11 @@
-""" Crashing into a planet: the canisters settle on an orbit around it,
-above its surface, where the next ship picks them up """
+""" Crashing into a planet: the canisters gather on an orbit close to it,
+those lost far away from it too, where the next ship picks them up """
 
 import math
 from typing import Any
+
+from app.logic.mining.canisters import eject_cargo
+from app.logic.mining.config import CANISTER_ORBIT_ALTITUDE
 
 from .harness import Scenario
 
@@ -51,20 +54,28 @@ def explodes() -> None:
     check(scenario.player.ship is None, 'the ship explodes')
     check(len(canisters()) >= 5, f'into canisters: {len(canisters())}')
     scenario.screenshot('thrown')
+    body = planet()
+    x, y = body.pos
+    far = (x + body.radius * 4.5, y)
+    scenario.player.canisters.add(eject_cargo(
+        scenario.game.rng, {'copper': 20.}, far, body.velocity, 0.,
+    ))
 
 
-@scenario.step(10.)
+@scenario.step(14.)
 def settles_on_an_orbit() -> None:
     body = planet()
     for canister in canisters():
         x, y, vx, vy = relative(canister)
         distance = math.hypot(x, y)
-        check(distance > body.radius + 40, f'above it: {distance:.0f}')
+        low, high = CANISTER_ORBIT_ALTITUDE
+        check(low - 30 < distance - body.radius < high + 30,
+              f'close to it: {distance - body.radius:.0f}')
         speed = math.hypot(vx, vy)
         circular = math.sqrt(math.hypot(*body.pull(*canister.pos)) * distance)
-        check(abs(speed - circular) < .25 * circular,
+        check(abs(speed - circular) < .1 * circular,
               f'at orbital speed: {speed:.0f} for {circular:.0f}')
-        check(abs(x * vx + y * vy) / distance < .25 * circular,
+        check(abs(x * vx + y * vy) / distance < .1 * circular,
               f'around it: {x * vx + y * vy:.0f}')
     remembered['angles'] = [
         math.atan2(y, x) for x, y, _, _ in map(relative, canisters())
