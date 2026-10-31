@@ -38,3 +38,9 @@ PAD_DIRECTION = 90.           # degrees, from the center of their body
 CRUSH_RATE = 4.               # units of rock a second
 # Found in a unit of rock, the rest is regolith
 CRUSH_YIELDS = (('iron', .3), ('copper', .15), ('gold', .04), ('crystal', .02))
+# At Cérès, among so much rock: faster, and richer
+CERES_CRUSH_RATE = 12.
+CERES_CRUSH_YIELDS = (
+    ('iron', .3), ('copper', .2), ('gold', .1), ('crystal', .06),
+    ('ruby', .02),
+)

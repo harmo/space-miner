@@ -3,7 +3,8 @@ from random import Random
 import pytest
 
 from app.logic.base.config import CRUSH_RATE, CRUSH_YIELDS
-from app.logic.base.crushing import Crusher, sift
+from app.logic.base.crushing import PLAIN_REFINERY, Crusher, Refinery, sift
+from app.logic.base.sites import CERES, FRONTIER, ICARE
 
 
 def test_nothing_to_crush_without_rock() -> None:
@@ -43,5 +44,26 @@ def test_crushed_rock_gives_other_ore_now_and_then() -> None:
 
 def test_most_of_it_is_regolith() -> None:
     rng = Random(5)
-    regolith = sum(sift(rng) == 'regolith' for _ in range(1000))
+    regolith = sum(sift(rng, CRUSH_YIELDS) == 'regolith' for _ in range(1000))
     assert regolith > 400
+
+
+def test_a_refinery_sets_the_pace() -> None:
+    crusher = Crusher(Random(6), Refinery(rate=12.))
+    stock = {'rock': 100.}
+    crusher.start(stock)
+    crusher.update(stock, 1.)
+    assert stock['rock'] == pytest.approx(88.)
+
+
+def test_ceres_crushes_faster_and_richer_than_the_earth() -> None:
+    refinery, earth = CERES.refinery, PLAIN_REFINERY
+    assert refinery.rate == 3 * earth.rate
+    rich, plain = dict(refinery.yields), dict(earth.yields)
+    assert all(rich[name] >= chance for name, chance in plain.items())
+    assert rich['gold'] > plain['gold'] and 'ruby' in rich
+    assert sum(rich.values()) < 1.
+
+
+def test_only_ceres_has_a_refinery_of_its_own() -> None:
+    assert FRONTIER.refinery == ICARE.refinery == PLAIN_REFINERY

@@ -52,6 +52,7 @@ class MarketPanel(BoxLayout):
     rock = NumericProperty(0)           # units in the depot
     crushing = BooleanProperty(False)
     refinery = BooleanProperty(True)    # if the post has one
+    refinery_told = StringProperty('')
     selling = BooleanProperty(True)     # or the depot alone
 
     def __init__(self, **kwargs: Any) -> None:
@@ -93,6 +94,8 @@ class MarketPanel(BoxLayout):
         self.empty = not rows.children
         self.rock = whole_units(self.stock.get('rock', 0.))
         self.refinery = self.crusher is not None
+        if self.crusher is not None:
+            self.refinery_told = self.crusher.refinery.told
         self.crushing = self.crusher is not None and self.crusher.crushing
 
     @property

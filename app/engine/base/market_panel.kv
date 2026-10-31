@@ -66,7 +66,7 @@
             text:
                 f'Raffinerie  ·  concassage, {root.rock} roches' \
                 if root.crushing else \
-                'Raffinerie  ·  la roche rend du fer, du cuivre, un peu d\'or'
+                f'Raffinerie  ·  {root.refinery_told}'
             font_size: '13sp'
             color: 1, 1, 1, .7
             text_size: self.size

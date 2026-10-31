@@ -4,7 +4,8 @@ offers the ships landing: fuel, a depot, then a market and missions. """
 from dataclasses import dataclass, replace
 from typing import Literal
 
-from .config import PAD_WIDTH
+from .config import CERES_CRUSH_RATE, CERES_CRUSH_YIELDS, PAD_WIDTH
+from .crushing import PLAIN_REFINERY, Refinery
 from .post import Services
 
 Form = Literal['ground', 'orbit']    # landed on, or docked to
@@ -39,6 +40,7 @@ class Site:
     stages: tuple[Stage, ...]
     trade: Trade = Trade()
     pad_width: float = PAD_WIDTH  # pixels, where ships land
+    refinery: Refinery = PLAIN_REFINERY  # once it has one
 
     @property
     def gives_missions(self) -> bool:
@@ -65,13 +67,17 @@ FRONTIER = Site('Base Frontière', 'ground', (
 
 
 # In the middle of the belt around the sun: a relay to mine, keep and
-# crush ore there, without missions. Its pad is small, as it is.
+# crush ore there, without missions. Its pad is small, as it is, and its
+# refinery the best there is, among so much rock.
 CERES = Site('Comptoir de Cérès', 'ground', (
     Stage('Fondations', (('rock', 80),), FUEL),
     Stage('Entrepôt', (('rock', 120), ('iron', 30)), DEPOT),
     Stage('Raffinerie', (('rock', 150), ('iron', 40), ('copper', 20)),
           REFINING),
-), pad_width=60.)
+), pad_width=60., refinery=Refinery(
+    CERES_CRUSH_RATE, CERES_CRUSH_YIELDS,
+    'trois fois plus vite, et plus riche en or, cristal, rubis',
+))
 
 # Orbiting the first planet, close to the sun: a refuge to mine the ejecta
 # of flares, paying well for them

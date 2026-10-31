@@ -169,7 +169,7 @@ def bare_outpost(key: str, body: Celestial, rng: Random) -> Outpost:
     site = SITES[key]
     return Outpost(
         key, body, math.radians(PAD_DIRECTION), Construction(site),
-        Post(Services(), rng), rng,
+        Post(Services(), rng, site.refinery), rng,
     )
 
 
