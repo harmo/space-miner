@@ -3,15 +3,21 @@ from random import Random
 
 import pytest
 
-from app.logic.mining.canisters import drift, eject_cargo, flow_velocity
+from app.logic.mining.canisters import (
+    drift,
+    eject_cargo,
+    flow_velocity,
+    settle,
+)
 from app.logic.mining.config import (
     CANISTER_DRAG,
+    CANISTER_ORBIT_ALTITUDE,
     CANISTER_SPEED,
     CANISTER_SPIN,
     CANISTER_SPREAD,
     CANISTER_UNITS,
 )
-from app.logic.world.space import angle_diff
+from app.logic.world.space import Celestial, Orbit, Vec2, angle_diff
 
 ORE = {'rock': 23., 'gold': 6., 'ice': 1e-9}
 
@@ -80,3 +86,78 @@ def test_drift_fades_towards_the_flow() -> None:
     # After one second, 60 frames
     assert speeds[59] == pytest.approx(100. * math.exp(-CANISTER_DRAG))
     assert speeds[-1] < 1.
+
+
+# Settling on an orbit around a planet
+
+DT = 1 / 60
+
+
+def planet() -> Celestial:
+    return Celestial(1, 200., pos=(1000., 500.), gravity=250.)
+
+
+def settled(body: Celestial, pos: Vec2, velocity: Vec2,
+            seconds: float) -> tuple[Vec2, Vec2]:
+    """ Where a canister thrown from pos ends up, and how fast """
+    for _ in range(round(seconds / DT)):
+        velocity = settle(pos, velocity, body, DT)
+        pos = (pos[0] + velocity[0] * DT, pos[1] + velocity[1] * DT)
+    return pos, velocity
+
+
+def test_canisters_settle_on_an_orbit_at_the_speed_of_its_pull() -> None:
+    body = planet()
+    pos, velocity = settled(body, (1500., 500.), (0., 0.), 60.)
+    distance = math.dist(pos, body.pos)
+    pull = math.hypot(*body.pull(*pos))
+    assert math.hypot(*velocity) == pytest.approx(
+        math.sqrt(pull * distance), rel=1e-3,
+    )
+    radial = (pos[0] - 1000.) * velocity[0] + (pos[1] - 500.) * velocity[1]
+    assert abs(radial) / distance < 1.
+
+
+def test_canisters_settle_progressively() -> None:
+    body = planet()
+    _, early = settled(body, (1500., 500.), (0., 0.), .5)
+    orbit = math.sqrt(math.hypot(*body.pull(1500., 500.)) * 500.)
+    assert 0. < math.hypot(*early) < orbit / 3
+
+
+def test_canisters_orbit_the_way_they_were_going() -> None:
+    body = planet()
+    _, up = settled(body, (1500., 500.), (0., 60.), 30.)
+    pos, down = settled(body, (1500., 500.), (0., -60.), 30.)
+    dx, dy = pos[0] - 1000., pos[1] - 500.
+    assert dx * down[1] - dy * down[0] < 0
+    assert math.hypot(*up) == pytest.approx(math.hypot(*down), rel=1e-2)
+
+
+def test_canisters_rise_above_the_surface() -> None:
+    body = planet()
+    low = (1000. + body.radius + 10., 500.)
+    pos, _ = settled(body, low, (-50., 0.), 60.)
+    altitude = math.dist(pos, body.pos) - body.radius
+    assert CANISTER_ORBIT_ALTITUDE <= altitude < 2 * CANISTER_ORBIT_ALTITUDE
+
+
+def test_orbits_hold_for_as_long_as_a_game() -> None:
+    body = planet()
+    pos, velocity = settled(body, (1500., 500.), (0., 0.), 20.)
+    distance = math.dist(pos, body.pos)
+    pos, _ = settled(body, pos, velocity, 600.)
+    assert math.dist(pos, body.pos) == pytest.approx(distance, rel=.01)
+
+
+def test_canisters_keep_up_with_a_moving_planet() -> None:
+    sun = Celestial(0, 600.)
+    body = Celestial(1, 200., orbit=Orbit(sun, 5000., 25., 0.), gravity=250.)
+    pos = (body.pos[0] + 500., body.pos[1])
+    velocity = body.velocity
+    for _ in range(round(30 / DT)):
+        velocity = settle(pos, velocity, body, DT)
+        pos = (pos[0] + velocity[0] * DT, pos[1] + velocity[1] * DT)
+        assert body.orbit is not None
+        body.orbit.advance(DT)
+    assert math.dist(pos, body.pos) == pytest.approx(500., rel=.05)

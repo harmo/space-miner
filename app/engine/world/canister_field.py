@@ -4,7 +4,12 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from ...logic.mining.canisters import CanisterPlan, drift, flow_velocity
+from ...logic.mining.canisters import (
+    CanisterPlan,
+    drift,
+    flow_velocity,
+    settle,
+)
 from ...logic.mining.config import (
     CANISTER_FOLLOW_RANGE,
     CANISTER_MAX,
@@ -75,9 +80,10 @@ class CanisterField:
 
     def update(self, dt: float, asteroids: Sequence[Celestial],
                attractors: Sequence[Celestial]) -> None:
-        """ Canisters slow down relative to the asteroids around them, and
-        turn with them. Away from asteroids, they move along with what
-        pulls them the most. """
+        """ Canisters settle on an orbit around the planet pulling them,
+        unless they turn with its own asteroids. Away from planets, they
+        slow down relative to the asteroids around them and turn with
+        them, or stop along with the sun. """
         self.neighbors_in -= dt
         if self.neighbors_in <= 0:
             self.neighbors_in = CANISTER_NEIGHBOR_PERIOD
@@ -88,17 +94,21 @@ class CanisterField:
         alive = set(asteroids)
 
         for canister in self.canisters:
+            pos, velocity = canister.pos, canister.velocity
+            attractor = strongest(pos, attractors)
+            planet = attractor if attractor and attractor.orbit else None
             neighbor = canister.neighbor
-            if neighbor is not None and neighbor in alive and neighbor.orbit:
-                parent = neighbor.orbit.parent
-                flow = flow_velocity(
-                    canister.pos, parent.pos, parent.velocity,
-                    neighbor.orbit.angular_speed, dt,
-                )
+            orbit = neighbor.orbit if neighbor in alive and neighbor else None
+            if orbit is not None and planet in (None, orbit.parent):
+                parent = orbit.parent
+                canister.body.velocity = drift(velocity, flow_velocity(
+                    pos, parent.pos, parent.velocity, orbit.angular_speed, dt,
+                ), dt)
+            elif planet is not None:
+                canister.body.velocity = settle(pos, velocity, planet, dt)
             else:
-                attractor = strongest(canister.pos, attractors)
                 flow = attractor.velocity if attractor else (0., 0.)
-            canister.body.velocity = drift(canister.velocity, flow, dt)
+                canister.body.velocity = drift(velocity, flow, dt)
 
     def shift(self, shift: Vec2) -> None:
         for canister in self.canisters:

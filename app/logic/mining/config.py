@@ -11,7 +11,11 @@ CANISTER_SPREAD = 70.         # degrees around that direction
 CANISTER_SPIN = 120.          # degrees/s
 CANISTER_MAX = 60             # beyond, the oldest ones vanish
 # Once thrown, canisters slow down relative to the asteroids around them,
-# then turn with them, or move along with what pulls them the most
+# then turn with them, or stop along with the sun
 CANISTER_DRAG = .8
+# Near a planet, they settle on an orbit around it, slowly
+CANISTER_ORBIT_DRAG = .3
+CANISTER_ORBIT_ALTITUDE = 80.  # above its surface at least, to be picked up
+CANISTER_CLIMB = .5           # how fast they rise that high
 CANISTER_FOLLOW_RANGE = 2000.
 CANISTER_NEIGHBOR_PERIOD = .5  # seconds between looks for the neighbors

@@ -1,12 +1,16 @@
-""" Ore lost in a crash, thrown out of the ship in canisters """
+""" Ore lost in a crash, thrown out of the ship in canisters, which turn
+with the asteroids around them or settle on an orbit around a planet """
 
 import math
 from dataclasses import dataclass
 from random import Random
 
-from ..world.space import Vec2
+from ..world.space import Celestial, Vec2
 from .config import (
+    CANISTER_CLIMB,
     CANISTER_DRAG,
+    CANISTER_ORBIT_ALTITUDE,
+    CANISTER_ORBIT_DRAG,
     CANISTER_SPEED,
     CANISTER_SPIN,
     CANISTER_SPREAD,
@@ -68,10 +72,42 @@ def flow_velocity(pos: Vec2, center: Vec2, center_velocity: Vec2,
     )
 
 
-def drift(velocity: Vec2, flow: Vec2, dt: float) -> Vec2:
+def orbit_flow(pos: Vec2, velocity: Vec2, body: Celestial, dt: float) -> Vec2:
+    """ Velocity of the circular orbit around `body` through pos, at the
+    speed its pull allows there, turning the way the canister already
+    goes, and rising when too low to be picked up """
+    dx, dy = pos[0] - body.pos[0], pos[1] - body.pos[1]
+    distance = math.hypot(dx, dy)
+    vx, vy = velocity[0] - body.velocity[0], velocity[1] - body.velocity[1]
+    angular_speed = math.sqrt(math.hypot(*body.pull(*pos)) / distance)
+    flow_x, flow_y = flow_velocity(
+        pos, body.pos, body.velocity,
+        math.copysign(angular_speed, dx * vy - dy * vx), dt,
+    )
+    too_low = body.radius + CANISTER_ORBIT_ALTITUDE - distance
+    climb = max(0., too_low) * CANISTER_CLIMB / distance
+    return flow_x + dx * climb, flow_y + dy * climb
+
+
+def drift(velocity: Vec2, flow: Vec2, dt: float,
+          drag: float = CANISTER_DRAG) -> Vec2:
     """ The velocity relative to the flow fades away """
-    keep = math.exp(-CANISTER_DRAG * dt)
+    keep = math.exp(-drag * dt)
     return (
         flow[0] + (velocity[0] - flow[0]) * keep,
         flow[1] + (velocity[1] - flow[1]) * keep,
+    )
+
+
+def settle(pos: Vec2, velocity: Vec2, body: Celestial, dt: float) -> Vec2:
+    """ Turning around `body` as fast as the canister goes, not to fly off
+    or fall in while it picks up speed, what departs from the orbit fading
+    away """
+    dx, dy = pos[0] - body.pos[0], pos[1] - body.pos[1]
+    vx, vy = velocity[0] - body.velocity[0], velocity[1] - body.velocity[1]
+    square = dx * dx + dy * dy
+    turn = ((dx * vy - dy * vx) / square) ** 2 * dt
+    return drift(
+        (velocity[0] - dx * turn, velocity[1] - dy * turn),
+        orbit_flow(pos, velocity, body, dt), dt, CANISTER_ORBIT_DRAG,
     )
