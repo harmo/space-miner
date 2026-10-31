@@ -50,8 +50,9 @@
                 pos: self.x, self.y + dp(3)
                 size: self.width, dp(5)
                 radius: [dp(2.5)]
+            # Rounded rectangles keep their last shape at a width of 0
             Color:
-                rgba: (*root.color, .9)
+                rgba: (*root.color, .9 if root.fill > 0 else 0)
             RoundedRectangle:
                 pos: self.x, self.y + dp(3)
                 size: self.width * root.fill, dp(5)
