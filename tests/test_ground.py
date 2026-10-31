@@ -11,6 +11,7 @@ from app.logic.ship.config import (
 )
 from app.logic.ship.ground import (
     Ground,
+    Grounds,
     closest_spot,
     ground_gap,
     ground_margin,
@@ -18,7 +19,6 @@ from app.logic.ship.ground import (
     is_landed,
     landed_distance,
     landed_on,
-    nearest,
     over_ground,
     pad_edge,
     surface_distance,
@@ -175,8 +175,9 @@ def test_a_ground_tells_where_ships_fit() -> None:
 def test_the_nearest_ground_is_that_of_the_closest_surface() -> None:
     small = Ground(Celestial(1, 50., pos=(0., 0.)), (True,) * 360)
     big = Ground(Celestial(2, 400., pos=(1000., 0.)), (True,) * 360)
-    assert nearest([small, big], (480., 0.)) is big
-    assert nearest([small, big], (300., 0.)) is small
+    grounds = Grounds([small, big])
+    assert grounds.nearest((480., 0.)) is big
+    assert grounds.nearest((300., 0.)) is small
 
 
 def test_a_pad_is_ground_around_its_direction_only() -> None:
@@ -202,3 +203,22 @@ def test_the_shortcut_lands_or_docks() -> None:
     assert shortcut_text('ready', 'land') == 'Atterrir'
     assert shortcut_text('far', 'pad') == 'Atterrir'
     assert shortcut_text('ready', 'port') == "S'amarrer"
+
+
+def test_grounds_tell_their_home_and_what_stands_on_a_body() -> None:
+    home = Ground(earth(), (True,) * 360)
+    pad = Ground(Celestial(2, 100.), pad_edge(100., 0., 60.), 'pad')
+    grounds = Grounds([home, pad])
+    assert grounds.home is home
+    assert grounds.of(pad.body) is pad
+    assert grounds.of(Celestial(3, 100.)) is None
+    assert grounds.landable == {home.body.entity_id, 2}
+
+
+def test_grounds_know_where_a_ship_fits() -> None:
+    pad = Ground(Celestial(2, 100.), pad_edge(100., 0., 60.), 'pad')
+    grounds = Grounds([pad])
+    grounds.fit(SHIP_WIDTH)
+    assert grounds.spots(pad) == pad.spots(SHIP_WIDTH)
+    grounds.fit(SHIP_WIDTH * 2)
+    assert grounds.spots(pad) == pad.spots(SHIP_WIDTH * 2)

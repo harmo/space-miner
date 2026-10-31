@@ -116,6 +116,8 @@ def moment_of(game: 'Game') -> Moment:
     """ What can be heard changing, now """
     player, base = game.player, game.ids.base
     events = game.system.events
+    parking = player.parking
+    ground = player.grounds.of(parking.body) if parking else None
     return Moment(
         ship=player.spawned if player.ship else None,
         parked=player.parking is not None,
@@ -129,8 +131,5 @@ def moment_of(game: 'Game') -> Moment:
         stranded=player.stranded,
         warmth=player.heat.warmth,
         flare=events.flares.clock.phase,
-        port=player.parking is not None and any(
-            ground.kind == 'port' and ground.body is player.parking.body
-            for ground in player.grounds
-        ),
+        port=ground is not None and ground.kind == 'port',
     )

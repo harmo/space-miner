@@ -5,7 +5,6 @@ and the messages """
 from typing import TYPE_CHECKING
 
 from ...logic.hud import message
-from ...logic.ship.ground import nearest
 from .cargo_panel import show_cargo
 from .gauges import show_fuel, show_heat
 from .land_button import show_shortcut
@@ -26,7 +25,7 @@ def show_hud(game: 'Game') -> None:
     show_needs(ids.tracker, game.desks, player)
     game.land_glow = show_shortcut(
         ids.land_button, player.shortcut,
-        nearest(player.grounds, player.anchor).kind, game.time,
+        player.grounds.nearest(player.anchor).kind, game.time,
     )
     show_fuel(ids.fuel, player.tank)
     show_heat(ids.heat, player.heat)

@@ -61,13 +61,6 @@ def pad_edge(radius: float, direction: float,
     )
 
 
-def nearest(grounds: Sequence[Ground], pos: Vec2) -> Ground:
-    """ Of the grounds, the closest to `pos` """
-    return min(
-        grounds, key=lambda ground: surface_distance(pos, ground.body)
-    )
-
-
 def ground_margin(body: Celestial, width: float) -> int:
     """ Degrees of ground needed on each side of the ship center """
     return (
@@ -134,3 +127,43 @@ def is_landed(pose: Pose, body: Celestial, size: ShipSize) -> bool:
         < LEG_LENGTH + LANDED_GAP
         and math.hypot(ship_vx - vx, ship_vy - vy) < LANDED_SPEED
     )
+
+
+class Grounds:
+    """ Where ships can land, the first one their home where they come
+    back after a crash, and where the ship fits on each """
+
+    def __init__(self, grounds: Sequence[Ground]) -> None:
+        self.grounds = tuple(grounds)
+        self.fits: dict[int, list[float]] = {}  # spots, by body
+
+    @property
+    def home(self) -> Ground:
+        return self.grounds[0]
+
+    @property
+    def landable(self) -> set[int]:
+        """ Entities ships can land on rather than crash """
+        return {ground.body.entity_id for ground in self.grounds}
+
+    def fit(self, width: float) -> None:
+        """ For a ship of `width` """
+        self.fits = {
+            ground.body.entity_id: ground.spots(width)
+            for ground in self.grounds
+        }
+
+    def spots(self, ground: Ground) -> list[float]:
+        return self.fits[ground.body.entity_id]
+
+    def nearest(self, pos: Vec2) -> Ground:
+        """ The closest to `pos` """
+        return min(
+            self.grounds,
+            key=lambda ground: surface_distance(pos, ground.body),
+        )
+
+    def of(self, body: Celestial) -> Ground | None:
+        return next(
+            (ground for ground in self.grounds if ground.body is body), None,
+        )

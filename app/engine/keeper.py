@@ -56,7 +56,7 @@ class Keeper:
         parking = player.parking
         if player.ship is None or player.landing or parking is None:
             return None
-        if parking.body is player.home.body:
+        if parking.body is player.grounds.home.body:
             return Landed(EARTH, parking.direction)
         place = next((
             outpost.key for outpost in self.outposts

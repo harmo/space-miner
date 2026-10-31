@@ -77,7 +77,7 @@ def shows_the_needs() -> None:
         ('Fer', '14 / 18', False, ''), ('Cristal', '5 / 5', True, ''),
         ('Rubis', '0 / 3', False, '3'),
     ], f'the needs add up, in the cargo and the depot: {rows}')
-    ground = scenario.player.spots(scenario.player.home)
+    ground = scenario.player.grounds.spots(scenario.player.grounds.home)
     scenario.put_ship(scenario.above_earth(ground[len(ground) // 2], 200.),
                       scenario.game.system.earth.velocity)
 

@@ -18,10 +18,10 @@ from ...logic.ship.config import (
 from ...logic.ship.fuel import Tank
 from ...logic.ship.ground import (
     Ground,
+    Grounds,
     closest_spot,
     is_landed,
     landed_on,
-    nearest,
     over_ground,
     surface_distance,
 )
@@ -46,11 +46,9 @@ from .ship_textures import ship_texture
 class Player:
 
     def __init__(self, gameworld: GameWorld, system: SolarSystem,
-                 camera: Any, rng: Random, grounds: list[Ground]) -> None:
+                 camera: Any, rng: Random, grounds: Grounds) -> None:
         self.gameworld = gameworld
         self.system = system
-        # Where the ship can land, the first one its home where it comes
-        # back after a crash
         self.grounds = grounds
         self.camera = camera
         self.rng = rng
@@ -68,33 +66,18 @@ class Player:
         self.stats = ship_stats(self.design)
         self.condition = Condition(self.stats)
         self.looked_for = set(LOOKED_FOR)   # by its scanner
-        self.fits: dict[int, list[float]] = {}  # spots, by body
-        self.fit()
+        grounds.fit(self.stats.size.width)
         self.miner = Miner(
             system, self.canisters, rng, self.explosions, self.stats
         )
         self.spawn(math.radians(START_DIRECTION))
 
-    @property
-    def home(self) -> Ground:
-        return self.grounds[0]
-
-    def fit(self) -> None:
-        """ Where the ship fits on each ground, for its width """
-        width = self.stats.size.width
-        self.fits = {
-            ground.body.entity_id: ground.spots(width)
-            for ground in self.grounds
-        }
-
-    def spots(self, ground: Ground) -> list[float]:
-        return self.fits[ground.body.entity_id]
-
     def spawn(self, direction: float, ground: Ground | None = None) -> None:
         """ Landed home, or on `ground`, as close to `direction` as it can """
-        ground = ground or self.home
+        grounds = self.grounds
+        ground = ground or grounds.home
         body = ground.body
-        direction = closest_spot(direction, self.spots(ground))
+        direction = closest_spot(direction, grounds.spots(ground))
         length = self.stats.size.length
         pos = landed_on(body, direction, length)
         entity_id = create_ship_entity(
@@ -115,14 +98,14 @@ class Player:
         """ State of the landing shortcut """
         if self.ship is None or self.landing is not None:
             return 'hidden'
-        ground = nearest(self.grounds, self.ship.position)
+        ground = self.grounds.nearest(self.ship.position)
         body = ground.body
         x, y = position = self.ship.position
         direction = math.atan2(y - body.pos[1], x - body.pos[0])
         return shortcut(
             surface_distance(position, body),
             is_landed(self.ship.pose, body, self.stats.size),
-            over_ground(direction, self.spots(ground)),
+            over_ground(direction, self.grounds.spots(ground)),
         )
 
     @property
@@ -132,7 +115,8 @@ class Player:
         fill their tank as soon as they land. """
         if self.ship is None or not self.tank.empty or self.landing:
             return False
-        return self.parking is None or self.parking.body is not self.home.body
+        home = self.grounds.home.body
+        return self.parking is None or self.parking.body is not home
 
     @property
     def docked(self) -> bool:
@@ -159,7 +143,7 @@ class Player:
             return self.parking.body
         if self.landing is not None:
             return self.landing.body
-        return nearest(self.grounds, self.anchor).body
+        return self.grounds.nearest(self.anchor).body
 
     def refit(self, design: Design) -> None:
         """ Swap the ship for one built after `design`, where it is
@@ -167,12 +151,7 @@ class Player:
         parking = self.parking
         if parking is not None and self.docked:
             self.restart(design, parking.direction,
-                         self.ground_of(parking.body))
-
-    def ground_of(self, body: Celestial) -> Ground | None:
-        return next(
-            (ground for ground in self.grounds if ground.body is body), None,
-        )
+                         self.grounds.of(parking.body))
 
     def restart(self, design: Design,
                 direction: float = math.radians(START_DIRECTION),
@@ -186,7 +165,7 @@ class Player:
         self.design, self.stats = design, ship_stats(design)
         self.miner.stats = self.stats
         self.condition.refit(self.stats)
-        self.fit()
+        self.grounds.fit(self.stats.size.width)
         self.spawn(direction, ground)
 
     def land(self) -> None:
@@ -195,12 +174,13 @@ class Player:
             return
         self.miner.release()
         self.parking = None
-        ground = nearest(self.grounds, self.ship.position)
+        ground = self.grounds.nearest(self.ship.position)
         body = ground.body
         x, y = self.ship.position
         approach = math.atan2(y - body.pos[1], x - body.pos[0])
         self.landing = Landing(
-            body, self.ship.pose, closest_spot(approach, self.spots(ground)),
+            body, self.ship.pose,
+            closest_spot(approach, self.grounds.spots(ground)),
             self.stats.size.length,
         )
 
@@ -266,7 +246,7 @@ class Player:
         else:
             self.parking = None
             ship.update(dt, heading, self.system.attractors)
-            body = nearest(self.grounds, ship.position).body
+            body = self.grounds.nearest(ship.position).body
             if heading is None and is_landed(
                 ship.pose, body, self.stats.size,
             ):
@@ -286,8 +266,7 @@ class Player:
         removed while it runs: the explosion happens on the next frame """
         if self.ship is not None:
             crash = crash_of(
-                self.gameworld, self.ship, arbiter,
-                {ground.body.entity_id for ground in self.grounds},
+                self.gameworld, self.ship, arbiter, self.grounds.landable,
             )
             self.crash = crash or self.crash
         return True
