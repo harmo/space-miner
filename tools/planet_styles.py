@@ -39,39 +39,40 @@ class Style:
 
 
 STYLES = {
-    # Gas giant, banded in cream and brown, a great storm in the south
+    # Jupiter: banded in cream and brown, a great storm in the south
     'planet1': Style(
         colors('#e3cfa6', '#b9845a', '#ecdcbc', '#9c6640', '#d8ad7c'),
         hex_color('#f0d8b0'), bands=3.5, swirl=.12,
         storms=(Storm((.32, .3), (.34, .2), hex_color('#a8563c')),),
     ),
-    # Rocky and rusty, dark plains, craters and a polar cap
+    # Mars: rocky and rusty, dark plains, craters and a polar cap
     'planet2': Style(
         colors('#6e3424', '#9c4a2e', '#c0673e', '#d48a5a'),
         hex_color('#e0a080'), rocky=True, craters=9, caps=True,
     ),
-    # Ice giant, smooth cyan, its bands hardly seen
+    # Uranus: smooth cyan, its bands hardly seen
     'planet3': Style(
         colors('#82c8cc', '#74b9bf', '#93d4d6', '#7ac0c6'),
         hex_color('#c8f2f4'), bands=2., swirl=.08, streaks=.25,
     ),
-    # Violet giant, its bands stormy
+    # Mercury: bare dark rock, battered by craters, no air
     'planet4': Style(
-        colors('#a585d4', '#7a5aae', '#bba2e2', '#64468f', '#9273c6'),
-        hex_color('#d8c4f4'), bands=6., swirl=.16,
+        colors('#5f5750', '#7b716a', '#94887e', '#ada094'),
+        hex_color('#ffffff'), rocky=True, craters=30, glow=0.,
+        seas=.5, sea=hex_color('#4a433e'), shadow=(28, 24, 22),
     ),
-    # Wrapped in pink and cream clouds
+    # Venus: wrapped in pink and cream clouds
     'planet5': Style(
         colors('#e3b4a8', '#d59a90', '#efcfc2', '#c9867f'),
         hex_color('#f6dcd2'), bands=1.5, swirl=.5, streaks=.35,
     ),
-    # Pale gold, ringed
+    # Saturn: pale gold, ringed
     'planet6': Style(
         colors('#eedcaa', '#d9be80', '#f4e6c0', '#cfae6e'),
         hex_color('#f4e8c4'), bands=4., swirl=.08,
         ring=colors('#c9b07a', '#e6d4a4', '#a8916a', '#ddc996'),
     ),
-    # Deep blue, a dark storm and bright streaks of clouds
+    # Neptune: deep blue, a dark storm and bright streaks of clouds
     'planet7': Style(
         colors('#4a68c8', '#3550a8', '#5a7ad4', '#2e4596'),
         hex_color('#9fb6f0'), bands=2.5, swirl=.15, streaks=.5,

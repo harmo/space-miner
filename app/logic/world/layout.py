@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from random import Random
 
-from ..config import CERES, MOON, PLANETS, STATION
+from ..config import CERES, MOON, STATION
 from ..mining.minerals import ASTEROID_SHAPES, MINERALS, asteroid_texture
 from .config import (
     ASTEROID_MASS,
@@ -23,17 +23,16 @@ from .config import (
     CERES_RADIUS,
     CERES_REGROW_TIME,
     EARTH_ORBIT,
-    EARTH_RADIUS,
     FIRST_ORBIT,
     GAP_SPREAD,
     GRAVITY,
+    LINEUP,
     MOON_MASS,
     MOON_ORBIT,
     MOON_RADIUS,
     MOON_SPEED,
     ORBIT_GAPS,
     PLANET_MASS,
-    PLANET_RADIUS,
     PLANET_SPEED,
     REGROW_THRESHOLD,
     REGROW_TIME,
@@ -138,19 +137,16 @@ def orbital_speed(distance: float) -> float:
 def plan_system(rng: Random) -> SystemPlan:
     orbits = plan_orbits(rng)
     distances = planet_orbits(orbits)
-    textures = rng.sample(PLANETS, len(PLANETS))
-    textures.insert(EARTH_ORBIT, 'earth')
-    others = [i for i in range(len(textures)) if i != EARTH_ORBIT]
+    # Not around the first planet, the refuge of its station stays safe
+    others = [i for i in range(1, len(LINEUP)) if i != EARTH_ORBIT]
     belts = set(rng.sample(others, BELT_COUNT))
 
     planets = []
     belt_plans = []
-    for index, texture in enumerate(textures):
+    for index, (texture, radius) in enumerate(LINEUP):
         if index == EARTH_ORBIT:
-            radius = EARTH_RADIUS
             satellites: tuple[OrbiterPlan, ...] = (plan_moon(rng),)
         else:
-            radius = rng.uniform(*PLANET_RADIUS)
             satellites = ()
             if index in belts:
                 belt = planet_belt(rng, index, radius)

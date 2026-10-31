@@ -4,6 +4,8 @@ the sun """
 import math
 from typing import Any
 
+from app.logic.config import HEAT_RANGE
+
 from .harness import Scenario
 
 scenario = Scenario('sky')
@@ -42,6 +44,13 @@ def flies() -> None:
     travel = math.dist(remembered['anchor'], scenario.player.anchor)
     check(0 < sky < travel * .2,
           f'the sky slides slower than the ship: {sky:.0f} for {travel:.0f}')
+    sun = scenario.game.system.sun
+    far = sun.radius + HEAT_RANGE + 3000
+    scenario.put_ship((sun.pos[0] + far, sun.pos[1]), (0, 0))
+
+
+@scenario.step(.2)
+def far_from_the_sun() -> None:
     check(scenario.game.sky.veil_color.a == 0, 'not red far from the sun')
     sun = scenario.game.system.sun
     scenario.put_ship((sun.pos[0] + sun.radius + 800, sun.pos[1]), (900, 0))

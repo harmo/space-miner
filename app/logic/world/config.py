@@ -15,9 +15,16 @@ GAP_SPREAD = (.9, 1.15)       # each gap times as much, game after game
 EARTH_ORBIT = 2               # the Earth is the third planet
 BELT_AFTER = 3                # the belt around the sun, after the fourth
 PLANET_SPEED = 40.            # on the first orbit, slower farther out
-PLANET_RADIUS = (150., 350.)
 PLANET_MASS = 1e6             # heavy enough not to be pushed by the ship
 EARTH_RADIUS = 200.
+# From the sun outwards, as in the real solar system, their texture and
+# their radius: Mercury, Venus, the Earth, Mars, Jupiter, Saturn, Uranus
+# and Neptune
+LINEUP = (
+    ('planet4', 150.), ('planet5', 195.), ('earth', EARTH_RADIUS),
+    ('planet2', 165.), ('planet1', 350.), ('planet6', 310.),
+    ('planet3', 260.), ('planet7', 250.),
+)
 
 GRAVITY = 1.25                # planet surface gravity is GRAVITY * radius
 GRAVITY_FALLOFF = 2.          # planets pull in 1/distance²

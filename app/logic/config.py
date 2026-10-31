@@ -16,7 +16,7 @@ PLANET_IMAGE_SCALE = {'planet6': 1.6}
 PLANET_COLORS = {
     'earth': (.23, .49, .76), 'planet1': (.85, .7, .5),
     'planet2': (.75, .4, .25), 'planet3': (.5, .8, .82),
-    'planet4': (.6, .5, .82), 'planet5': (.88, .68, .64),
+    'planet4': (.58, .53, .49), 'planet5': (.88, .68, .64),
     'planet6': (.9, .82, .6), 'planet7': (.3, .42, .78),
 }
 RINGED = {'planet6'}

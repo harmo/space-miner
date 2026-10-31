@@ -17,6 +17,7 @@ from app.logic.world.config import (
     EARTH_ORBIT,
     EARTH_RADIUS,
     GRAVITY,
+    LINEUP,
     MOON_ORBIT,
     STATION_ALTITUDE,
     SUN_BELT_ASTEROIDS,
@@ -60,6 +61,24 @@ def test_planets_are_farther_apart_outwards(plan: SystemPlan) -> None:
     assert gaps[-1] > 2 * gaps[0]
     assert all(s > 0 for s in speeds)
     assert speeds == sorted(speeds, reverse=True)
+
+
+@pytest.mark.parametrize('seed', [1, 2, 3])
+def test_planets_keep_their_place_from_game_to_game(seed: int) -> None:
+    plan = plan_system(Random(seed))
+    assert [(p.planet.texture, p.planet.radius) for p in plan.planets] == (
+        list(LINEUP)
+    )
+
+
+@pytest.mark.parametrize('seed', [1, 2, 3, 4, 5, 6, 7])
+def test_the_planet_of_the_station_has_no_asteroids(seed: int) -> None:
+    assert not plan_system(Random(seed)).planets[0].satellites
+
+
+def test_inner_planets_are_smaller_than_the_giants() -> None:
+    radii = [radius for _, radius in LINEUP]
+    assert max(radii[:4]) < min(radii[4:])
 
 
 def test_gaps_differ_from_game_to_game() -> None:
