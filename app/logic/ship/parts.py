@@ -72,7 +72,7 @@ PARTS = {
         burn=.2, price=2000,
     ),
     'rear_hold': Part(
-        'Soute arrière', 'rear', (12., 12.), capacity=20., max_speed=-30.,
+        'Soute arrière', 'rear', (12., 12.), capacity=30., max_speed=-30.,
         price=3000, tier=2,
     ),
     'vector_nozzle': Part(
@@ -81,12 +81,12 @@ PARTS = {
     ),
     'afterburner': Part(
         'Postcombustion', 'rear', (12., 11.),
-        max_speed=100., thrust=.8, turn_speed=-1., burn=1.,
+        max_speed=100., thrust=1., turn_speed=-1., burn=1.,
         price=5000, materials=(('iron', 15),), tier=2,
     ),
     'ion_engine': Part(
         'Propulseur ionique', 'rear', (14., 10.), max_speed=250., thrust=-.2,
-        burn=-.5, price=9500, materials=(('helium3', 6),), tier=3,
+        burn=-.3, price=9500, materials=(('helium3', 6),), tier=3,
     ),
     'twin_engine': Part(
         'Double réacteur', 'rear', (12., 15.),
@@ -95,7 +95,7 @@ PARTS = {
     ),
     'solar_sail': Part(
         'Voile solaire', 'rear', (10., 18.), max_speed=120., turn_speed=2.,
-        burn=-1., price=16000, materials=(('stellarium', 3),), tier=4,
+        burn=-.4, price=16000, materials=(('stellarium', 3),), tier=4,
     ),
     'fusion_engine': Part(
         'Réacteur à fusion', 'rear', (14., 14.), max_speed=320., thrust=.6,
@@ -119,7 +119,7 @@ PARTS = {
     ),
     'container': Part(
         'Grand conteneur', 'side', (24., 10.),
-        capacity=30., max_speed=-50., turn_speed=-1.5,
+        capacity=40., max_speed=-50., turn_speed=-1.5,
         price=7500, materials=(('iron', 20),), tier=3,
     ),
     'ion_pod': Part(

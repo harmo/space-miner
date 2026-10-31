@@ -120,7 +120,7 @@ def test_the_best_laser_mines_everything() -> None:
 def test_effects_of_a_part() -> None:
     assert effects(PARTS['laser']) == '+1 laser'
     assert effects(PARTS['container']) == (
-        '-50 vitesse · -1.5 maniabilité · +30 soute'
+        '-50 vitesse · -1.5 maniabilité · +40 soute'
     )
     assert all(effects(part) for part in PARTS.values())
 

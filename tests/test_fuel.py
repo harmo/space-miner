@@ -1,6 +1,6 @@
 import pytest
 
-from app.logic.ship.config import HULL_BURN
+from app.logic.ship.config import MIN_BURN
 from app.logic.ship.fuel import Tank, burn_rate
 from app.logic.ship.hulls import HULLS
 from app.logic.ship.lasers import LASERS
@@ -27,13 +27,15 @@ def test_tanks_add_to_the_hull_s() -> None:
 def test_engines_change_what_the_hull_burns() -> None:
     def burn(engine: str) -> float:
         return ship_stats(Design(parts={'rear': engine})).burn
-    assert ship_stats(Design()).burn == HULL_BURN
-    assert burn('afterburner') > burn('engine') > HULL_BURN
-    assert burn('ion_engine') < HULL_BURN
+    scout = HULLS['scout'].burn
+    assert ship_stats(Design()).burn == scout
+    assert burn('afterburner') > burn('engine') > scout
+    assert burn('ion_engine') < scout
 
 
-def test_a_solar_sail_flies_for_free() -> None:
-    assert ship_stats(Design(parts={'rear': 'solar_sail'})).burn == 0.
+def test_a_solar_sail_burns_little_but_never_nothing() -> None:
+    sail = ship_stats(Design(parts={'rear': 'solar_sail'})).burn
+    assert 0 < sail < ship_stats(Design()).burn
 
 
 def test_better_lasers_burn_more() -> None:
@@ -68,3 +70,19 @@ def test_a_smaller_tank_holds_less() -> None:
     assert tank.level == 100.
     tank.resize(200.)
     assert tank.level == 100. and tank.missing == 100.
+
+
+@pytest.mark.parametrize('hull_id', HULLS)
+def test_nothing_makes_thrust_free(hull_id: str) -> None:
+    rears = [
+        slot for slot, kind in HULLS[hull_id].slots.items()
+        if kind.kind == 'rear'
+    ]
+    stats = ship_stats(Design(hull_id, dict.fromkeys(rears, 'solar_sail')))
+    assert stats.burn >= HULLS[hull_id].burn * MIN_BURN > 0
+
+
+def test_the_bigger_the_hull_the_more_it_burns() -> None:
+    burns = [HULLS[hull].burn
+             for hull in ('scout', 'driller', 'hauler', 'cruiser')]
+    assert burns == sorted(burns)

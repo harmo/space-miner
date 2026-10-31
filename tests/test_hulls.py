@@ -87,7 +87,7 @@ def test_heavy_ships_still_fly() -> None:
     stats = ship_stats(heaviest)
     assert stats.max_speed == MIN_SPEED
     assert stats.thrust > 0 and stats.turn_speed > 0
-    assert stats.laser == BEST
+    assert stats.laser == HULLS['cruiser'].laser + PARTS['quantum_laser'].laser
 
 
 def test_the_driller_mines_better_from_the_start() -> None:
@@ -96,3 +96,37 @@ def test_the_driller_mines_better_from_the_start() -> None:
         BEST
     )
     assert PARTS['stellar_laser'].laser + HULLS['driller'].laser == BEST
+
+
+def test_two_lasers_are_no_stronger_than_the_best() -> None:
+    both = {'nose_left': 'stellar_laser', 'nose_right': 'heavy_laser'}
+    stats = ship_stats(Design('cruiser', both))
+    assert stats.laser == HULLS['cruiser'].laser + PARTS['stellar_laser'].laser
+
+
+def most_capacity(hull_id: str) -> float:
+    slots = HULLS[hull_id].slots.items()
+    parts = {
+        slot_id: max(
+            (part_id for part_id, part in PARTS.items()
+             if part.kind == slot.kind),
+            key=lambda part_id: PARTS[part_id].capacity,
+        )
+        for slot_id, slot in slots
+    }
+    return ship_stats(Design(hull_id, parts)).capacity
+
+
+def test_the_hauler_holds_the_most() -> None:
+    assert all(
+        most_capacity('hauler') > most_capacity(hull_id)
+        for hull_id in HULLS if hull_id != 'hauler'
+    )
+
+
+def test_only_the_driller_reaches_the_best_laser() -> None:
+    best = max(part.laser for part in PARTS.values())
+    assert [
+        hull_id for hull_id, hull in HULLS.items()
+        if min(BEST, hull.laser + best) == BEST
+    ] == ['driller']

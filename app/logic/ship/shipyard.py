@@ -6,7 +6,7 @@ from dataclasses import dataclass, field, replace
 from ..colors import Rgb
 from ..world.space import Vec2
 from .config import (
-    HULL_BURN,
+    MIN_BURN,
     MIN_SPEED,
     MIN_THRUST,
     MIN_TURN_SPEED,
@@ -116,7 +116,8 @@ def scan_reach(hull: float, parts: list[float]) -> float:
 
 
 def ship_stats(design: Design) -> ShipStats:
-    """ Those of the hull, changed by the parts, within bounds """
+    """ Those of the hull, changed by the parts, within bounds. Only the
+    best laser counts: two beams are no stronger than one. """
     hull = HULLS[design.hull]
     parts = [PARTS[part] for part in design.parts.values()]
     speed = hull.max_speed + sum(p.max_speed for p in parts)
@@ -127,11 +128,13 @@ def ship_stats(design: Design) -> ShipStats:
         thrust=max(MIN_THRUST, thrust),
         turn_speed=max(MIN_TURN_SPEED, turn_speed),
         capacity=hull.capacity + sum(p.capacity for p in parts),
-        laser=min(BEST, hull.laser + sum(p.laser for p in parts)),
+        laser=min(BEST, hull.laser + max(
+            (p.laser for p in parts), default=0,
+        )),
         scan=scan_reach(hull.scan, [p.scan for p in parts]),
         size=ship_size(design),
         tank=hull.tank + sum(p.tank for p in parts),
-        burn=max(0., HULL_BURN + sum(p.burn for p in parts)),
+        burn=max(hull.burn * MIN_BURN, hull.burn + sum(p.burn for p in parts)),
         shield=shielding([p.shield for p in parts]),
     )
 

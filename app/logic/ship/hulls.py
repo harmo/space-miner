@@ -32,6 +32,7 @@ class Hull:
     # Reach added to the scanners fitted, none without any
     scan: float
     tank: float               # units of fuel
+    burn: float               # fuel a second at full thrust
     price: int = 0            # credits
     # Ore taken from the depot to build it, by mineral
     materials: tuple[tuple[str, int], ...] = ()
@@ -64,6 +65,7 @@ def sides(x: float, y: float, where: str = '') -> dict[str, Slot]:
 
 
 HULLS = {
+    # Thrifty and nimble, the farthest on a tank for its size
     'scout': Hull(
         'Éclaireur', (26., 16.),
         {
@@ -76,9 +78,9 @@ HULLS = {
             **internals(1),
         },
         max_speed=350., thrust=1.2, turn_speed=6., capacity=30., laser=1,
-        scan=0., tank=100.,
+        scan=0., tank=100., burn=.8,
     ),
-    # Slow and roomy, four sides for cargo
+    # Slow and the roomiest, four sides for cargo
     'hauler': Hull(
         'Cargo', (40., 22.),
         {
@@ -88,11 +90,11 @@ HULLS = {
             **sides(-10., 10., 'back'),
             **internals(2),
         },
-        max_speed=280., thrust=1., turn_speed=4.5, capacity=60., laser=1,
-        scan=0., tank=160.,
+        max_speed=280., thrust=1., turn_speed=4.5, capacity=90., laser=1,
+        scan=0., tank=180., burn=1.3,
         price=8000, materials=(('iron', 20),), tier=2,
     ),
-    # A strong laser built in, which mines much faster
+    # A strong laser built in, the only one reaching the best level
     'driller': Hull(
         'Foreuse', (32., 18.),
         {
@@ -102,10 +104,10 @@ HULLS = {
             **internals(2),
         },
         max_speed=330., thrust=1.3, turn_speed=5.5, capacity=40., laser=2,
-        scan=2000., tank=120.,
+        scan=2000., tank=120., burn=1.,
         price=20000, materials=(('copper', 15), ('crystal', 8)), tier=3,
     ),
-    # Two of everything
+    # Two of everything, and thirsty for it
     'cruiser': Hull(
         'Croiseur', (48., 26.),
         {
@@ -117,8 +119,8 @@ HULLS = {
             **sides(-12., 12., 'back'),
             **internals(3),
         },
-        max_speed=380., thrust=1.4, turn_speed=5., capacity=50., laser=1,
-        scan=1000., tank=200.,
+        max_speed=340., thrust=1.4, turn_speed=5., capacity=40., laser=1,
+        scan=1000., tank=180., burn=1.6,
         price=50000, materials=(('stellarium', 8), ('antimatter', 4)),
         tier=5,
     ),

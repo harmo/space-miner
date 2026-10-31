@@ -11,7 +11,7 @@ MIN_THRUST = .4
 MIN_TURN_SPEED = 1.5
 
 # Fuel, burnt by thrusting and firing the laser: see parts.py and lasers.py
-HULL_BURN = 1.                # units a second at full thrust, by any hull
+MIN_BURN = .25                # of what the hull burns, whatever is fitted
 LOW_FUEL = .25                # of the tank, the gauge warns below
 CRITICAL_FUEL = .1
 
