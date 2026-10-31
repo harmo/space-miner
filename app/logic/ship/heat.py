@@ -49,6 +49,7 @@ class HullHeat:
 
     def __init__(self) -> None:
         self.level = 0.                      # from cool to blowing up
+        self.sheltered = False               # on this frame
 
     @property
     def burnt(self) -> bool:
@@ -61,10 +62,14 @@ class HullHeat:
         return 'hot' if self.level >= HOT else 'cool'
 
     def update(self, dt: float, gain: float) -> None:
-        self.level = min(1., max(0., self.level + (gain - HEAT_COOLING) * dt))
+        """ `gain` a second, none of it sheltered, whatever the sun does """
+        heat = 0. if self.sheltered else gain
+        self.sheltered = False
+        self.level = min(1., max(0., self.level + (heat - HEAT_COOLING) * dt))
 
     def shelter(self, dt: float) -> None:
         """ Out of the heat, cooling down fast """
+        self.sheltered = True
         self.level = max(0., self.level - SHELTER_COOLING * dt)
 
     def reset(self) -> None:

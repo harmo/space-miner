@@ -3,6 +3,7 @@ import pytest
 from app.logic.config import HEAT_RANGE
 from app.logic.ship.config import HEAT_COOLING, HEAT_GAIN, HOT, OVERHEATING
 from app.logic.ship.heat import HullHeat, Sunlight, heating
+from app.logic.world.config import FLARE_SURGE
 
 
 def test_the_sun_heats_more_and_more_closer() -> None:
@@ -42,3 +43,21 @@ def test_sunlight_tells_how_far_from_the_sun_surface() -> None:
     sunlight = Sunlight((100., 0.), 50., surge=2.)
     assert sunlight.distance((100., 300.)) == 250.
     assert sunlight.surge == 2.
+
+
+def test_nothing_heats_a_sheltered_hull_even_during_flares() -> None:
+    hull = HullHeat()
+    hull.level = .5
+    for _ in range(600):
+        hull.shelter(1 / 60)
+        hull.update(1 / 60, heating(0., surge=FLARE_SURGE))
+    assert hull.level == 0.
+    assert not hull.burnt
+
+
+def test_the_shelter_ends_with_the_ship_leaving() -> None:
+    hull = HullHeat()
+    hull.shelter(1 / 60)
+    hull.update(1 / 60, 1.)
+    hull.update(1., .3)
+    assert hull.level > 0.
