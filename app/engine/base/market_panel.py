@@ -20,7 +20,7 @@ from ...logic.base.unloading import Depot, load
 from ...logic.base.wallet import Wallet
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
-from ...logic.mining.ore import cargo_room, whole_units
+from ...logic.mining.ore import Hold, cargo_room, whole_units
 from ..ship.miner import Miner
 from ..ui.cargo_panel import ICON_SHAPE
 from ..ui.widgets import load_style
@@ -55,7 +55,7 @@ class MarketPanel(BoxLayout):
         self.register_event_type('on_close')
         super().__init__(**kwargs)
         self.wallet = Wallet()
-        self.stock: dict[str, float] = {}   # of the depot
+        self.stock: Hold = {}   # of the depot
         self.board: Board | None = None
         self.crusher: Crusher | None = None
         self.prices = Trade()               # those of the Earth

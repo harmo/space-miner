@@ -12,7 +12,7 @@ from ...logic.base.missions import Board
 from ...logic.base.reputation import is_sold, next_tier
 from ...logic.base.shop import Inventory, buy, buy_hull, refit, rehull, sell
 from ...logic.base.wallet import Wallet
-from ...logic.mining.ore import cargo_load
+from ...logic.mining.ore import Hold, cargo_load
 from ...logic.ship.hulls import HULLS
 from ...logic.ship.parts import PARTS
 from ...logic.ship.shipyard import (
@@ -54,7 +54,7 @@ class HangarPanel(BoxLayout):
         self.player: Player | None = None
         self.inventory = Inventory()
         self.wallet = Wallet()
-        self.stock: dict[str, float] = {}   # of the depot
+        self.stock: Hold = {}   # of the depot
         self.board: Board | None = None     # its missions make reputation
         self.slot = ''                      # or HULL
         # Part, or hull, compared with the ship as it is

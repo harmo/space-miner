@@ -12,6 +12,7 @@ from ...logic.base.outposts import SITES, Construction, Stage
 from ...logic.base.post import Post, Services
 from ...logic.base.reputation import Standing
 from ...logic.base.wallet import Wallet
+from ...logic.mining.ore import Hold
 from ...logic.save import Progress
 from ...logic.ship.landing import Ground, Parking, pad_edge
 from ...logic.world.layout import plan_ceres, plan_station
@@ -82,7 +83,7 @@ class Outpost:
             mission_level=board.level if board else 1,
         )
 
-    def deliver(self, cargo: dict[str, float]) -> Stage | None:
+    def deliver(self, cargo: Hold) -> Stage | None:
         """ What is needed from `cargo`: the stage built by it, if so """
         built = self.construction.deliver(cargo)
         self.post.services = self.construction.services

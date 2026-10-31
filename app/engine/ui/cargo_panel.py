@@ -14,7 +14,7 @@ from ...logic.colors import Rgb
 from ...logic.config import IMAGES
 from ...logic.hud import cargo_color
 from ...logic.mining.minerals import MINERALS, asteroid_texture
-from ...logic.mining.ore import cargo_fill, cargo_lines, cargo_total
+from ...logic.mining.ore import Hold, cargo_fill, cargo_lines, cargo_total
 from ..ship.miner import Miner
 from .widgets import load_style
 
@@ -50,7 +50,7 @@ class CargoPanel(BoxLayout):
             )
         self.shown: list[str] = []
 
-    def show(self, ore: dict[str, float], mining: str | None, fill: float,
+    def show(self, ore: Hold, mining: str | None, fill: float,
              load: str, bar_color: Rgb) -> None:
         """ `mining` is highlighted, as mined, or unloaded """
         self.fill = fill

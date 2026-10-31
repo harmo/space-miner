@@ -9,6 +9,11 @@ from ..world.space import Celestial
 from .config import ORE_DENSITY
 from .minerals import MINERALS, Mineral
 
+Hold = dict[str, float]       # units of ore, by mineral
+
+# Less ore than this is what rounding left, not ore
+EPSILON = 1e-6
+
 
 def ore_in(radius: float) -> float:
     return ORE_DENSITY * radius ** 2
@@ -20,25 +25,34 @@ def mineral_of(asteroid: Celestial) -> Mineral:
 
 def whole_units(amount: float) -> int:
     """ Rounded down, but sums of floats like 19.999999 count as 20 """
-    return int(amount + 1e-6)
+    return int(amount + EPSILON)
 
 
-def cargo_total(ore: dict[str, float]) -> int:
+def withdraw(hold: Hold, name: str, units: float) -> None:
+    """ Emptied, it no longer holds `name` """
+    left = hold.get(name, 0.) - units
+    if left > EPSILON:
+        hold[name] = left
+    else:
+        hold.pop(name, None)
+
+
+def cargo_total(ore: Hold) -> int:
     """ Units of ore of every mineral """
     return sum(whole_units(amount) for amount in ore.values())
 
 
-def cargo_load(ore: dict[str, float]) -> float:
+def cargo_load(ore: Hold) -> float:
     return sum(ore.values())
 
 
-def cargo_room(ore: dict[str, float], capacity: float) -> float:
+def cargo_room(ore: Hold, capacity: float) -> float:
     """ Ore that still fits in the cargo """
     room = capacity - cargo_load(ore)
-    return room if room > 1e-6 else 0.
+    return room if room > EPSILON else 0.
 
 
-def cargo_fill(ore: dict[str, float], capacity: float) -> float:
+def cargo_fill(ore: Hold, capacity: float) -> float:
     """ From 0 when empty to 1 when full """
     return min(1., cargo_load(ore) / capacity)
 
@@ -53,7 +67,7 @@ class CargoLine:
     mining: bool              # being extracted right now
 
 
-def cargo_lines(ore: dict[str, float],
+def cargo_lines(ore: Hold,
                 mining: str | None) -> list[CargoLine]:
     """ Minerals in the cargo, and the one being mined even before the
     first unit, in the order of the minerals table """

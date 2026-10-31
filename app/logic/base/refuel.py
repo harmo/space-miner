@@ -6,6 +6,7 @@ away is towed back, for a price growing with the distance. """
 import math
 from dataclasses import dataclass
 
+from ..mining.ore import Hold, withdraw
 from ..ship.fuel import Tank
 from .config import FREE_RESERVE, FUEL_PRICE, ICE_FUEL, TOW_BASE, TOW_RATE
 from .wallet import Wallet
@@ -18,21 +19,19 @@ class Refuel:
     fuel: float               # put in the tank
 
 
-def take_ice(wanted: float, holds: tuple[dict[str, float], ...]) -> float:
+def take_ice(wanted: float, holds: tuple[Hold, ...]) -> float:
     """ Up to `wanted` units, from one hold after the other """
     taken = 0.
     for hold in holds:
         ice = min(hold.get('ice', 0.), wanted - taken)
         if ice > 0:
-            hold['ice'] -= ice
-            if hold['ice'] <= 1e-6:
-                del hold['ice']
+            withdraw(hold, 'ice', ice)
             taken += ice
     return taken
 
 
 def refuel(missing: float, wallet: Wallet,
-           *holds: dict[str, float]) -> Refuel:
+           *holds: Hold) -> Refuel:
     """ Up to `missing` units of fuel, taking the ice of the holds then
     credits """
     ice = take_ice(missing / ICE_FUEL, holds)
@@ -45,7 +44,7 @@ def refuel(missing: float, wallet: Wallet,
     return Refuel(ice, max(0, cost), fuel)
 
 
-def fill(tank: Tank, wallet: Wallet, *holds: dict[str, float]) -> Refuel:
+def fill(tank: Tank, wallet: Wallet, *holds: Hold) -> Refuel:
     """ As full as the ice and credits allow, and the reserve at least """
     done = refuel(tank.missing, wallet, *holds)
     tank.fill(done.fuel)

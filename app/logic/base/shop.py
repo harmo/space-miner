@@ -5,7 +5,7 @@ hull of the hangar, with its parts. """
 
 from typing import Protocol
 
-from ..mining.ore import whole_units
+from ..mining.ore import Hold, whole_units, withdraw
 from ..ship.hulls import HULLS
 from ..ship.parts import PARTS, Part
 from ..ship.shipyard import Design, fitted, ship_stats, transfer
@@ -45,7 +45,7 @@ class Inventory:
 
 
 def missing_materials(item: Buyable,
-                      stock: dict[str, float]) -> dict[str, int]:
+                      stock: Hold) -> dict[str, int]:
     """ Ore lacking in the depot to build it, by mineral """
     lacking = {
         name: units - whole_units(stock.get(name, 0.))
@@ -55,23 +55,21 @@ def missing_materials(item: Buyable,
 
 
 def can_buy(item: Buyable, wallet: Wallet,
-            stock: dict[str, float]) -> bool:
+            stock: Hold) -> bool:
     return wallet.can_pay(item.price) and not missing_materials(item, stock)
 
 
-def pay(item: Buyable, wallet: Wallet, stock: dict[str, float]) -> bool:
+def pay(item: Buyable, wallet: Wallet, stock: Hold) -> bool:
     """ With credits and ore, when there are enough """
     if not can_buy(item, wallet, stock):
         return False
     wallet.pay(item.price)
     for name, units in item.materials:
-        stock[name] -= units
-        if stock[name] <= 1e-6:
-            del stock[name]
+        withdraw(stock, name, units)
     return True
 
 
-def buy(part_id: str, wallet: Wallet, stock: dict[str, float],
+def buy(part_id: str, wallet: Wallet, stock: Hold,
         inventory: Inventory) -> bool:
     """ Into the hangar """
     if not pay(PARTS[part_id], wallet, stock):
@@ -80,7 +78,7 @@ def buy(part_id: str, wallet: Wallet, stock: dict[str, float],
     return True
 
 
-def buy_hull(hull_id: str, wallet: Wallet, stock: dict[str, float],
+def buy_hull(hull_id: str, wallet: Wallet, stock: Hold,
              inventory: Inventory) -> bool:
     if hull_id in inventory.hulls or not pay(HULLS[hull_id], wallet, stock):
         return False

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from random import Random
 
 from ..mining.minerals import MINED, MINERALS
-from ..mining.ore import whole_units
+from ..mining.ore import EPSILON, Hold, whole_units, withdraw
 from .config import (
     MISSION_AMOUNT,
     MISSION_BONUS,
@@ -37,7 +37,7 @@ class Mission:
     reward: int               # credits
     level: int = 1            # bigger and rarer orders, higher
 
-    def missing(self, *holds: dict[str, float]) -> dict[str, int]:
+    def missing(self, *holds: Hold) -> dict[str, int]:
         """ Units still lacking in the holds, the depot and the cargo, by
         mineral """
         lacking = {
@@ -46,11 +46,11 @@ class Mission:
         }
         return {name: units for name, units in lacking.items() if units > 0}
 
-    def can_validate(self, *holds: dict[str, float]) -> bool:
+    def can_validate(self, *holds: Hold) -> bool:
         return not self.missing(*holds)
 
 
-def held(name: str, holds: Sequence[dict[str, float]]) -> int:
+def held(name: str, holds: Sequence[Hold]) -> int:
     """ Whole units of a mineral in all the holds """
     return whole_units(sum(hold.get(name, 0.) for hold in holds))
 
@@ -68,7 +68,7 @@ class Need:
 
 
 def needs(missions: list[Mission],
-          *holds: dict[str, float]) -> list[Need]:
+          *holds: Hold) -> list[Need]:
     """ Wanted by all the missions, against what the `holds` hold, in the
     order of the minerals table """
     wanted: dict[str, int] = {}
@@ -85,15 +85,15 @@ def needs(missions: list[Mission],
 class Desk:
     """ Where missions are validated, the Earth or an outpost """
     missions: list[Mission]   # under way there
-    stock: dict[str, float]   # of its depot
+    stock: Hold   # of its depot
 
 
 def needs_at(desks: Sequence[Desk],
-             cargo: dict[str, float]) -> list[Need]:
+             cargo: Hold) -> list[Need]:
     """ Wanted at all the desks, against the cargo and the depots of those
     wanting each mineral, in the order of the minerals table """
     wanted: dict[str, int] = {}
-    holds: dict[str, list[dict[str, float]]] = {}
+    holds: dict[str, list[Hold]] = {}
     for desk in desks:
         for need in needs(desk.missions):
             name = need.mineral
@@ -199,7 +199,7 @@ class Board:
         self.offers[index] = self.make()
         self.active.append(mission)
 
-    def validate(self, mission: Mission, *holds: dict[str, float]) -> None:
+    def validate(self, mission: Mission, *holds: Hold) -> None:
         """ Takes the ore from the holds, the first ones first, and pays """
         if mission not in self.active or not mission.can_validate(*holds):
             return
@@ -219,15 +219,13 @@ class Board:
             self.active.remove(mission)
 
 
-def take(name: str, units: float, holds: Sequence[dict[str, float]]) -> None:
+def take(name: str, units: float, holds: Sequence[Hold]) -> None:
     """ From the first holds first, all the units being there """
     for hold in holds:
         taken = min(units, hold.get(name, 0.))
         if taken <= 0:
             continue
-        hold[name] -= taken
+        withdraw(hold, name, taken)
         units -= taken
-        if hold[name] <= 1e-6:
-            del hold[name]
-        if units <= 1e-6:
+        if units <= EPSILON:
             return

@@ -4,7 +4,7 @@ the base, which buys from the depot """
 import math
 
 from ..mining.minerals import MINERALS, Mineral
-from ..mining.ore import whole_units
+from ..mining.ore import Hold, whole_units, withdraw
 from .config import ORE_SALE
 from .wallet import Wallet
 
@@ -23,14 +23,12 @@ def ore_price(name: str, factor: float = 1.) -> int:
     return max(1, round(ore_value(MINERALS[name]) * ORE_SALE * factor))
 
 
-def sell_ore(stock: dict[str, float], name: str, units: int,
+def sell_ore(stock: Hold, name: str, units: int,
              wallet: Wallet, factor: float = 1.) -> int:
     """ Sells up to `units` whole units of the stock, returns how many """
     sold = min(units, whole_units(stock.get(name, 0.)))
     if sold <= 0:
         return 0
-    stock[name] -= sold
-    if stock[name] <= 1e-6:
-        del stock[name]
+    withdraw(stock, name, sold)
     wallet.earn(sold * ore_price(name, factor))
     return sold

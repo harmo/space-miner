@@ -4,7 +4,7 @@ offers, its depot, and its work on each frame """
 from dataclasses import dataclass
 from random import Random
 
-from ..mining.ore import cargo_total
+from ..mining.ore import Hold, cargo_total
 from ..ship.fuel import Tank
 from ..ship.heat import HullHeat
 from .crushing import Crusher
@@ -33,7 +33,7 @@ HOME_SERVICES = Services(
 @dataclass(frozen=True)
 class Docked:
     """ A ship landed at a post, as the post sees it """
-    ore: dict[str, float]     # in its cargo
+    ore: Hold     # in its cargo
     tank: Tank
     heat: HullHeat
 
@@ -54,7 +54,7 @@ class Post:
         self.depot = Depot()
         self.crusher = Crusher(rng)
 
-    def status(self, cargo: dict[str, float],
+    def status(self, cargo: Hold,
                board: Board | None) -> PostStatus:
         """ `board` holding its missions, if it gives any """
         depot = self.depot

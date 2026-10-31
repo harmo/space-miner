@@ -4,7 +4,7 @@ otherwise, back into the depot. It goes on while the ship is away. """
 
 from random import Random
 
-from ..mining.ore import whole_units
+from ..mining.ore import Hold, whole_units, withdraw
 from .config import CRUSH_RATE, CRUSH_YIELDS
 
 
@@ -26,17 +26,16 @@ class Crusher:
         self.crushing = False
         self.ground = 0.          # rock crushed, not sifted yet
 
-    def start(self, stock: dict[str, float]) -> None:
+    def start(self, stock: Hold) -> None:
         self.crushing = whole_units(stock.get('rock', 0.)) > 0
 
-    def update(self, stock: dict[str, float], dt: float) -> list[str]:
+    def update(self, stock: Hold, dt: float) -> list[str]:
         """ Returns what was found """
         if not self.crushing:
             return []
         crushed = min(stock.get('rock', 0.), CRUSH_RATE * dt)
-        stock['rock'] = stock.get('rock', 0.) - crushed
-        if stock['rock'] <= 1e-6:
-            del stock['rock']
+        withdraw(stock, 'rock', crushed)
+        if 'rock' not in stock:
             self.crushing = False
         self.ground += crushed
         found = []

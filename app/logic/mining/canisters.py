@@ -12,6 +12,7 @@ from .config import (
     CANISTER_SPREAD,
     CANISTER_UNITS,
 )
+from .ore import EPSILON, Hold
 
 
 @dataclass(frozen=True)
@@ -28,13 +29,13 @@ def canister_texture(mineral: str) -> str:
     return f'canister_{mineral}'
 
 
-def eject_cargo(rng: Random, ore: dict[str, float], pos: Vec2,
+def eject_cargo(rng: Random, ore: Hold, pos: Vec2,
                 velocity: Vec2, away: float) -> list[CanisterPlan]:
     """ The ore split in canisters of CANISTER_UNITS at most, thrown from
     `pos` in a fan around the direction `away`, along with `velocity` """
     plans = []
     for mineral, amount in ore.items():
-        if amount <= 1e-6:
+        if amount <= EPSILON:
             continue
         count = math.ceil(amount / CANISTER_UNITS - 1e-9)
         for _ in range(count):

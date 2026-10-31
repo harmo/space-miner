@@ -8,6 +8,7 @@ from typing import Any
 
 from .base.missions import Mission
 from .mining.minerals import MINERALS
+from .mining.ore import Hold
 from .ship.hulls import HULLS
 from .ship.parts import PARTS
 from .ship.scanner import LOOKED_FOR
@@ -25,7 +26,7 @@ class Progress:
     """ Of an outpost being built, and trading once it can """
     built: int = 0                      # stages
     delivered: dict[str, int] = field(default_factory=dict)
-    stock: dict[str, float] = field(default_factory=dict)  # of its depot
+    stock: Hold = field(default_factory=dict)  # of its depot
     # Its missions
     offers: list[Mission] = field(default_factory=list)
     active: list[Mission] = field(default_factory=list)
@@ -53,8 +54,8 @@ class Save:
     design: Design = field(default_factory=Design)
     hulls: list[str] = field(default_factory=lambda: ['scout'])  # owned
     spares: dict[str, int] = field(default_factory=dict)
-    stock: dict[str, float] = field(default_factory=dict)
-    cargo: dict[str, float] = field(default_factory=dict)
+    stock: Hold = field(default_factory=dict)
+    cargo: Hold = field(default_factory=dict)
     validated: int = 0
     seen_tier: int = 1
     offers: list[Mission] = field(default_factory=list)
@@ -69,7 +70,7 @@ class Save:
     landed: Landed | None = None
 
 
-def ores(data: Any) -> dict[str, float]:
+def ores(data: Any) -> Hold:
     return {
         name: float(units) for name, units in dict(data).items()
         if name in MINERALS and float(units) > 0

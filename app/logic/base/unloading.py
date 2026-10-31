@@ -2,11 +2,11 @@
 to empty it, and loading it back from there """
 
 from ..mining.minerals import MINERALS
-from ..mining.ore import cargo_load, whole_units
+from ..mining.ore import EPSILON, Hold, cargo_load, whole_units, withdraw
 from .config import UNLOAD_RATE
 
 
-def unload(ore: dict[str, float], stock: dict[str, float],
+def unload(ore: Hold, stock: Hold,
            amount: float) -> str | None:
     """ Move up to `amount` of the cargo into the stock, one mineral after
     the other in the order of the minerals table. Returns the mineral
@@ -17,22 +17,20 @@ def unload(ore: dict[str, float], stock: dict[str, float],
     moved = min(amount, ore[mineral])
     stock[mineral] = stock.get(mineral, 0.) + moved
     ore[mineral] -= moved
-    if ore[mineral] <= 1e-6:
+    if ore[mineral] <= EPSILON:
         # What rounding left goes along
         stock[mineral] += ore.pop(mineral)
     return mineral
 
 
-def load(stock: dict[str, float], ore: dict[str, float], mineral: str,
+def load(stock: Hold, ore: Hold, mineral: str,
          room: float) -> int:
     """ Whole units of `mineral` back into the cargo, as many as there are
     and as fit in `room`. Returns how many. """
     units = min(whole_units(stock.get(mineral, 0.)), whole_units(room))
     if units <= 0:
         return 0
-    stock[mineral] -= units
-    if stock[mineral] <= 1e-6:
-        del stock[mineral]
+    withdraw(stock, mineral, units)
     ore[mineral] = ore.get(mineral, 0.) + units
     return units
 
@@ -42,18 +40,18 @@ class Depot:
     there, a bit at a time """
 
     def __init__(self) -> None:
-        self.stock: dict[str, float] = {}
+        self.stock: Hold = {}
         self.unloading = False
         self.mineral: str | None = None      # being unloaded right now
 
-    def start(self, ore: dict[str, float]) -> None:
+    def start(self, ore: Hold) -> None:
         self.unloading = cargo_load(ore) > 0
 
     def stop(self) -> None:
         self.unloading = False
         self.mineral = None
 
-    def update(self, ore: dict[str, float], dt: float,
+    def update(self, ore: Hold, dt: float,
                docked: bool) -> None:
         """ Taking off stops unloading """
         if not self.unloading:

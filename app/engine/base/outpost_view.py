@@ -18,7 +18,7 @@ from ...logic.base.outposts import unlocked
 from ...logic.base.post import Post
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
-from ...logic.mining.ore import whole_units
+from ...logic.mining.ore import Hold, whole_units
 from ..audio import audio
 from ..ship.player import Player
 from ..ui.cargo_panel import ICON_SHAPE
@@ -50,7 +50,7 @@ class SitePanel(BoxLayout):
     news = StringProperty('')           # a stage just built
     can_deliver = BooleanProperty(False)
 
-    def show(self, outpost: Outpost, cargo: dict[str, float]) -> None:
+    def show(self, outpost: Outpost, cargo: Hold) -> None:
         construction = outpost.construction
         self.title = f'CHANTIER  ·  {outpost.name}'
         stage = construction.stage

@@ -5,7 +5,7 @@ the ships landing there: fuel, a depot, then a market and missions. """
 from dataclasses import dataclass, replace
 from typing import Literal
 
-from ..mining.ore import whole_units
+from ..mining.ore import Hold, whole_units, withdraw
 from ..save import Progress
 from .config import PAD_WIDTH
 from .post import Services
@@ -147,16 +147,14 @@ class Construction:
         }
         return {name: units for name, units in lacking.items() if units > 0}
 
-    def deliver(self, cargo: dict[str, float]) -> Stage | None:
+    def deliver(self, cargo: Hold) -> Stage | None:
         """ Takes from `cargo` whole units of what is needed. Returns the
         stage built by it, if so. """
         for name, units in self.needed.items():
             taken = min(units, whole_units(cargo.get(name, 0.)))
             if taken <= 0:
                 continue
-            cargo[name] -= taken
-            if cargo[name] <= 1e-6:
-                del cargo[name]
+            withdraw(cargo, name, taken)
             self.delivered[name] = self.delivered.get(name, 0) + taken
         stage = self.stage
         if stage is None or self.needed:

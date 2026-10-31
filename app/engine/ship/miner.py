@@ -7,7 +7,7 @@ from random import Random
 
 from ...logic.config import DEBRIS_FRAGMENTS, DEBRIS_SPEED
 from ...logic.mining.minerals import MINERALS, mining_rate
-from ...logic.mining.ore import Deposits, cargo_room, mineral_of
+from ...logic.mining.ore import EPSILON, Deposits, Hold, cargo_room, mineral_of
 from ...logic.ship.config import (
     LASER_RANGE,
     LASER_RATE,
@@ -41,7 +41,7 @@ class Miner:
         self.cargo_full = False             # mining or pickup stopped
         self.stats = stats                  # of the ship, refitted or not
         self.deposits = Deposits()
-        self.ore: dict[str, float] = {}     # in the cargo, by mineral
+        self.ore: Hold = {}     # in the cargo, by mineral
         # Told the mineral of each asteroid mined out, and of each canister
         # picked up
         self.on_mined_out: list[Callable[[str], None]] = []
@@ -96,7 +96,7 @@ class Miner:
         self.too_weak = False
         self.cargo_full = False
 
-    def lose_cargo(self) -> dict[str, float]:
+    def lose_cargo(self) -> Hold:
         """ Empties the cargo, returns what it held """
         ore = dict(self.ore)
         self.ore.clear()                    # the panels hold on to it
@@ -166,7 +166,7 @@ class Miner:
             self.ore.get(canister.mineral, 0.) + taken
         )
         canister.amount -= taken
-        if canister.amount > 1e-6:
+        if canister.amount > EPSILON:
             self.cargo_full = True          # the rest stays in it
             return
         self.explosions.append(Explosion(

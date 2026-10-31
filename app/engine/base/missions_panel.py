@@ -16,6 +16,7 @@ from ...logic.base.config import TIER_MISSIONS
 from ...logic.base.missions import Board, Mission, held
 from ...logic.base.reputation import next_tier, tier
 from ...logic.mining.minerals import MINERALS
+from ...logic.mining.ore import Hold
 from ..ui.widgets import PanelButton, load_style
 
 
@@ -34,7 +35,7 @@ def offer_text(mission: Mission, laser: int) -> str:
     return ' · '.join(parts)
 
 
-def progress_text(mission: Mission, *holds: dict[str, float]) -> str:
+def progress_text(mission: Mission, *holds: Hold) -> str:
     """ Units in the holds out of those wanted """
     return ' · '.join(
         f'{MINERALS[name].name} {min(units, held(name, holds))}/{units}'
@@ -86,8 +87,8 @@ class MissionsPanel(BoxLayout):
         self.register_event_type('on_close')
         super().__init__(**kwargs)
         self.board: Board | None = None
-        self.stock: dict[str, float] = {}   # of the depot
-        self.cargo: dict[str, float] = {}   # of the ship, taken after it
+        self.stock: Hold = {}   # of the depot
+        self.cargo: Hold = {}   # of the ship, taken after it
         self.laser = 1                      # of the ship
         self.watching: ClockEvent | None = None
 
