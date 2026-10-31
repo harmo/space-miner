@@ -2,14 +2,18 @@ from random import Random
 
 import pytest
 
+from app.logic.ship.config import LANDING_RANGE
 from app.logic.world.config import (
+    CERES_BELT_ASTEROIDS,
+    CERES_BELT_ORBITS,
+    CERES_RADIUS,
     REGROW_THRESHOLD,
     REGROW_TIME,
     SWARM_ASTEROIDS,
     SWARM_EVERY,
     SWARM_STAYS,
 )
-from app.logic.world.layout import plan_system, sun_belt_orbit
+from app.logic.world.layout import plan_ceres_belt, plan_system, sun_belt_orbit
 from app.logic.world.regrowth import Regrowth
 from app.logic.world.swarms import RICH, SwarmClock, plan_swarm
 
@@ -84,3 +88,32 @@ def test_swarms_come_and_leave() -> None:
         if change:
             changes.append(change)
     assert changes[:3] == ['arrives', 'leaves', 'arrives']
+
+
+def test_a_belt_kept_full_grows_back_from_one_missing() -> None:
+    regrowth = Regrowth(FULL, 60., 1.)
+    assert regrowth.update(FULL - 1, regrowth.period) == 1
+    assert regrowth.update(FULL, 1.) == 0
+
+
+def test_the_belt_of_ceres_is_the_fullest_and_quickest() -> None:
+    belt = plan_ceres_belt()
+    plan = plan_system(Random(1))
+    assert belt.full == CERES_BELT_ASTEROIDS
+    assert all(belt.full > other.full for other in plan.belts[:-1])
+    assert all(belt.regrow_time < other.regrow_time for other in plan.belts)
+    near_the_sun = plan.belts[-1]
+    area = near_the_sun.orbits[1] ** 2 - near_the_sun.orbits[0] ** 2
+    own_area = belt.orbits[1] ** 2 - belt.orbits[0] ** 2
+    assert belt.full / own_area > 4 * near_the_sun.full / area
+
+
+def test_the_belt_of_ceres_leaves_room_to_land() -> None:
+    inner, _ = CERES_BELT_ORBITS
+    assert inner - CERES_RADIUS > LANDING_RANGE
+
+
+def test_asteroids_of_ceres_turn_at_their_own_speed() -> None:
+    belt = plan_ceres_belt()
+    asteroid = belt.asteroid(Random(2))
+    assert belt.speeds[0] <= asteroid.speed <= belt.speeds[1]

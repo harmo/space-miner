@@ -38,9 +38,10 @@ class SolarSystem:
         self.bodies: list[Celestial] = []
         self.locked: list[Celestial] = []   # facing their parent
         # The asteroids of each belt of the plan, mined or not
-        self.belt_plans = plan.belts
+        self.belt_plans = list(plan.belts)
         self.orbits = plan.orbits           # of the planets and the belt
         self.belts: list[list[Celestial]] = [[] for _ in plan.belts]
+        self.added_belts: dict[BeltPlan, Celestial] = {}  # to their parent
         belt_of = {belt.parent: index for index, belt in enumerate(plan.belts)}
         # Told when an asteroid goes, mined out or leaving with its swarm
         self.on_remove: list[Callable[[Celestial], None]] = []
@@ -70,6 +71,8 @@ class SolarSystem:
         self.events = SystemEvents(self, rng)
 
     def parent_of(self, belt: BeltPlan) -> Celestial:
+        if belt in self.added_belts:
+            return self.added_belts[belt]
         return self.sun if belt.parent is None else self.planets[belt.parent]
 
     def add_body(self, plan: OrbiterPlan,
@@ -80,6 +83,17 @@ class SolarSystem:
         if plan.gravity:
             self.attractors.append(body)
         return body
+
+    def add_belt(self, belt: BeltPlan, parent: Celestial,
+                 rng: Random) -> None:
+        """ Full, around `parent` """
+        self.added_belts[belt] = parent
+        self.belt_plans.append(belt)
+        self.belts.append([
+            self.add_asteroid(belt.asteroid(rng), parent)
+            for _ in range(belt.full)
+        ])
+        self.events.watch(belt)
 
     def add_asteroid(self, plan: OrbiterPlan,
                      parent: Celestial) -> Celestial:

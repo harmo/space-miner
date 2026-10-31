@@ -1,13 +1,15 @@
-""" Cérès: a big asteroid in the middle of the belt around the sun, where
-the ship lands on a small pad. Landed there out of fuel before anything
-is built, it calls for help. Built up to its refinery, it crushes the
-rock of its depot there, with no missions. """
+""" Cérès: a big asteroid in the middle of the belt around the sun, in a
+cloud of asteroids of its own which is always full, where the ship lands
+on a small pad. Landed there out of fuel before anything is built, it
+calls for help. Built up to its refinery, faster and richer than the one
+of the Earth, it crushes the rock of its depot there, with no missions. """
 
 import math
 from typing import Any
 
-from app.logic.base.config import CRUSH_RATE
+from app.logic.base.config import CERES_CRUSH_RATE
 from app.logic.ship.config import LANDING_DURATION
+from app.logic.world.config import CERES_BELT_ASTEROIDS, CERES_REGROW_TIME
 from app.logic.world.layout import sun_belt_orbit
 
 from .harness import Scenario
@@ -32,14 +34,22 @@ def flies_to_ceres() -> None:
     belt = sun_belt_orbit(system.orbits)
     check(abs(distance - belt) < 1, f'in the belt around the sun: {distance}')
     check(outpost.body in system.attractors, 'pulling the ship')
+    cloud = system.belts[-1]
+    check(len(cloud) == CERES_BELT_ASTEROIDS, f'its cloud: {len(cloud)}')
+    check(all(a.orbit.parent is outpost.body for a in cloud),
+          'turning around it')
+    for asteroid in cloud[:3]:
+        system.remove(asteroid)
     # Below it, away from its pad
     x, y = outpost.body.pos
     scenario.put_ship((x, y - outpost.body.radius - 120),
                       outpost.body.velocity)
 
 
-@scenario.step(.3)
+@scenario.step(4 * CERES_REGROW_TIME / CERES_BELT_ASTEROIDS)
 def is_aside_from_the_pad() -> None:
+    cloud = scenario.game.system.belts[-1]
+    check(len(cloud) == CERES_BELT_ASTEROIDS, f'grown back: {len(cloud)}')
     button = scenario.game.ids.land_button
     check(button.text == 'Hors de la plateforme', f'told: {button.text}')
     above_the_pad()
@@ -131,6 +141,8 @@ def opens_the_market() -> None:
 def crushes_rock_there() -> None:
     market = view().ids.market
     check(market.refinery, 'the market has its refinery')
+    check('rubis' in market.refinery_told, 'telling how rich it is')
+    scenario.screenshot('market')
     scenario.press(scenario.button(market, 'Concasser la roche'))
 
 
@@ -145,7 +157,7 @@ def into_other_ore() -> None:
     check(view().ids.market.crushing, 'as the market shows')
 
 
-@scenario.step(40. / CRUSH_RATE)
+@scenario.step(40. / CERES_CRUSH_RATE)
 def until_it_is_over() -> None:
     check(not view().ids.market.crushing, 'the market shows it is over')
     check(scenario.game.soundtrack.machine.name is None, 'falling silent')

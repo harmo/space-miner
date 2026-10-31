@@ -1,10 +1,10 @@
 """ Outposts founded in the solar system, on bodies of their own for those
-it has none for """
+it has none for, Cérès with its cloud of asteroids """
 
 from random import Random
 
 from ...logic.base.outposts import Outpost, bare_outpost
-from ...logic.world.layout import plan_ceres, plan_station
+from ...logic.world.layout import plan_ceres, plan_ceres_belt, plan_station
 from ..world.solar_system import SolarSystem
 
 
@@ -16,6 +16,7 @@ def found_outposts(system: SolarSystem, rng: Random) -> list[Outpost]:
     ceres = system.add_body(plan_ceres(
         system.orbits, earth.angle if earth else 0.,
     ))
+    system.add_belt(plan_ceres_belt(), ceres, rng)
     first = system.planets[0]
     icare = system.add_body(plan_station(first.radius), first)
     return [

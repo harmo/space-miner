@@ -28,12 +28,20 @@ class SystemEvents:
     def __init__(self, system: 'SolarSystem', rng: Random) -> None:
         self.system = system
         self.rng = rng
-        self.regrowths = [Regrowth(belt.full) for belt in system.belt_plans]
+        self.regrowths: list[Regrowth] = []
+        for belt in system.belt_plans:
+            self.watch(belt)
         self.clock = SwarmClock(rng)
         self.flares = SolarFlares(system, rng)
         self.swarm: list[Celestial] = []
         self.news = ''
         self.news_left = 0.       # seconds it is shown still
+
+    def watch(self, belt: BeltPlan) -> None:
+        """ Growing back as it should """
+        self.regrowths.append(
+            Regrowth(belt.full, belt.regrow_time, belt.regrow_below)
+        )
 
     def update(self, dt: float, ship: Vec2) -> None:
         system = self.system

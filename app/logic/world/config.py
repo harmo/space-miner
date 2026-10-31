@@ -27,6 +27,12 @@ GRAVITY_RANGE = 6.            # planets pull the ship up to this many radii
 # of an outpost, never mined
 CERES_RADIUS = 70.
 CERES_GRAVITY = 40.           # at its surface, weak (px/s²)
+# Its own cloud of asteroids turning around it, the fullest there is, and
+# growing back as soon as one is mined. Its middle stays clear, to land.
+CERES_BELT_ASTEROIDS = 60
+CERES_BELT_ORBITS = (400., 1600.)  # from its center
+CERES_BELT_SPEED = (30., 70.)
+CERES_REGROW_TIME = 60.       # seconds for a whole belt
 
 # Stations orbiting planets, sites of outposts
 STATION_RADIUS = 40.

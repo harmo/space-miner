@@ -16,8 +16,12 @@ from .config import (
     BELT_COUNT,
     BELT_SPEED,
     BELT_WIDTH,
+    CERES_BELT_ASTEROIDS,
+    CERES_BELT_ORBITS,
+    CERES_BELT_SPEED,
     CERES_GRAVITY,
     CERES_RADIUS,
+    CERES_REGROW_TIME,
     EARTH_ORBIT,
     EARTH_RADIUS,
     FIRST_ORBIT,
@@ -31,6 +35,8 @@ from .config import (
     PLANET_MASS,
     PLANET_RADIUS,
     PLANET_SPEED,
+    REGROW_THRESHOLD,
+    REGROW_TIME,
     STATION_ALTITUDE,
     STATION_RADIUS,
     STATION_SPEED,
@@ -38,6 +44,8 @@ from .config import (
     SUN_BELT_SPEED,
     SUN_BELT_WIDTH,
 )
+
+CERES_PARENT = -1             # not a planet, see BeltPlan
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,10 +83,14 @@ class PlanetPlan:
 @dataclass(frozen=True, slots=True)
 class BeltPlan:
     """ Where the asteroids of a belt turn, to put back those mined """
-    parent: int | None        # index of its planet, None around the sun
+    # Index of its planet, CERES_PARENT around Cérès, None around the sun
+    parent: int | None
     orbits: tuple[float, float]   # from the center of its parent
-    speeds: tuple[float, float]   # around a planet, or times the speed of a
-    full: int                     # planet at that distance from the sun
+    # In px/s, or around the sun times the speed of a planet at that distance
+    speeds: tuple[float, float]
+    full: int
+    regrow_time: float = REGROW_TIME
+    regrow_below: float = REGROW_THRESHOLD   # of `full`
 
     def asteroid(self, rng: Random,
                  angle: float | None = None) -> OrbiterPlan:
@@ -174,6 +186,14 @@ def plan_ceres(orbits: tuple[float, ...],
         CERES, CERES_RADIUS, PLANET_MASS, distance,
         speed=orbital_speed(distance), orbit_angle=earth_angle + math.pi,
         gravity=CERES_GRAVITY,
+    )
+
+
+def plan_ceres_belt() -> BeltPlan:
+    """ Asteroids turning around Cérès, always there """
+    return BeltPlan(
+        CERES_PARENT, CERES_BELT_ORBITS, CERES_BELT_SPEED,
+        CERES_BELT_ASTEROIDS, CERES_REGROW_TIME, 1.,
     )
 
 
