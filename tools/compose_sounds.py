@@ -3,7 +3,7 @@ those of the ship, see ship_sounds.py, of asteroids breaking up, see
 mineral_sounds.py, of what happens, see event_sounds.py, of the fuel, see
 fuel_sounds.py, of the sun, see sun_sounds.py, of the outposts, see
 outpost_sounds.py, and the ambience of space, drones and radio calls, see
-ambience.py.
+ambience.py and radio_sounds.py.
 
     uv run python -m tools.compose_sounds [sounds] [fuel] [sun] [outposts]
         [ambience]
@@ -15,26 +15,33 @@ ffmpeg encodes them, with libvorbis.
 """
 
 import sys
-from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from random import Random
 
-from .ambience import DRONES, calls, play
+from .ambience import DRONES, play
 from .event_sounds import (
     BASE_EVENTS,
     SHIP_EVENTS,
-    SWARM_ALERT,
+    SWARM,
     crushing,
-    swarm,
     unloading,
 )
 from .fuel_sounds import FUEL_EVENTS
-from .mineral_sounds import BREAKING, BREAKS
+from .mineral_sounds import BREAKS
 from .outpost_sounds import OUTPOST_EVENTS
+from .radio_sounds import calls
 from .ship_sounds import BEAMS, ENGINE_LOOP, ENGINES, laser
+from .sound_events import (
+    AMBIENT_DB,
+    EVENT_WINDOW,
+    LASER_DB,
+    LOOP_DB,
+    RADIO_DB,
+    SoundEvent,
+)
 from .sun_sounds import SUN_EVENTS
-from .synth import Samples, faded, length, level, save
+from .synth import length, level, save
 
 SOUNDS_DIR = Path(__file__).parent.parent / 'assets' / 'sounds'
 SEED = 5
@@ -43,25 +50,11 @@ FUEL_SEED = 13
 SUN_SEED = 21
 OUTPOST_SEED = 34
 
-# Loudness, in decibels, from the laser, which sounds right in the game:
-# the other loops stay below it, as do sounds of events at their loudest
-LASER_DB = -26.
-LOOP_DB = -32.
-EVENT_DB = -28.
-FLARE_DB = -26.               # the sun blasting, above everything
-BREAK_DB = -34.               # heard again and again while mining
-CLICK_DB = -34.               # heard so often it must stay discreet
-AMBIENT_DB = -30.             # always there, its volume set apart
-RADIO_DB = -36.               # calls now and then over the ambience
-EVENT_WINDOW = .1             # seconds, their loudness is measured over
-FADE = .4                     # seconds, at their end
 
-
-def event(rng: Random, seconds: float,
-          compose: Callable[[Random, int], Samples],
-          db: float = EVENT_DB) -> Samples:
-    sound = faded(compose(rng, length(seconds)), min(FADE, seconds / 3))
-    return level(sound, db, EVENT_WINDOW)
+def save_events(rng: Random, events: dict[str, SoundEvent],
+                prefix: str = '') -> None:
+    for name, sound in events.items():
+        save(SOUNDS_DIR / f'{prefix}{name}.ogg', sound.render(rng))
 
 
 def main() -> None:
@@ -73,16 +66,11 @@ def main() -> None:
     for name, compose in ENGINES.items():
         sound = compose(rng, length(ENGINE_LOOP))
         save(SOUNDS_DIR / f'engine_{name}.ogg', level(sound, LOOP_DB))
-    for name, compose in BREAKS.items():
-        save(SOUNDS_DIR / f'break_{name}.ogg',
-             event(rng, BREAKING, compose, BREAK_DB))
-    for name, (seconds, compose) in SHIP_EVENTS.items():
-        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose))
+    save_events(rng, BREAKS, 'break_')
+    save_events(rng, SHIP_EVENTS)
     save(SOUNDS_DIR / 'unloading.ogg', level(unloading(rng), LOOP_DB))
-    for name, (seconds, compose) in BASE_EVENTS.items():
-        db = CLICK_DB if name == 'click' else EVENT_DB
-        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose, db))
-    save(SOUNDS_DIR / 'swarm.ogg', event(rng, SWARM_ALERT, swarm))
+    save_events(rng, BASE_EVENTS)
+    save_events(rng, {'swarm': SWARM})
 
 
 def compose_drone(number: int) -> None:
@@ -94,25 +82,19 @@ def compose_drone(number: int) -> None:
 
 def compose_fuel() -> None:
     """ With random numbers of their own, not to change the other sounds """
-    rng = Random(FUEL_SEED)
-    for name, (seconds, compose) in FUEL_EVENTS.items():
-        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose))
+    save_events(Random(FUEL_SEED), FUEL_EVENTS)
 
 
 def compose_sun() -> None:
     """ The sun, and the refinery, with random numbers of their own """
     rng = Random(SUN_SEED)
-    for name, (seconds, compose) in SUN_EVENTS.items():
-        db = FLARE_DB if name == 'flare' else EVENT_DB
-        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose, db))
+    save_events(rng, SUN_EVENTS)
     save(SOUNDS_DIR / 'crushing.ogg', level(crushing(rng), LOOP_DB))
 
 
 def compose_outposts() -> None:
     """ With random numbers of their own """
-    rng = Random(OUTPOST_SEED)
-    for name, (seconds, compose) in OUTPOST_EVENTS.items():
-        save(SOUNDS_DIR / f'{name}.ogg', event(rng, seconds, compose))
+    save_events(Random(OUTPOST_SEED), OUTPOST_EVENTS)
 
 
 def compose_ambience() -> None:

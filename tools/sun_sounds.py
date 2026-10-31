@@ -1,9 +1,9 @@
 """ Sounds of the sun: the hull overheating, a flare told before, and the
 flare blazing """
 
-from collections.abc import Callable
 from random import Random
 
+from .sound_events import FLARE_DB, SoundEvent
 from .synth import (
     Samples,
     crackle,
@@ -58,8 +58,8 @@ def flare(rng: Random, n: int) -> Samples:
 
 
 # Seconds long, and how they sound
-SUN_EVENTS: dict[str, tuple[float, Callable[[Random, int], Samples]]] = {
-    'overheat': (1.2, overheat),
-    'flare_warning': (2., flare_warning),
-    'flare': (3., flare),
+SUN_EVENTS = {
+    'overheat': SoundEvent(1.2, overheat),
+    'flare_warning': SoundEvent(2., flare_warning),
+    'flare': SoundEvent(3., flare, FLARE_DB),
 }

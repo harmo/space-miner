@@ -1,9 +1,9 @@
 """ Sounds of the outposts: ore delivered to a site, a stage built, and a
 ship docking to a station """
 
-from collections.abc import Callable
 from random import Random
 
+from .sound_events import SoundEvent
 from .sound_parts import bell, debris, hiss, thump
 from .synth import (
     Samples,
@@ -65,8 +65,8 @@ def dock(rng: Random, n: int) -> Samples:
 
 
 # Seconds long, and how they sound
-OUTPOST_EVENTS: dict[str, tuple[float, Callable[[Random, int], Samples]]] = {
-    'deliver': (1., deliver),
-    'built': (1.8, built),
-    'dock': (1.2, dock),
+OUTPOST_EVENTS = {
+    'deliver': SoundEvent(1., deliver),
+    'built': SoundEvent(1.8, built),
+    'dock': SoundEvent(1.2, dock),
 }

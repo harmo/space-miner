@@ -3,9 +3,9 @@ full, its legs, its landing and its crash, at the base, its machines,
 trade, missions validated and buttons clicked, and in the solar system,
 swarms arriving """
 
-from collections.abc import Callable
 from random import Random
 
+from .sound_events import CLICK_DB, SoundEvent
 from .sound_parts import bell, burst, chimes, debris, hiss, thump
 from .synth import (
     Samples,
@@ -107,13 +107,13 @@ def touchdown(rng: Random, n: int) -> Samples:
 
 
 # Seconds long, and how they sound
-SHIP_EVENTS: dict[str, tuple[float, Callable[[Random, int], Samples]]] = {
-    'pickup': (.6, pickup),
-    'cargo_full': (.9, cargo_full),
-    'explosion': (2.5, explosion),
-    'gear_out': (.75, gear_out),
-    'gear_in': (.75, gear_in),
-    'touchdown': (.8, touchdown),
+SHIP_EVENTS = {
+    'pickup': SoundEvent(.6, pickup),
+    'cargo_full': SoundEvent(.9, cargo_full),
+    'explosion': SoundEvent(2.5, explosion),
+    'gear_out': SoundEvent(.75, gear_out),
+    'gear_in': SoundEvent(.75, gear_in),
+    'touchdown': SoundEvent(.8, touchdown),
 }
 
 
@@ -210,11 +210,11 @@ def click(rng: Random, n: int) -> Samples:
 
 
 # Seconds long, and how they sound
-BASE_EVENTS: dict[str, tuple[float, Callable[[Random, int], Samples]]] = {
-    'sale': (.7, sale),
-    'purchase': (.7, purchase),
-    'mission': (1.1, mission),
-    'click': (.08, click),
+BASE_EVENTS = {
+    'sale': SoundEvent(.7, sale),
+    'purchase': SoundEvent(.7, purchase),
+    'mission': SoundEvent(1.1, mission),
+    'click': SoundEvent(.08, click, CLICK_DB),
 }
 
 
@@ -233,3 +233,5 @@ def swarm(rng: Random, n: int) -> Samples:
     ))
     return mix((.3, static), (1., normalized(echoes)))
 
+
+SWARM = SoundEvent(SWARM_ALERT, swarm)

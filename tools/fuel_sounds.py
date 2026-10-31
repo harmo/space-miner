@@ -1,10 +1,10 @@
 """ Sounds of the fuel: the tank running low, then dry, filled on the
 Earth, and the distress beacon of a ship calling to be towed back """
 
-from collections.abc import Callable
 from random import Random
 
-from .ambience import radio, static
+from .radio_sounds import radio, static
+from .sound_events import SoundEvent
 from .synth import (
     RATE,
     Samples,
@@ -78,9 +78,9 @@ def tow(rng: Random, n: int) -> Samples:
 
 
 # Seconds long, and how they sound
-FUEL_EVENTS: dict[str, tuple[float, Callable[[Random, int], Samples]]] = {
-    'low_fuel': (1.1, low_fuel),
-    'fuel_out': (1.6, fuel_out),
-    'refuel': (1.4, refuel),
-    'tow': (1.8, tow),
+FUEL_EVENTS = {
+    'low_fuel': SoundEvent(1.1, low_fuel),
+    'fuel_out': SoundEvent(1.6, fuel_out),
+    'refuel': SoundEvent(1.4, refuel),
+    'tow': SoundEvent(1.8, tow),
 }

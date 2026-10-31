@@ -2,9 +2,9 @@
 for each mineral: the rock bursting, and what it is made of ringing,
 tinkling, fizzing... """
 
-from collections.abc import Callable
 from random import Random
 
+from .sound_events import BREAK_DB, SoundEvent
 from .sound_parts import bell, burst, chimes, debris, thump
 from .synth import (
     Samples,
@@ -150,18 +150,18 @@ def antimatter(rng: Random, n: int) -> Samples:
 
 
 # By mineral, as in the table of minerals
-BREAKS: dict[str, Callable[[Random, int], Samples]] = {
-    'rock': rock,
-    'ice': ice,
-    'iron': iron,
-    'copper': copper,
-    'gold': gold,
-    'crystal': crystal,
-    'uranium': uranium,
-    'helium3': helium3,
-    'ruby': ruby,
-    'nebulite': nebulite,
-    'stellarium': stellarium,
-    'antimatter': antimatter,
+BREAKS = {
+    'rock': SoundEvent(BREAKING, rock, BREAK_DB),
+    'ice': SoundEvent(BREAKING, ice, BREAK_DB),
+    'iron': SoundEvent(BREAKING, iron, BREAK_DB),
+    'copper': SoundEvent(BREAKING, copper, BREAK_DB),
+    'gold': SoundEvent(BREAKING, gold, BREAK_DB),
+    'crystal': SoundEvent(BREAKING, crystal, BREAK_DB),
+    'uranium': SoundEvent(BREAKING, uranium, BREAK_DB),
+    'helium3': SoundEvent(BREAKING, helium3, BREAK_DB),
+    'ruby': SoundEvent(BREAKING, ruby, BREAK_DB),
+    'nebulite': SoundEvent(BREAKING, nebulite, BREAK_DB),
+    'stellarium': SoundEvent(BREAKING, stellarium, BREAK_DB),
+    'antimatter': SoundEvent(BREAKING, antimatter, BREAK_DB),
 }
 
