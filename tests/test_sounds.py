@@ -30,7 +30,8 @@ FLYING = Moment(
 )
 EVENTS = (
     'explosion', 'gear_out', 'gear_in', 'touchdown', 'cargo_full',
-    'mission', 'sale', 'purchase', 'swarm', 'pickup', 'click', 'unloading',
+    'mission', 'sale', 'purchase', 'swarm', 'comet', 'pickup', 'click',
+    'unloading',
     'low_fuel', 'fuel_out', 'refuel', 'tow', 'overheat', 'flare_warning',
     'flare', 'crushing', 'deliver', 'built', 'dock',
 )
@@ -128,6 +129,12 @@ def test_money_is_heard_coming_in_and_out() -> None:
 def test_a_mission_validated_is_heard_rather_than_its_reward() -> None:
     validated = replace(FLYING, credits=1500, validated=3)
     assert heard(FLYING, validated) == ['mission']
+
+
+def test_a_comet_is_heard_arriving_not_leaving() -> None:
+    comet = replace(FLYING, comet=True)
+    assert heard(FLYING, comet) == ['comet']
+    assert heard(comet, FLYING) == []
 
 
 def test_a_swarm_is_heard_arriving_not_leaving() -> None:

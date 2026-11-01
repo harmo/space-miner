@@ -2,11 +2,11 @@
 those of the ship, see ship_sounds.py, of asteroids breaking up, see
 mineral_sounds.py, of what happens, see event_sounds.py, of the fuel, see
 fuel_sounds.py, of the sun, see sun_sounds.py, of the outposts, see
-outpost_sounds.py, and the ambience of space, drones and radio calls, see
-ambience.py and radio_sounds.py.
+outpost_sounds.py, of comets, see comet_sounds.py, and the ambience of
+space, drones and radio calls, see ambience.py and radio_sounds.py.
 
     uv run python -m tools.compose_sounds [sounds] [fuel] [sun] [outposts]
-        [ambience]
+        [comet] [ambience]
 
 All of them without any, those named otherwise. Each group has random
 numbers of its own, so that changing one leaves the others as they were.
@@ -20,6 +20,7 @@ from pathlib import Path
 from random import Random
 
 from .ambience import DRONES, play
+from .comet_sounds import COMET_EVENTS
 from .event_sounds import (
     BASE_EVENTS,
     SHIP_EVENTS,
@@ -49,6 +50,7 @@ AMBIENCE_SEED = 8
 FUEL_SEED = 13
 SUN_SEED = 21
 OUTPOST_SEED = 34
+COMET_SEED = 55
 
 
 def save_events(
@@ -100,6 +102,11 @@ def compose_outposts() -> None:
     save_events(Random(OUTPOST_SEED), OUTPOST_EVENTS)
 
 
+def compose_comet() -> None:
+    """ With random numbers of its own """
+    save_events(Random(COMET_SEED), COMET_EVENTS)
+
+
 def compose_ambience() -> None:
     """ The drones side by side, as they take long """
     with ProcessPoolExecutor() as pool:
@@ -112,7 +119,9 @@ def compose_ambience() -> None:
 
 if __name__ == '__main__':
     # All of them, or the groups named
-    wanted = sys.argv[1:] or ['sounds', 'fuel', 'sun', 'outposts', 'ambience']
+    wanted = sys.argv[1:] or [
+        'sounds', 'fuel', 'sun', 'outposts', 'comet', 'ambience',
+    ]
     SOUNDS_DIR.mkdir(parents=True, exist_ok=True)
     if 'sounds' in wanted:
         main()
@@ -122,5 +131,7 @@ if __name__ == '__main__':
         compose_sun()
     if 'outposts' in wanted:
         compose_outposts()
+    if 'comet' in wanted:
+        compose_comet()
     if 'ambience' in wanted:
         compose_ambience()

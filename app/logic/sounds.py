@@ -138,8 +138,10 @@ def heard_of_money(before: Moment, now: Moment, paid_for: bool) -> list[str]:
 def heard_of_space(before: Moment, now: Moment) -> list[str]:
     """ Swarms and comets arriving, flares told then blazing """
     sounds = []
-    if (now.swarm and not before.swarm) or (now.comet and not before.comet):
+    if now.swarm and not before.swarm:
         sounds.append('swarm')
+    if now.comet and not before.comet:
+        sounds.append('comet')
     if now.flare != before.flare:
         if now.flare == 'warning':
             sounds.append('flare_warning')

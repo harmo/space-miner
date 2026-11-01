@@ -43,7 +43,7 @@ def a_comet_comes() -> None:
     distance = math.dist(events().comets.comet.pos, system.sun.pos)
     check(abs(distance - system.orbits[-1]) < 50,
           f'from as far as the last planet: {distance:.0f}')
-    check('swarm' in played, f'heard: {played}')
+    check('comet' in played and 'swarm' not in played, f'heard: {played}')
     news = scenario.game.ids.news_label.text
     check('Comète' in news and 'près du soleil' in news, f'told: {news}')
     scenario.press(scenario.game.ids.map_button)
