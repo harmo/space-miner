@@ -2,6 +2,7 @@
 flares, outposts, markers, the work of the ship and explosions """
 
 import math
+from dataclasses import dataclass
 
 from ...logic.base.outposts import Outpost
 from ...logic.config import (
@@ -34,11 +35,22 @@ from .overlay import Overlay
 OUTPOST_SIZE = 60.            # around the pad, for its marker
 
 
-def draw_scene(overlay: Overlay, size: Vec2, system: SolarSystem,
-               outposts: list[Outpost], player: Player, ship: ShipLooks,
-               playing: bool, preferences: Preferences) -> None:
+@dataclass(frozen=True)
+class SceneView:
+    """ What is drawn over the game """
+    system: SolarSystem
+    outposts: list[Outpost]
+    player: Player
+    ship: ShipLooks
+    playing: bool
+    preferences: Preferences
+
+
+def draw_scene(overlay: Overlay, size: Vec2, view: SceneView) -> None:
     """ Markers and the work of the ship are for playing, not for the
     scenery behind the home page """
+    system, outposts, player = view.system, view.outposts, view.player
+    ship, playing, preferences = view.ship, view.playing, view.preferences
     overlay.begin(size)
     if preferences.orbits:
         draw_orbits(overlay, size, system)

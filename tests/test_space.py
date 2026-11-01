@@ -10,6 +10,7 @@ from app.logic.world.space import (
     Station,
     Vec2,
     angle_diff,
+    bearing,
     closest_pulling,
     closest_to,
     nearest,
@@ -232,3 +233,9 @@ def test_the_closest_pulling_body_is_not_the_strongest() -> None:
     assert closest_pulling((2800., 0.), attractors) is big
     assert closest_pulling((0., 900.), attractors) is None
     assert closest_pulling((20000., 0.), attractors) is None
+
+
+def test_bearing_of_a_point_from_another() -> None:
+    assert bearing((10., 5.), (0., 5.)) == 0.
+    assert bearing((0., 8.), (0., 5.)) == pytest.approx(math.pi / 2)
+    assert bearing((-1., 5.), (0., 5.)) == pytest.approx(math.pi)

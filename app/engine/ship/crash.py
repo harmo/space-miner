@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from ...logic.ship.ship import Ship, is_crash
-from ...logic.world.space import Vec2
+from ...logic.world.space import Vec2, bearing
 from ..entities import GameWorld, get_body
 
 
@@ -29,8 +29,7 @@ def crash_of(gameworld: GameWorld, ship: Ship, arbiter: Any,
     )
     if not is_crash(relative_speed, other in grounds):
         return None
-    x, y = ship.position
     return Crash(
         (velocity.x, velocity.y),
-        math.atan2(y - position.y, x - position.x),
+        bearing(ship.position, (position.x, position.y)),
     )

@@ -21,6 +21,11 @@ def wrap_shift(pos: Vec2, center: Vec2, period: float = WORLD_SIZE) -> Vec2:
     )
 
 
+def bearing(pos: Vec2, center: Vec2) -> float:
+    """ Direction of `pos`, seen from `center` """
+    return math.atan2(pos[1] - center[1], pos[0] - center[0])
+
+
 def angle_diff(a: float, b: float) -> float:
     """ Shortest turn from b to a, between -pi and pi """
     return (a - b + math.pi) % (2 * math.pi) - math.pi
@@ -108,10 +113,7 @@ class Station(Generic[T_co]):
                  distance: float) -> None:
         self.target = target
         self.distance = distance
-        x, y = target.pos
-        self.angle = (
-            math.atan2(start[1] - y, start[0] - x) - self.orbit_angle
-        )
+        self.angle = bearing(start, target.pos) - self.orbit_angle
 
     @property
     def orbit_angle(self) -> float:

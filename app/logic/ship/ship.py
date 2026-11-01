@@ -10,6 +10,7 @@ from ..world.space import (
     Target,
     Vec2,
     angle_diff,
+    bearing,
     strongest,
 )
 from .config import HOLD_GAIN, HOLD_RESPONSE, LANDING_MAX_SPEED, SHIP_DRAG
@@ -111,8 +112,7 @@ class Ship:
         # thrusters cancel gravity, or the ship would sag below its spot
         station_vx, station_vy = station.velocity
         gravity_x, gravity_y = self.gravity(attractors)
-        target_x, target_y = station.target.pos
-        self.turn(dt, math.atan2(target_y - y, target_x - x))
+        self.turn(dt, bearing(station.target.pos, (x, y)))
         self.steer(dt, (
             station_vx + correction_x - gravity_x / HOLD_RESPONSE,
             station_vy + correction_y - gravity_y / HOLD_RESPONSE,

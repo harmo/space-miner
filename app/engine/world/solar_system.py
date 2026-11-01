@@ -28,7 +28,13 @@ from ...logic.world.config import (
 from ...logic.world.layout import BeltPlan, OrbiterPlan, SystemPlan, facing
 from ...logic.world.shadow import shadow_of
 from ...logic.world.space import Celestial, Orbit, Vec2, closest_to
-from ..entities import GameWorld, create_round_entity, get_body, move_body
+from ..entities import (
+    GameWorld,
+    RoundBody,
+    create_round_entity,
+    get_body,
+    move_body,
+)
 from .events import SystemEvents
 
 
@@ -155,11 +161,10 @@ class SolarSystem:
             listener(celestial)
 
     def create_sun(self, pos: Vec2) -> Celestial:
-        entity_id = create_round_entity(
-            self.gameworld, 'sun', pos, SUN_RADIUS,
-            mass=0, collision_type=COLLISION_PLANET,
+        entity_id = create_round_entity(self.gameworld, RoundBody(
+            'sun', pos, SUN_RADIUS, mass=0, collision_type=COLLISION_PLANET,
             display_radius=SUN_RADIUS / SUN_DISC,
-        )
+        ))
         sun = Celestial(
             entity_id, SUN_RADIUS, pos=pos,
             gravity=SUN_GRAVITY, gravity_falloff=SUN_GRAVITY_FALLOFF,
@@ -171,26 +176,13 @@ class SolarSystem:
     def create_orbiter(self, plan: OrbiterPlan, parent: Celestial,
                        collision_type: int) -> Celestial:
         orbit = Orbit(parent, plan.orbit_radius, plan.speed, plan.orbit_angle)
-        return self.create_on(plan, orbit, collision_type)
-
-    def add_comet(self, orbit: CometOrbit) -> Celestial:
-        """ Going through the planets and whatever turns around them """
-        plan = OrbiterPlan(
-            COMET, COMET_RADIUS, PLANET_MASS, 0., 0., orbit_angle=0.,
-        )
-        return self.create_on(plan, orbit, COLLISION_ORBITER)
-
-    def create_on(self, plan: OrbiterPlan, orbit: Orbit,
-                  collision_type: int) -> Celestial:
-        entity_id = create_round_entity(
-            self.gameworld, plan.texture, orbit.position, plan.radius,
-            mass=plan.mass, collision_type=collision_type,
-            angle=plan.rotation,
-            velocity=orbit.velocity,
-            angular_velocity=math.radians(plan.spin),
-            display_radius=plan.radius * display_scale(plan.mineral)
+        entity_id = create_round_entity(self.gameworld, RoundBody(
+            plan.texture, orbit.position, plan.radius, plan.mass,
+            collision_type, plan.rotation, orbit.velocity,
+            math.radians(plan.spin),
+            plan.radius * display_scale(plan.mineral)
             * PLANET_IMAGE_SCALE.get(plan.texture, 1.),
-        )
+        ))
         celestial = Celestial(
             entity_id, plan.radius, orbit=orbit, gravity=plan.gravity,
             mineral=plan.mineral,
@@ -199,6 +191,16 @@ class SolarSystem:
         if plan.locked:
             self.locked.append(celestial)
         return celestial
+
+    def add_comet(self, orbit: CometOrbit) -> Celestial:
+        """ Going through the planets and whatever turns around them """
+        entity_id = create_round_entity(self.gameworld, RoundBody(
+            COMET, orbit.position, COMET_RADIUS, PLANET_MASS,
+            COLLISION_ORBITER, velocity=orbit.velocity,
+        ))
+        comet = Celestial(entity_id, COMET_RADIUS, orbit=orbit)
+        self.bodies.append(comet)
+        return comet
 
     def move_orbiters(self, dt: float) -> None:
         """ Steer every orbiting body along its orbit, parents first so that

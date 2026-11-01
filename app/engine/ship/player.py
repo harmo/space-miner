@@ -27,12 +27,13 @@ from ...logic.ship.ground import (
 from ...logic.ship.heat import HullHeat
 from ...logic.ship.landing import Landing
 from ...logic.ship.parking import Parking, parking_at, parking_on
+from ...logic.ship.pose import Pose
 from ...logic.ship.scanner import LOOKED_FOR
 from ...logic.ship.ship import Ship
 from ...logic.ship.shipyard import Design, ship_stats
 from ...logic.ship.shortcut import Shortcut, shortcut
 from ...logic.world.explosion import Explosion
-from ...logic.world.space import Celestial, Vec2
+from ...logic.world.space import Celestial, Vec2, bearing
 from ..entities import GameWorld, create_ship_entity, get_body, move_body
 from ..world.canister_field import CanisterField
 from ..world.solar_system import SolarSystem
@@ -81,7 +82,7 @@ class Player:
         length = self.stats.size.length
         pos = landed_on(body, direction, length)
         entity_id = create_ship_entity(
-            self.gameworld, pos, body.velocity, direction,
+            self.gameworld, Pose(pos, body.velocity, direction),
             ship_texture(self.design, self.stats.size), self.stats.size,
         )
         ship_body = get_body(self.gameworld, entity_id)
@@ -100,12 +101,11 @@ class Player:
             return 'hidden'
         ground = self.grounds.nearest(self.ship.position)
         body = ground.body
-        x, y = position = self.ship.position
-        direction = math.atan2(y - body.pos[1], x - body.pos[0])
+        position = self.ship.position
         return shortcut(
             surface_distance(position, body),
             is_landed(self.ship.pose, body, self.stats.size),
-            self.grounds.within_reach(ground, direction),
+            self.grounds.within_reach(ground, bearing(position, body.pos)),
         )
 
     @property
@@ -176,8 +176,7 @@ class Player:
         self.parking = None
         ground = self.grounds.nearest(self.ship.position)
         body = ground.body
-        x, y = self.ship.position
-        approach = math.atan2(y - body.pos[1], x - body.pos[0])
+        approach = bearing(self.ship.position, body.pos)
         self.landing = Landing(
             body, self.ship.pose,
             closest_spot(approach, self.grounds.spots(ground)),

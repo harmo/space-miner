@@ -3,6 +3,7 @@ ellipses, slow at their far end and racing by the sun, as Kepler said """
 
 import math
 from collections.abc import Sequence
+from dataclasses import dataclass
 from random import Random
 
 from .config import (
@@ -26,18 +27,27 @@ ICE = ('ice',)
 THAWING = ('ice', 'gold', 'crystal', 'helium3')
 
 
+@dataclass(frozen=True)
+class CometPath:
+    closest: float            # to the sun
+    farthest: float
+    time: float               # seconds, from one far end to the other
+    tilt: float               # of its long axis
+    sense: int                # 1 counterclockwise, -1 clockwise
+
+
 class CometOrbit(Orbit):
     """ From one far end of its ellipse to the other, the parent on one
     of its foci. `anomaly` goes from -pi to pi, 0 being closest to it. """
 
-    def __init__(self, parent: Celestial, closest: float, farthest: float,
-                 time: float, tilt: float, sense: int) -> None:
+    def __init__(self, parent: Celestial, path: CometPath) -> None:
+        closest, farthest = path.closest, path.farthest
         super().__init__(parent, (closest + farthest) / 2, 0., 0.)
         self.eccentricity = (farthest - closest) / (farthest + closest)
         self.minor = self.radius * math.sqrt(1 - self.eccentricity ** 2)
-        self.motion = 2 * math.pi / time
-        self.tilt = tilt
-        self.sense = sense        # 1 counterclockwise, -1 clockwise
+        self.motion = 2 * math.pi / path.time
+        self.tilt = path.tilt
+        self.sense = path.sense
         self.anomaly = -math.pi
         self.along = self.solved()
 
@@ -109,10 +119,10 @@ class CometOrbit(Orbit):
 
 
 def plan_comet(rng: Random, sun: Celestial,
-               orbits: Sequence[float]) -> CometOrbit:
+               orbits: Sequence[float]) -> CometPath:
     """ From as far as the last planet, whichever the way """
-    return CometOrbit(
-        sun, sun.radius + COMET_PERIHELION, orbits[-1], COMET_TIME,
+    return CometPath(
+        sun.radius + COMET_PERIHELION, orbits[-1], COMET_TIME,
         rng.uniform(0, 2 * math.pi), rng.choice((-1, 1)),
     )
 

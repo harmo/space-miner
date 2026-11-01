@@ -2,7 +2,7 @@
 
 import math
 
-from ..world.space import Celestial, Vec2, angle_diff
+from ..world.space import Celestial, Vec2, angle_diff, bearing
 from .config import LANDING_DURATION
 from .ground import landed_distance
 from .pose import Pose
@@ -28,8 +28,7 @@ class Landing:
                  duration: float = LANDING_DURATION) -> None:
         self.body = body
         x, y = body.pos
-        start_x, start_y = start.position
-        self.start_direction = math.atan2(start_y - y, start_x - x)
+        self.start_direction = bearing(start.position, body.pos)
         self.end_direction = end_direction
         self.around = angle_diff(end_direction, self.start_direction)
         self.start_distance = math.dist(start.position, (x, y))

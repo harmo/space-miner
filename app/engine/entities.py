@@ -1,6 +1,7 @@
 """ Creation and moves of KivEnt entities """
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
 from cymunk import Body
@@ -18,6 +19,7 @@ from ..logic.mining.canisters import CanisterPlan, canister_texture
 from ..logic.mining.config import CANISTER_SIZE
 from ..logic.mining.minerals import display_scale
 from ..logic.ship.config import SHIP_MASS
+from ..logic.ship.pose import Pose, ShipSize
 from ..logic.world.space import Vec2
 from .textures import texture_size
 
@@ -62,28 +64,38 @@ def setup_collisions(gameworld: GameWorld,
         )
 
 
-def create_round_entity(gameworld: GameWorld, texture: str, pos: Vec2,
-                        radius: float, mass: float, collision_type: int,
-                        angle: float = 0., velocity: Vec2 = (0., 0.),
-                        angular_velocity: float = 0.,
-                        display_radius: float | None = None) -> int:
-    """ Round physics body drawn with `texture`. A mass of 0 makes a static
-    body. """
+@dataclass(frozen=True)
+class RoundBody:
+    """ A physics body drawn with `texture`. A mass of 0 makes it static. """
+    texture: str
+    pos: Vec2
+    radius: float
+    mass: float
+    collision_type: int
+    angle: float = 0.
+    velocity: Vec2 = (0., 0.)
+    angular_velocity: float = 0.
+    display_radius: float | None = None
+
+
+def create_round_entity(gameworld: GameWorld, body: RoundBody) -> int:
+    texture, pos, radius = body.texture, body.pos, body.radius
+    mass = body.mass
     tex_width, tex_height = texture_size(texture)
-    display_radius = display_radius or radius
+    display_radius = body.display_radius or radius
     entity_id: int = gameworld.init_entity(
         components_to_use={
             'cymunk_physics': {
                 'main_shape': 'circle',
                 'position': pos,
-                'angle': angle,
-                'angular_velocity': angular_velocity,
-                'velocity': velocity,
+                'angle': body.angle,
+                'angular_velocity': body.angular_velocity,
+                'velocity': body.velocity,
                 'mass': mass,
                 'col_shapes': [{
                     'shape_type': 'circle',
                     'elasticity': .5,
-                    'collision_type': collision_type,
+                    'collision_type': body.collision_type,
                     'friction': 1.,
                     'shape_info': {
                         'inner_radius': 0,
@@ -109,17 +121,18 @@ def create_round_entity(gameworld: GameWorld, texture: str, pos: Vec2,
     return entity_id
 
 
-def create_ship_entity(gameworld: GameWorld, pos: Vec2, velocity: Vec2,
-                       angle: float, texture: str, size: Vec2) -> int:
+def create_ship_entity(gameworld: GameWorld, pose: Pose, texture: str,
+                       size: ShipSize) -> int:
     length, width = size
+    pos = pose.position
     entity_id: int = gameworld.init_entity(
         components_to_use={
             'cymunk_physics': {
                 'main_shape': 'box',
                 'position': pos,
-                'angle': angle,
+                'angle': pose.angle,
                 'angular_velocity': 0,
-                'velocity': velocity,
+                'velocity': pose.velocity,
                 'mass': SHIP_MASS,
                 'col_shapes': [{
                     'shape_type': 'box',

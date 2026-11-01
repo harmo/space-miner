@@ -3,7 +3,7 @@
 import math
 from dataclasses import dataclass
 
-from ..world.space import Celestial, Vec2
+from ..world.space import Celestial, Vec2, bearing
 from .ground import landed_distance
 from .pose import Pose
 
@@ -40,9 +40,7 @@ def parking_on(body: Celestial, direction: float,
 
 def parking_at(body: Celestial, pose: Pose) -> Parking:
     """ Landed where the ship is, as it is """
-    x, y = body.pos
-    px, py = pose.position
     return Parking(
-        body, math.atan2(py - y, px - x), math.dist((px, py), (x, y)),
-        pose.angle,
+        body, bearing(pose.position, body.pos),
+        math.dist(pose.position, body.pos), pose.angle,
     )

@@ -43,7 +43,7 @@ from .ui.hud import show_hud
 from .ui.map_view import Charted
 from .ui.overlay import Overlay
 from .ui.pointer import pointer_heading
-from .ui.scene import draw_scene
+from .ui.scene import SceneView, draw_scene
 from .world.sky import Sky
 from .world.solar_system import SolarSystem
 from .world.starfield import StarField
@@ -263,10 +263,10 @@ class Game(Widget):
         self.cargo_open = not self.cargo_open
 
     def draw_overlay(self) -> None:
-        draw_scene(
-            self.overlay, self.size, self.system, self.outposts, self.player,
-            self.looks, self.playing, self.preferences,
-        )
+        draw_scene(self.overlay, self.size, SceneView(
+            self.system, self.outposts, self.player, self.looks,
+            self.playing, self.preferences,
+        ))
 
     # Input
 

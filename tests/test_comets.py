@@ -6,6 +6,7 @@ import pytest
 from app.logic.world.comets import (
     CometClock,
     CometOrbit,
+    CometPath,
     debris_shed,
     plan_comet,
     plan_debris,
@@ -32,7 +33,9 @@ def sun() -> Celestial:
 
 
 def comet(tilt: float = 0., sense: int = 1) -> CometOrbit:
-    return CometOrbit(sun(), CLOSEST, FARTHEST, 480., tilt, sense)
+    return CometOrbit(
+        sun(), CometPath(CLOSEST, FARTHEST, 480., tilt, sense),
+    )
 
 
 def distance(orbit: CometOrbit) -> float:
@@ -103,7 +106,7 @@ def test_the_path_of_a_comet_closes_on_itself() -> None:
 
 
 def test_a_planned_comet_comes_from_the_last_planet() -> None:
-    orbit = plan_comet(Random(1), sun(), (2000., 25000.))
+    orbit = CometOrbit(sun(), plan_comet(Random(1), sun(), (2000., 25000.)))
     assert distance(orbit) == pytest.approx(25000.)
     orbit.advance(COMET_TIME / 2)
     assert distance(orbit) == pytest.approx(600. + COMET_PERIHELION)

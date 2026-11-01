@@ -2,12 +2,12 @@
 thrusting and firing the laser, and the heat of its hull, by the sun. Out
 of fuel the ship can neither thrust nor mine, too hot it blows up. """
 
-import math
 
 from ...logic.ship.fuel import Tank, burn_rate
 from ...logic.ship.heat import HullHeat, Sunlight, heating
 from ...logic.ship.ship import Ship
 from ...logic.ship.shipyard import ShipStats
+from ...logic.world.space import bearing
 from .crash import Crash
 
 
@@ -36,5 +36,4 @@ class Condition:
         self.heat.update(dt, gain)
         if not self.heat.burnt:
             return None
-        (x, y), (sun_x, sun_y) = ship.position, sunlight.pos
-        return Crash(ship.velocity, math.atan2(y - sun_y, x - sun_x))
+        return Crash(ship.velocity, bearing(ship.position, sunlight.pos))

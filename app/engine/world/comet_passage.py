@@ -2,12 +2,14 @@
 on its way, what the player is told, and how it is saved """
 
 import math
+from dataclasses import replace
 from random import Random
 from typing import TYPE_CHECKING
 
 from ...logic.world.comets import (
     CometClock,
     CometOrbit,
+    CometPath,
     debris_shed,
     plan_comet,
     plan_debris,
@@ -35,16 +37,20 @@ class CometPassage:
         comet, orbit = self.comet, self.orbit
         if comet is None or orbit is None:
             if self.clock.due(dt):
-                system = self.system
-                self.arrive(plan_comet(self.rng, system.sun, system.orbits))
+                self.arrive(self.next_path())
         elif orbit.over:
             self.leave()
         else:
             self.thaw(comet)
 
-    def arrive(self, orbit: CometOrbit) -> None:
-        self.orbit = orbit
-        self.comet = self.system.add_comet(orbit)
+    def next_path(self) -> CometPath:
+        system = self.system
+        return plan_comet(self.rng, system.sun, system.orbits)
+
+    def arrive(self, path: CometPath) -> CometOrbit:
+        self.orbit = CometOrbit(self.system.sun, path)
+        self.comet = self.system.add_comet(self.orbit)
+        return self.orbit
 
     def leave(self) -> None:
         system = self.system
@@ -81,10 +87,9 @@ class CometPassage:
         if state is None:
             return
         system = self.system
-        orbit = plan_comet(self.rng, system.sun, system.orbits)
-        orbit.tilt, orbit.sense = state.tilt, state.sense
-        orbit.set_anomaly(state.anomaly)
-        self.arrive(orbit)
+        self.arrive(replace(
+            self.next_path(), tilt=state.tilt, sense=state.sense,
+        )).set_anomaly(state.anomaly)
         assert self.comet is not None
         self.shed = state.shed
         self.debris = [

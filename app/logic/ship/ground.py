@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
 
-from ..world.space import Celestial, Vec2, angle_diff
+from ..world.space import Celestial, Vec2, angle_diff, bearing
 from .config import (
     GROUND_SAFETY,
     LANDED_GAP,
@@ -122,7 +122,7 @@ def ground_gap(pos: Vec2, angle: float, body: Celestial,
     """ Between the ground and the ship, a box of `size` turned by
     `angle`: it lies closer to the ground on its side than on its nose """
     x, y = body.pos
-    tilt = angle - math.atan2(pos[1] - y, pos[0] - x)
+    tilt = angle - bearing(pos, body.pos)
     reach = (
         abs(math.cos(tilt)) * size.length / 2
         + abs(math.sin(tilt)) * size.width / 2
