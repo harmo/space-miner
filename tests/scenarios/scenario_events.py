@@ -65,8 +65,18 @@ def a_swarm_arrives() -> None:
         math.dist(rock.pos, other.pos)
         for other in scenario.game.system.asteroids if other is not rock
     ))
+    # Away from what is closest to it
+    system = scenario.game.system
+    closest = min(
+        (body for body in system.bodies if body is not asteroid),
+        key=lambda body: math.dist(body.pos, asteroid.pos) - body.radius,
+    )
     x, y = asteroid.pos
-    scenario.put_ship((x + 140, y), asteroid.velocity, angle=math.pi)
+    away = math.atan2(y - closest.pos[1], x - closest.pos[0])
+    scenario.put_ship(
+        (x + math.cos(away) * 140, y + math.sin(away) * 140),
+        asteroid.velocity, angle=away + math.pi,
+    )
     scenario.player.miner.lock_on(asteroid, scenario.player.ship.position)
     remembered['locked'] = asteroid
 
