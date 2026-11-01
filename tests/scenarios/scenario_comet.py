@@ -101,7 +101,8 @@ def mines_it() -> None:
 
 @scenario.step(.1)
 def races_by_the_sun() -> None:
-    jump(-.08)
+    # Close enough for rich debris, whatever its path
+    jump(-.03)
     orbit = events().comets.orbit
     remembered['far'] = 50.
     scenario.put_ship((orbit.position[0] + 8000, orbit.position[1]), (0, 0))
