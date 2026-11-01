@@ -110,7 +110,7 @@ def builds_it() -> None:
     check(view().docked, 'served on its small pad')
     scenario.grant_concessions()
     ore = scenario.player.miner.ore
-    for stage in ceres().construction.site.stages:
+    for stage in ceres().construction.site.stages[:3]:
         ore.update({name: float(units) for name, units in stage.materials})
         ceres().deliver(ore)
     check(ceres().construction.built == 3, 'built up to its refinery')

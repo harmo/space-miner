@@ -71,7 +71,7 @@ def is_docked() -> None:
 def builds_its_frame() -> None:
     scenario.screenshot('frame')
     ore = scenario.player.miner.ore
-    for stage in icare().construction.site.stages[1:]:
+    for stage in icare().construction.site.stages[1:3]:
         ore.update({name: float(units) for name, units in stage.materials})
         icare().deliver(ore)
     check(icare().construction.built == 3, 'built up to its trading post')

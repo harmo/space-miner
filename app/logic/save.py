@@ -9,9 +9,17 @@ from typing import Any
 from .base.board import Contracts
 from .base.missions import Mission
 from .base.outposts import Progress
+from .base.shuttles import ShuttleState
 from .mining.minerals import MINERALS
 from .mining.ore import Hold
-from .save_world import canister_data, canisters_of, events_data, events_of
+from .save_world import (
+    canister_data,
+    canisters_of,
+    events_data,
+    events_of,
+    shuttle_data,
+    shuttles_of,
+)
 from .ship.hulls import HULLS
 from .ship.parts import PARTS
 from .ship.scanner import LOOKED_FOR
@@ -54,6 +62,8 @@ class Save:
     # Saved in flight, the ship comes back on the Earth, its cargo lost
     landed: Landed | None = None
     concessions: list[str] = field(default_factory=list)  # granted
+    # By post, those with a route or on their way
+    shuttles: dict[str, ShuttleState] = field(default_factory=dict)
     canisters: list[LostCanister] = field(default_factory=list)
     # None in older saves: nothing going on
     events: EventsState | None = None
@@ -190,6 +200,9 @@ def dump(save: Save) -> str:
             'direction': save.landed.direction,
         } if save.landed else None,
         'concessions': save.concessions,
+        'shuttles': {
+            post: shuttle_data(state) for post, state in save.shuttles.items()
+        },
         'canisters': [canister_data(c) for c in save.canisters],
         'events': events_data(save.events) if save.events else None,
     }, ensure_ascii=False, indent=1, sort_keys=True)
@@ -222,6 +235,7 @@ def load(text: str) -> Save:
             fuel=fuel_of(data.get('fuel')),
             outposts=outposts_of(data.get('outposts', {})),
             concessions=[str(key) for key in data.get('concessions', [])],
+            shuttles=shuttles_of(data.get('shuttles', {})),
             canisters=canisters_of(data.get('canisters', [])),
             events=events_of(data.get('events')),
             landed=landed_of(data.get('landed')),

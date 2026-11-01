@@ -3,12 +3,14 @@ it back in them """
 
 from ..logic.base.board import Contracts
 from ..logic.base.outposts import Outpost, Progress, open_boards
+from ..logic.base.shuttles import ShuttleState
 from ..logic.mining.minerals import MINERALS
 from ..logic.save import EARTH, Landed, Save, dump
 from ..logic.ship.ground import Ground
 from ..logic.ship.hulls import HULLS
 from ..logic.ship.shipyard import Design
 from .base.earth_base import EarthBase
+from .base.quays import quays_of
 from .ship.player import Player
 from .storage import delete_save, write_save
 
@@ -43,6 +45,11 @@ class Keeper:
             ],
             fuel=round(self.player.tank.level, 2),
             concessions=sorted(base.permits.granted),
+            shuttles={
+                quay.key: quay.post.shuttle.state
+                for quay in quays_of(base, self.outposts)
+                if quay.post.shuttle.state != ShuttleState()
+            },
             canisters=self.player.canisters.lost(system.attractors),
             events=system.events.state(),
             outposts={
@@ -106,6 +113,9 @@ class Keeper:
         self.player.miner.ore.clear()
         self.player.miner.ore.update(save.cargo)
         self.player.looked_for = set(save.looked_for)
+        for quay in quays_of(base, self.outposts):
+            if quay.key in save.shuttles:
+                quay.post.shuttle.resume(save.shuttles[quay.key])
         system = self.player.system
         self.player.canisters.recover(save.canisters, system.attractors)
         if save.events is not None:

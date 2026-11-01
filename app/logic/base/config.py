@@ -44,6 +44,11 @@ MINE_RATE = .05               # units a second
 MINE_YIELDS = (('helium3', 3), ('ice', 1))
 ARES_YIELDS = (('iron', 3), ('copper', 2), ('regolith', 1))
 
+# Shuttles, carrying ore from dock to depot
+SHUTTLE_LOAD = 60             # units, in all
+SHUTTLE_SPEED = 150.          # pixels a second
+SHUTTLE_MIN_TRIP = 20.        # seconds, however close
+
 # Refinery: rock of the depot crushed into what little it holds
 CRUSH_RATE = 4.               # units of rock a second
 # Found in a unit of rock, the rest is regolith

@@ -6,6 +6,7 @@ from kivy.uix.widget import Widget
 
 from ...logic.base.board import Board
 from ...logic.base.post import Post
+from ...logic.base.quays import Quay
 from ...logic.base.wallet import Wallet
 from ..ship.player import Player
 from ..ui.cargo_panel import show_depot
@@ -41,6 +42,8 @@ class PostView(Widget):
         if self.player is None:
             return
         status = post.status(self.player.miner.ore, board)
+        if self.panel == 'shuttles':
+            self.ids.shuttles.follow()
         if self.panel == 'market' and (
             found or self.crushing != status.crushing
         ):
@@ -57,6 +60,11 @@ class PostView(Widget):
     def unload(self) -> None:
         if self.post is not None and self.player is not None:
             self.post.depot.start(self.player.miner.ore)
+
+    def show_dock(self, quay: Quay, quays: list[Quay]) -> None:
+        """ Where its shuttle goes """
+        self.ids.shuttles.show(quay, quays)
+        self.panel = 'shuttles'
 
     def close(self) -> None:
         self.panel = ''

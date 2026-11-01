@@ -27,6 +27,8 @@ from ..ui.widgets import load_style
 from .market_panel import MarketPanel  # noqa: F401
 from .missions_panel import MissionsPanel  # noqa: F401
 from .post_view import PostView
+from .quays import quays_of
+from .shuttle_panel import ShuttlePanel  # noqa: F401
 
 if TYPE_CHECKING:
     from .earth_base import EarthBase
@@ -174,12 +176,18 @@ class OutpostView(PostView):
         if current is None or player is None or base is None:
             return
         ore, depot, board = player.miner.ore, current.post.depot, current.board
+        if panel == 'shuttles':
+            quays = quays_of(base, self.outposts)
+            here = next(q for q in quays if q.key == current.key)
+            self.show_dock(here, quays)
+            return
         if panel == 'site':
             self.ids.site.news = ''
             self.ids.site.show(current, ore)
         elif panel == 'market':
             market = self.ids.market
             market.selling = current.post.services.market
+            market.shuttles = current.post.services.dock
             market.wallet, market.stock = base.wallet, depot.stock
             market.depot, market.miner = depot, player.miner
             refinery = current.post.services.refinery

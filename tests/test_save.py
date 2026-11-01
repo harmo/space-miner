@@ -6,6 +6,7 @@ import pytest
 from app.logic.base.board import Contracts
 from app.logic.base.missions import Mission
 from app.logic.base.outposts import Progress
+from app.logic.base.shuttles import Route, ShuttleState
 from app.logic.preferences import (
     Preferences,
     dump_preferences,
@@ -45,6 +46,9 @@ SAVE = Save(
     },
     landed=Landed('frontier', 1.5),
     concessions=['ares_mine'],
+    shuttles={'ares': ShuttleState(
+        Route('earth', ('iron', 'copper')), 'out', 12.5, 20., {'iron': 60.},
+    )},
     canisters=[LostCanister('gold', 7.5, 180., 3, (120., -40.))],
     events=EventsState(
         'ejecta', 42., [ASTEROID], 100., 25., [ASTEROID], 300.,

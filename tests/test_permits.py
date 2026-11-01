@@ -3,6 +3,7 @@ from random import Random
 from app.logic.base.board import Board
 from app.logic.base.outposts import Construction
 from app.logic.base.permits import Permits
+from app.logic.base.post import Services
 from app.logic.base.sites import (
     ARES,
     ARES_MINE,
@@ -29,12 +30,16 @@ def built_up_to_the_lock(permits: Permits) -> Construction:
 
 def test_mines_refineries_and_markets_take_a_concession() -> None:
     for site in (ARES, CERES, FRONTIER, ICARE):
+        before = Services()
         for stage in site.stages:
+            services = stage.services
             worth_it = (
-                stage.services.mine or stage.services.refinery
-                or stage.services.market
+                (services.mine and not before.mine)
+                or (services.refinery and not before.refinery)
+                or (services.market and not before.market)
             )
-            assert bool(stage.permit) == bool(worth_it)
+            assert bool(stage.permit) == bool(worth_it), stage.name
+            before = services
 
 
 def test_foundations_and_depots_need_none() -> None:

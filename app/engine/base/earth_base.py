@@ -11,6 +11,7 @@ from kivy.uix.widget import Widget
 
 from ...logic.base.board import Board
 from ...logic.base.crushing import Crusher
+from ...logic.base.outposts import Outpost
 from ...logic.base.permits import Permits
 from ...logic.base.post import Post, home_post
 from ...logic.base.refuel import tow, tow_price
@@ -28,6 +29,8 @@ from .hangar import HangarPanel  # noqa: F401
 from .market_panel import MarketPanel  # noqa: F401
 from .missions_panel import MissionsPanel, credits_text  # noqa: F401
 from .post_view import PostView
+from .quays import quays_of
+from .shuttle_panel import ShuttlePanel  # noqa: F401
 
 
 class EarthBase(PostView):
@@ -42,6 +45,7 @@ class EarthBase(PostView):
         self.wallet = Wallet()
         self.inventory = Inventory()        # parts in the hangar
         self.permits = Permits()            # shared with the outposts
+        self.outposts: list[Outpost] = []
         self.rng = Random()
         self.home = home_post(self.rng)
         self.board: Board | None = None
@@ -138,6 +142,10 @@ class EarthBase(PostView):
 
     def open(self, panel: str) -> None:
         if self.player is None or not self.player.docked:
+            return
+        if panel == 'shuttles':
+            quays = quays_of(self, self.outposts)
+            self.show_dock(quays[0], quays)
             return
         if panel == 'hangar':
             self.ids.hangar.open()

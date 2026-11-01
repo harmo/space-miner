@@ -3,10 +3,52 @@
 from dataclasses import asdict
 from typing import Any, get_args
 
+from .base.shuttles import Leg, Route, ShuttleState
 from .mining.minerals import MINERALS
 from .world.flares import Phase
 from .world.layout import OrbiterPlan
 from .world.state import CometState, EventsState, LostCanister
+
+
+def route_of(data: Any) -> Route | None:
+    if data is None:
+        return None
+    return Route(
+        str(data['destination']),
+        tuple(m for m in data['minerals'] if m in MINERALS),
+    )
+
+
+def shuttles_of(data: Any) -> dict[str, ShuttleState]:
+    """ By post, older saves having none """
+    return {
+        str(post): ShuttleState(
+            route_of(state['route']), leg_of(state['leg']),
+            float(state['left']), float(state['trip']),
+            {
+                name: float(units)
+                for name, units in dict(state['load']).items()
+                if name in MINERALS
+            },
+        )
+        for post, state in dict(data).items()
+    }
+
+
+def leg_of(data: Any) -> Leg:
+    return next((leg for leg in get_args(Leg) if leg == data), 'waiting')
+
+
+def shuttle_data(state: ShuttleState) -> dict[str, Any]:
+    route = state.route
+    return {
+        'route': {
+            'destination': route.destination,
+            'minerals': list(route.minerals),
+        } if route else None,
+        'leg': state.leg, 'left': state.left, 'trip': state.trip,
+        'load': state.load,
+    }
 
 
 def canisters_of(data: Any) -> list[LostCanister]:

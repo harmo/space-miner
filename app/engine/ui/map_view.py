@@ -49,6 +49,7 @@ class Charted:
     system: SolarSystem
     player: Player
     outposts: list[Outpost]
+    shuttles: list[Vec2]      # those on their way
 
 
 class MapView(Widget):
@@ -126,6 +127,7 @@ class MapView(Widget):
             self.ejecta(system, frame)
             self.shadow(system, frame)
             self.outposts(self.shown.outposts, frame)
+            self.shuttles(self.shown.shuttles, frame)
             self.ship(player, frame)
 
     def orbits(self, system: SolarSystem, frame: Chart) -> None:
@@ -245,6 +247,12 @@ class MapView(Widget):
                     offered(outpost.construction.services), (x, y - dp(18)),
                     OUTPOST_COLOR, OFFERED_FONT,
                 )
+
+    def shuttles(self, shuttles: list[Vec2], frame: Chart) -> None:
+        Color(*OUTPOST_COLOR, 1)
+        for pos in shuttles:
+            x, y = frame.place(pos)
+            Ellipse(pos=(x - dp(2.5), y - dp(2.5)), size=(dp(5), dp(5)))
 
     def ship(self, player: Player, frame: Chart) -> None:
         """ Pointing where it heads, within the reach of its scanner """

@@ -97,6 +97,17 @@
             x: root.center_x - self.width / 2
             y: root.center_y - self.height / 2
             on_close: root.close()
+            on_dock: root.open('shuttles')
+
+    Layer:
+        size: root.size
+        pos: root.pos
+        shown: root.panel == 'shuttles'
+        ShuttlePanel:
+            id: shuttles
+            x: root.center_x - self.width / 2
+            y: root.center_y - self.height / 2
+            on_close: root.close()
 
     Layer:
         size: root.size

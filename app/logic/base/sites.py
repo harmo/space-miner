@@ -58,6 +58,13 @@ class Site:
         return any(stage.services.missions for stage in self.stages)
 
 
+def docked(services: Services) -> Stage:
+    """ The dock of shuttles, on top of what an outpost offers """
+    return Stage(
+        'Quai des navettes', DOCK_MATERIALS, replace(services, dock=True),
+    )
+
+
 def concession(key: str, tier: int, name: str, wanted: dict[str, int],
                reward: int) -> Permit:
     return Permit(key, tier, Mission(name, wanted, reward, tier))
@@ -93,6 +100,7 @@ DEPOT = replace(FUEL, depot=True)
 TRADING_POST = replace(DEPOT, market=True, missions=True)
 MINING = replace(TRADING_POST, mine=True)
 DIGGING = replace(DEPOT, mine=True)
+DOCK_MATERIALS = (('rock', 120), ('iron', 60), ('copper', 30))
 REFINING = replace(DEPOT, market=True, missions=True, refinery=True)
 SHELTER = replace(FUEL, shelter=True)
 
@@ -106,6 +114,7 @@ FRONTIER = Site('Base Frontière', 'ground', (
           TRADING_POST, FRONTIER_TRADE),
     Stage('Mine', (('rock', 260), ('iron', 100), ('copper', 60),
                    ('crystal', 15)), MINING, FRONTIER_MINE),
+    docked(MINING),
 ), Trade(1.3, (('ice', 2.),), Clientele((
     'Colonie Thulé', 'Relais Éclipse', 'Forge Boréale', 'Halte des Confins',
 ), 1.25)))
@@ -120,6 +129,7 @@ CERES = Site('Comptoir de Cérès', 'ground', (
     Stage('Entrepôt', (('rock', 120), ('iron', 30)), DEPOT),
     Stage('Raffinerie', (('rock', 150), ('iron', 40), ('copper', 20)),
           REFINING, CERES_REFINERY),
+    docked(REFINING),
 ), Trade(clientele=Clientele((
     'Chantier Vesta', 'Mines de Pallas', "Cité d'Hygie", 'Forges de Junon',
 ), 1., (('rock', 120), ('regolith', 60), ('iron', 50), ('copper', 40)))),
@@ -136,6 +146,7 @@ ICARE = Site('Station Icare', 'orbit', (
     Stage('Anneau habitable', (('rock', 120), ('iron', 50)), _RING),
     Stage('Comptoir', (('rock', 150), ('iron', 60), ('copper', 30)),
           replace(_RING, market=True), ICARE_TRADE),
+    docked(replace(_RING, market=True)),
 ), Trade(dearer=(('nebulite', 1.6), ('stellarium', 1.6),
                  ('antimatter', 1.6))), pad_width=40.)
 
@@ -146,6 +157,7 @@ ARES = Site('Base Ares', 'ground', (
     Stage('Entrepôt', (('rock', 90), ('iron', 20)), DEPOT),
     Stage('Mine', (('rock', 150), ('iron', 50), ('copper', 25)), DIGGING,
           ARES_MINE),
+    docked(DIGGING),
 ), yields=ARES_YIELDS)
 
 # By the key they are saved under
@@ -158,6 +170,7 @@ OFFERED = (
     ('fuel', 'le plein'), ('depot', 'un entrepôt'), ('market', 'un marché'),
     ('missions', 'des missions'), ('refinery', 'une raffinerie'),
     ('shelter', 'un abri contre la chaleur'), ('mine', 'une mine'),
+    ('dock', 'un quai de navettes'),
 )
 
 
@@ -165,7 +178,7 @@ OFFERED = (
 SHOWN = (
     ('fuel', 'Plein'), ('depot', 'Entrepôt'), ('market', 'Marché'),
     ('missions', 'Missions'), ('refinery', 'Raffinerie'), ('shelter', 'Abri'),
-    ('mine', 'Mine'),
+    ('mine', 'Mine'), ('dock', 'Quai'),
 )
 
 

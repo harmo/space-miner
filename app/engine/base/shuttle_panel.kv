@@ -1,0 +1,75 @@
+# The dock of a post, see shuttle_panel.py
+
+<ChoiceButton>:
+    bold: False
+    font_size: '13sp'
+    corner: 8
+    glow: .95 if self.chosen else .25
+    color: (*MET_COLOR, 1) if self.chosen else (1, 1, 1, .8)
+    size_hint: None, None
+    size: dp(116), dp(36)
+    on_release: root.panel.choose(self)
+
+<ShuttlePanel>:
+    orientation: 'vertical'
+    size_hint: None, None
+    size: dp(520), self.minimum_height
+    padding: dp(18), dp(14), dp(18), dp(16)
+    spacing: dp(8)
+    canvas.before:
+        Color:
+            rgba: PANEL
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(12)]
+        Color:
+            rgba: (*HOME_COLOR, .5)
+        Line:
+            rounded_rectangle: self.x, self.y, self.width, self.height, dp(12)
+            width: dp(1.2)
+    PanelTitle:
+        text: root.title
+    Label:
+        text: 'Destination'
+        font_size: '13sp'
+        color: 1, 1, 1, .6
+        size_hint_y: None
+        height: dp(20)
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
+    StackLayout:
+        id: places
+        size_hint_y: None
+        height: self.minimum_height
+        spacing: dp(6)
+    Label:
+        text: 'Ressources emportées, dans cet ordre'
+        font_size: '13sp'
+        color: 1, 1, 1, .6
+        size_hint_y: None
+        height: dp(20)
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
+    StackLayout:
+        id: minerals
+        size_hint_y: None
+        height: self.minimum_height
+        spacing: dp(6)
+    Label:
+        text: root.status
+        font_size: '13sp'
+        color: (*MET_COLOR, .9)
+        size_hint_y: None
+        height: dp(24)
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
+    PanelButton:
+        text: 'Fermer'
+        font_size: '15sp'
+        size_hint_y: None
+        height: dp(40)
+        on_release: root.dispatch('on_close')

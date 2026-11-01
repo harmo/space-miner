@@ -256,7 +256,6 @@ def validates_it_there() -> None:
 
 @scenario.step(.3)
 def has_its_mine_built() -> None:
-    check(not view().building, 'nothing left to build')
     check(not frontier().post.depot.stock, 'nothing dug yet')
     frontier().post.mine.dug = 3.5
 

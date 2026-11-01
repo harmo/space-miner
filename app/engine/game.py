@@ -18,6 +18,7 @@ from kivy.utils import platform
 from ..logic.base.board import Board
 from ..logic.base.missions import Desk
 from ..logic.base.outposts import Outpost, open_boards
+from ..logic.base.quays import Quay, shuttle_position, update_shuttles
 from ..logic.config import (
     AUTOSAVE_PERIOD,
     MAX_FRAME_TIME,
@@ -31,6 +32,7 @@ from ..logic.world.layout import plan_system
 from ..logic.world.space import Vec2
 from .base.outposts import found_outposts
 from .base.post_view import PostView
+from .base.quays import quays_of
 from .entities import setup_collisions, setup_state, step_systems
 from .keeper import Keeper
 from .ship.looks import ShipLooks
@@ -124,6 +126,7 @@ class Game(Widget):
         self.soundtrack = Soundtrack(self.player, self.rng)
         self.ids.base.setup(self.player, self.rng)
         self.ids.outpost.setup(self.player, self.outposts, self.ids.base)
+        self.ids.base.outposts = self.outposts
         base = self.ids.base
         if base.board is not None:
             open_boards(self.outposts, base.wallet)
@@ -153,6 +156,10 @@ class Game(Widget):
             if view.docked:
                 return cast(PostView, view)
         return None
+
+    @property
+    def quays(self) -> list[Quay]:
+        return quays_of(self.ids.base, self.outposts)
 
     @property
     def boards(self) -> list[Board]:
@@ -191,6 +198,7 @@ class Game(Widget):
         self.ids.base.update(dt)
         for board in self.boards:
             board.update(dt)
+        update_shuttles(self.quays, dt)
         self.scanning = self.player.stats.scan > 0
         self.system.update(dt, self.player.anchor)
         shift = recenter(self.player, self.camera, self.system, self.stars)
@@ -259,7 +267,12 @@ class Game(Widget):
             self.ids.outpost.close()
             self.ids.scanner.open = False
             self.pointer = None
-            self.ids.map.show(Charted(self.system, self.player, self.outposts))
+            quays = self.quays
+            shuttles = [shuttle_position(quay, quays) for quay in quays]
+            self.ids.map.show(Charted(
+                self.system, self.player, self.outposts,
+                [pos for pos in shuttles if pos is not None],
+            ))
 
     def toggle_cargo(self) -> None:
         self.cargo_open = not self.cargo_open

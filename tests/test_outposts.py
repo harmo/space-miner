@@ -1,4 +1,5 @@
 import math
+from dataclasses import replace
 from random import Random
 
 from app.logic.base.board import Board, Contracts
@@ -63,7 +64,9 @@ def test_each_stage_offers_more() -> None:
         outpost.deliver({name: float(units) for name, units in
                          stage.materials})
         offered.append(outpost.services)
-    assert offered == [FUEL, DEPOT, TRADING_POST, MINING]
+    assert offered == [
+        FUEL, DEPOT, TRADING_POST, MINING, replace(MINING, dock=True),
+    ]
     assert outpost.stage is None and outpost.needed == {}
     assert outpost.deliver({'rock': 50.}) is None
 
@@ -89,11 +92,12 @@ def test_how_far_it_was_built_comes_back() -> None:
 
 
 def test_each_stage_tells_what_it_adds() -> None:
-    first, second, third, fourth = FRONTIER.stages
+    first, second, third, fourth, fifth = FRONTIER.stages
     assert unlocked(first, Services()) == ['le plein']
     assert unlocked(second, FUEL) == ['un entrepôt']
     assert unlocked(third, DEPOT) == ['un marché', 'des missions']
     assert unlocked(fourth, TRADING_POST) == ['une mine']
+    assert unlocked(fifth, MINING) == ['un quai de navettes']
 
 
 def test_the_frontier_pays_more_for_ore_ice_most_of_all() -> None:
@@ -186,9 +190,9 @@ def test_an_outpost_gets_its_reputation_back() -> None:
 def test_a_post_tells_what_it_offers() -> None:
     assert offered(Services()) == 'Chantier'
     assert offered(FRONTIER.stages[-1].services) == (
-        'Plein · Entrepôt · Marché · Missions · Mine'
+        'Plein · Entrepôt · Marché · Missions · Mine · Quai'
     )
     assert offered(CERES.stages[-1].services) == (
-        'Plein · Entrepôt · Marché · Missions · Raffinerie'
+        'Plein · Entrepôt · Marché · Missions · Raffinerie · Quai'
     )
     assert offered(ICARE.stages[0].services) == 'Plein · Abri'

@@ -12,6 +12,7 @@ from .config import MINE_YIELDS
 from .crushing import PLAIN_REFINERY, Crusher, Refinery
 from .mine import Mine, Yields
 from .refuel import fill
+from .shuttles import Shuttle
 from .unloading import Depot
 from .wallet import Wallet
 
@@ -26,10 +27,12 @@ class Services:
     refinery: bool = False    # rock of the depot crushed
     shelter: bool = False     # their hull cooled, out of the heat
     mine: bool = False        # ore dug into the depot
+    dock: bool = False        # a shuttle, carrying ore of the depot away
 
 
 HOME_SERVICES = Services(
     fuel=True, depot=True, market=True, missions=True, refinery=True,
+    dock=True,
 )
 
 
@@ -60,6 +63,7 @@ class Post:
         self.depot = Depot()
         self.crusher = Crusher(rng, refinery)
         self.mine = Mine(rng, yields)
+        self.shuttle = Shuttle()
 
     def status(self, cargo: Hold,
                board: Board | None) -> PostStatus:

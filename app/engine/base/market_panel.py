@@ -55,9 +55,11 @@ class MarketPanel(BoxLayout):
     refinery = BooleanProperty(True)    # if the post has one
     refinery_told = StringProperty('')
     selling = BooleanProperty(True)     # or the depot alone
+    shuttles = BooleanProperty(True)    # a dock, where they are chosen
 
     def __init__(self, **kwargs: Any) -> None:
         self.register_event_type('on_close')
+        self.register_event_type('on_dock')
         super().__init__(**kwargs)
         self.wallet = Wallet()
         self.stock: Hold = {}   # of the depot
@@ -72,6 +74,9 @@ class MarketPanel(BoxLayout):
 
     def on_close(self) -> None:
         """ The close button was pressed """
+
+    def on_dock(self) -> None:
+        """ Those of the dock are asked for """
 
     def refresh(self) -> None:
         self.money = credits_text(self.wallet.credits)
