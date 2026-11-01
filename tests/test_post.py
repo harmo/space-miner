@@ -1,6 +1,7 @@
 from random import Random
 
-from app.logic.base.missions import Board, Mission
+from app.logic.base.board import Board
+from app.logic.base.missions import Mission
 from app.logic.base.post import Docked, Post, Services, home_post
 from app.logic.base.wallet import Wallet
 from app.logic.ship.fuel import Tank

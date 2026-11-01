@@ -44,8 +44,6 @@ from .config import (
     SUN_BELT_WIDTH,
 )
 
-CERES_PARENT = -1             # not a planet, see BeltPlan
-
 
 @dataclass(frozen=True, slots=True)
 class OrbiterPlan:
@@ -82,12 +80,12 @@ class PlanetPlan:
 @dataclass(frozen=True, slots=True)
 class BeltPlan:
     """ Where the asteroids of a belt turn, to put back those mined """
-    # Index of its planet, CERES_PARENT around Cérès, None around the sun
-    parent: int | None
+    parent: int | None        # index of its planet, if it turns around one
     orbits: tuple[float, float]   # from the center of its parent
-    # In px/s, or around the sun times the speed of a planet at that distance
+    # In px/s, or `kepler` times the speed of a planet at that distance
     speeds: tuple[float, float]
     full: int
+    kepler: bool = False
     regrow_time: float = REGROW_TIME
     regrow_below: float = REGROW_THRESHOLD   # of `full`
 
@@ -95,7 +93,7 @@ class BeltPlan:
                  angle: float | None = None) -> OrbiterPlan:
         distance = rng.uniform(*self.orbits)
         speed = rng.uniform(*self.speeds)
-        if self.parent is None:
+        if self.kepler:
             speed *= orbital_speed(distance)
         return plan_asteroid(rng, distance, speed, angle)
 
@@ -189,8 +187,8 @@ def plan_ceres(orbits: tuple[float, ...],
 def plan_ceres_belt() -> BeltPlan:
     """ Asteroids turning around Cérès, always there """
     return BeltPlan(
-        CERES_PARENT, CERES_BELT_ORBITS, CERES_BELT_SPEED,
-        CERES_BELT_ASTEROIDS, CERES_REGROW_TIME, 1.,
+        None, CERES_BELT_ORBITS, CERES_BELT_SPEED, CERES_BELT_ASTEROIDS,
+        regrow_time=CERES_REGROW_TIME, regrow_below=1.,
     )
 
 
@@ -257,5 +255,5 @@ def plan_sun_belt(middle: float) -> BeltPlan:
     """ Sparse asteroids turning around the sun like the planets """
     return BeltPlan(
         None, (middle - SUN_BELT_WIDTH / 2, middle + SUN_BELT_WIDTH / 2),
-        SUN_BELT_SPEED, SUN_BELT_ASTEROIDS,
+        SUN_BELT_SPEED, SUN_BELT_ASTEROIDS, kepler=True,
     )

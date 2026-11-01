@@ -13,9 +13,10 @@ from kivy.properties import (
 )
 from kivy.uix.boxlayout import BoxLayout
 
+from ...logic.base.board import Board
 from ...logic.base.crushing import Crusher
 from ...logic.base.market import ore_price, sell_ore
-from ...logic.base.missions import Board, needs
+from ...logic.base.missions import needs
 from ...logic.base.sites import Trade
 from ...logic.base.unloading import Depot, load_ore
 from ...logic.base.wallet import Wallet

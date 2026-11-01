@@ -1,7 +1,8 @@
 from random import Random
 
+from app.logic.base.board import Board
 from app.logic.base.config import TIER_MISSIONS
-from app.logic.base.missions import Board, Mission, make_mission
+from app.logic.base.missions import Mission, make_mission
 from app.logic.base.reputation import is_sold, next_tier, tier
 from app.logic.base.wallet import Wallet
 from app.logic.ship.parts import PARTS

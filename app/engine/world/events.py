@@ -43,18 +43,19 @@ class SystemEvents:
 
     def update(self, dt: float, ship: Vec2) -> None:
         system = self.system
-        for plan, belt, regrowth in zip(
-            system.belt_plans, system.belts, self.regrowths, strict=True,
+        for plan, parent, belt, regrowth in zip(
+            system.belt_plans, system.belt_parents, system.belts,
+            self.regrowths, strict=True,
         ):
             for _ in range(regrowth.update(len(belt), dt)):
-                belt.append(self.grow(plan, ship))
+                belt.append(self.grow(plan, parent, ship))
         self.swarms.update(dt)
         self.flares.update(dt)
         self.comets.update(dt)
 
-    def grow(self, belt: BeltPlan, ship: Vec2) -> Celestial:
+    def grow(self, belt: BeltPlan, parent: Celestial,
+             ship: Vec2) -> Celestial:
         """ One asteroid back, as far from the ship as can be found """
-        parent = self.system.parent_of(belt)
         best, farthest = None, -1.
         for _ in range(TRIES):
             plan = belt.asteroid(self.rng, self.rng.uniform(0, 2 * math.pi))

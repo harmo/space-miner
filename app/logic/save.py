@@ -3,20 +3,20 @@ seed of its solar system. Parts or minerals unknown to this version of
 the game are left out rather than failing. """
 
 import json
-from dataclasses import asdict, dataclass, field
-from typing import Any, get_args
+from dataclasses import dataclass, field
+from typing import Any
 
-from .base.missions import Contracts, Mission
+from .base.board import Contracts
+from .base.missions import Mission
 from .base.outposts import Progress
 from .mining.minerals import MINERALS
 from .mining.ore import Hold
+from .save_world import canister_data, canisters_of, events_data, events_of
 from .ship.hulls import HULLS
 from .ship.parts import PARTS
 from .ship.scanner import LOOKED_FOR
 from .ship.shipyard import Design
-from .world.flares import Phase
-from .world.layout import OrbiterPlan
-from .world.state import CometState, EventsState, LostCanister
+from .world.state import EventsState, LostCanister
 
 VERSION = 1
 
@@ -151,76 +151,6 @@ def outposts_of(data: Any) -> dict[str, Progress]:
             contracts_of(progress),
         )
         for site, progress in dict(data).items()
-    }
-
-
-def canisters_of(data: Any) -> list[LostCanister]:
-    """ Those of minerals known to this version """
-    return [
-        LostCanister(
-            str(item['mineral']), float(item['amount']),
-            float(item['altitude']), int(item['around']),
-            (float(item['x']), float(item['y'])),
-        )
-        for item in data if item['mineral'] in MINERALS
-    ]
-
-
-def canister_data(canister: LostCanister) -> dict[str, Any]:
-    return {
-        'mineral': canister.mineral, 'amount': canister.amount,
-        'altitude': canister.altitude, 'around': canister.around,
-        'x': canister.offset[0], 'y': canister.offset[1],
-    }
-
-
-def plans_of(data: Any) -> list[OrbiterPlan]:
-    """ Of asteroids of minerals known to this version """
-    return [
-        OrbiterPlan(**item) for item in data if item['mineral'] in MINERALS
-    ]
-
-
-def comet_of(data: Any) -> CometState | None:
-    if data is None:
-        return None
-    return CometState(
-        float(data['anomaly']), float(data['tilt']), int(data['sense']),
-        int(data['shed']), plans_of(data['debris']),
-    )
-
-
-def phase_of(data: Any) -> Phase:
-    """ Quiet if unknown to this version """
-    return next((phase for phase in get_args(Phase) if phase == data), 'quiet')
-
-
-def events_of(data: Any) -> EventsState | None:
-    """ Older saves have none """
-    if data is None:
-        return None
-    return EventsState(
-        phase_of(data['flare_phase']), float(data['flare_left']),
-        plans_of(data['ejecta']), float(data['swarm_waiting']),
-        float(data['swarm_left']), plans_of(data['swarm']),
-        float(data['comet_waiting']), comet_of(data['comet']),
-    )
-
-
-def events_data(events: EventsState) -> dict[str, Any]:
-    comet = events.comet
-    return {
-        'flare_phase': events.flare_phase, 'flare_left': events.flare_left,
-        'ejecta': [asdict(plan) for plan in events.ejecta],
-        'swarm_waiting': events.swarm_waiting,
-        'swarm_left': events.swarm_left,
-        'swarm': [asdict(plan) for plan in events.swarm],
-        'comet_waiting': events.comet_waiting,
-        'comet': {
-            'anomaly': comet.anomaly, 'tilt': comet.tilt,
-            'sense': comet.sense, 'shed': comet.shed,
-            'debris': [asdict(plan) for plan in comet.debris],
-        } if comet else None,
     }
 
 

@@ -7,8 +7,8 @@ from random import Random
 from ..mining.ore import Hold, cargo_total
 from ..ship.fuel import Tank
 from ..ship.heat import HullHeat
+from .board import Board
 from .crushing import PLAIN_REFINERY, Crusher, Refinery
-from .missions import Board
 from .refuel import fill
 from .unloading import Depot
 from .wallet import Wallet

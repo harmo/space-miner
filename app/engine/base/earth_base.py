@@ -9,8 +9,8 @@ from random import Random
 from kivy.properties import BooleanProperty, StringProperty
 from kivy.uix.widget import Widget
 
+from ...logic.base.board import Board
 from ...logic.base.crushing import Crusher
-from ...logic.base.missions import Board
 from ...logic.base.post import Post, home_post
 from ...logic.base.refuel import tow, tow_price
 from ...logic.base.reputation import tier

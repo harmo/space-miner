@@ -8,7 +8,7 @@ from typing import Any
 from kivy.properties import BooleanProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 
-from ...logic.base.missions import Board
+from ...logic.base.board import Board
 from ...logic.base.reputation import is_sold, next_tier
 from ...logic.base.shop import Inventory, buy, buy_hull, refit, rehull, sell
 from ...logic.base.wallet import Wallet

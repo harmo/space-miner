@@ -11,8 +11,8 @@ from ..mining.ore import Hold, whole_units, withdraw
 from ..ship.ground import Ground, pad_edge
 from ..ship.parking import Parking
 from ..world.space import Celestial, Vec2
+from .board import Board, Contracts
 from .config import PAD_DIRECTION
-from .missions import Board, Contracts
 from .post import Post, Services
 from .reputation import Standing
 from .sites import SITES, Site, Stage

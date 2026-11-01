@@ -4,7 +4,7 @@ tell of the post the ship is landed at, and their panels """
 from kivy.properties import BooleanProperty, StringProperty
 from kivy.uix.widget import Widget
 
-from ...logic.base.missions import Board
+from ...logic.base.board import Board
 from ...logic.base.post import Post
 from ...logic.base.wallet import Wallet
 from ..ship.player import Player

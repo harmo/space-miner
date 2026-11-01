@@ -13,8 +13,9 @@ from kivy.properties import (
 )
 from kivy.uix.boxlayout import BoxLayout
 
+from ...logic.base.board import Board
 from ...logic.base.config import TIER_MISSIONS
-from ...logic.base.missions import Board, Mission, held
+from ...logic.base.missions import Mission, held
 from ...logic.base.reputation import next_tier, tier
 from ...logic.mining.minerals import MINERALS
 from ...logic.mining.ore import Hold

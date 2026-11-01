@@ -1,7 +1,7 @@
 """ Keeps the game saved: takes it from the player and the base, and puts
 it back in them """
 
-from ..logic.base.missions import Contracts
+from ..logic.base.board import Contracts
 from ..logic.base.outposts import Outpost, Progress, open_boards
 from ..logic.mining.minerals import MINERALS
 from ..logic.save import EARTH, Landed, Save, dump

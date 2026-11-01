@@ -2,6 +2,7 @@ from random import Random
 
 import pytest
 
+from app.logic.base.board import Board, Contracts
 from app.logic.base.config import (
     MISSION_OFFERS,
     MISSION_REFILL,
@@ -10,9 +11,7 @@ from app.logic.base.config import (
 )
 from app.logic.base.market import ore_value
 from app.logic.base.missions import (
-    Board,
     Clientele,
-    Contracts,
     Desk,
     Mission,
     Need,

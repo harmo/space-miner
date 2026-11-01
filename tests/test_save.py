@@ -3,7 +3,8 @@ from dataclasses import replace
 
 import pytest
 
-from app.logic.base.missions import Contracts, Mission
+from app.logic.base.board import Contracts
+from app.logic.base.missions import Mission
 from app.logic.base.outposts import Progress
 from app.logic.preferences import (
     Preferences,

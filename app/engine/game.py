@@ -15,7 +15,8 @@ from kivy.properties import BooleanProperty, NumericProperty, ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.utils import platform
 
-from ..logic.base.missions import Board, Desk
+from ..logic.base.board import Board
+from ..logic.base.missions import Desk
 from ..logic.base.outposts import Outpost, open_boards
 from ..logic.config import (
     AUTOSAVE_PERIOD,

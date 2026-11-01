@@ -47,7 +47,6 @@ class SolarSystem:
         self.belt_plans = list(plan.belts)
         self.orbits = plan.orbits           # of the planets and the belt
         self.belts: list[list[Celestial]] = [[] for _ in plan.belts]
-        self.added_belts: dict[BeltPlan, Celestial] = {}  # to their parent
         belt_of = {belt.parent: index for index, belt in enumerate(plan.belts)}
         self.planned: dict[Celestial, OrbiterPlan] = {}  # asteroids
         # Told when an asteroid goes, mined out or leaving with its swarm
@@ -73,6 +72,11 @@ class SolarSystem:
             self.belts[belt_of[None]].append(
                 self.add_asteroid(asteroid_plan, self.sun)
             )
+        # What the belts turn around
+        self.belt_parents = [
+            self.sun if belt.parent is None else self.planets[belt.parent]
+            for belt in plan.belts
+        ]
         self.earth = self.planets[plan.earth]
         self.attractors = [self.sun, *self.planets]
         self.events = SystemEvents(self, rng)
@@ -87,11 +91,6 @@ class SolarSystem:
         """ The farthest planet from the sun """
         return self.planets[-1]
 
-    def parent_of(self, belt: BeltPlan) -> Celestial:
-        if belt in self.added_belts:
-            return self.added_belts[belt]
-        return self.sun if belt.parent is None else self.planets[belt.parent]
-
     def add_body(self, plan: OrbiterPlan,
                  parent: Celestial | None = None) -> Celestial:
         """ Around `parent`, the sun without any, solid as the planets and
@@ -104,7 +103,7 @@ class SolarSystem:
     def add_belt(self, belt: BeltPlan, parent: Celestial,
                  rng: Random) -> None:
         """ Full, around `parent` """
-        self.added_belts[belt] = parent
+        self.belt_parents.append(parent)
         self.belt_plans.append(belt)
         self.belts.append([
             self.add_asteroid(belt.asteroid(rng), parent)

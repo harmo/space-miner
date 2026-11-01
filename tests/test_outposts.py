@@ -1,8 +1,8 @@
 import math
 from random import Random
 
+from app.logic.base.board import Board, Contracts
 from app.logic.base.config import PAD_DIRECTION
-from app.logic.base.missions import Board, Contracts
 from app.logic.base.outposts import (
     Construction,
     Outpost,
