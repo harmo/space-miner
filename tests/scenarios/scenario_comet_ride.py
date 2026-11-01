@@ -17,11 +17,11 @@ played = scenario.record_sounds()
 
 
 def comet() -> Any:
-    return scenario.game.system.events.comet
+    return scenario.game.system.events.comets.comet
 
 
 def orbit() -> Any:
-    return scenario.game.system.events.comet_orbit
+    return scenario.game.system.events.comets.orbit
 
 
 def jump(anomaly: float) -> None:
@@ -37,10 +37,10 @@ def without_debris() -> None:
     """ Nothing to bump into, on the way to it: riding is what is tested """
     system = scenario.game.system
     events = system.events
-    for asteroid in list(events.debris):
+    for asteroid in list(events.comets.debris):
         system.remove(asteroid)
-    events.debris.clear()
-    events.shed = 1000
+    events.comets.debris.clear()
+    events.comets.shed = 1000
 
 
 def beside() -> None:
@@ -50,7 +50,7 @@ def beside() -> None:
 
 @scenario.step(1.)
 def waits_for_a_comet() -> None:
-    scenario.game.system.events.comet_clock.waiting = 0.
+    scenario.game.system.events.comets.clock.waiting = 0.
 
 
 @scenario.step(.3)

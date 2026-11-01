@@ -62,23 +62,23 @@ def lose_cargo() -> None:
 
 def make_things_happen() -> None:
     lose_cargo()
-    events().comet_clock.waiting = 0.
-    events().swarm_clock.waiting = 0.
+    events().comets.clock.waiting = 0.
+    events().swarms.clock.waiting = 0.
     flares = events().flares.clock
     flares.phase, flares.left = 'blazing', 0.
 
 
 def mine_some() -> None:
-    check(events().comet is not None, 'a comet')
-    check(bool(events().swarm), 'a swarm')
+    check(events().comets.comet is not None, 'a comet')
+    check(bool(events().swarms.asteroids), 'a swarm')
     check(bool(events().flares.ejecta), 'ejecta')
-    system().remove(events().debris[0])
-    system().remove(events().swarm[0])
+    system().remove(events().comets.debris[0])
+    system().remove(events().swarms.asteroids[0])
     system().remove(events().flares.ejecta[0])
 
 
 def remember() -> None:
-    orbit, body = events().comet_orbit, planet()
+    orbit, body = events().comets.orbit, planet()
     canisters = scenario.player.canisters.canisters
     (DATA / 'then.json').write_text(json.dumps({
         'canisters': len(canisters),
@@ -87,10 +87,10 @@ def remember() -> None:
         ],
         'amount': sum(canister.amount for canister in canisters),
         'anomaly': orbit.anomaly, 'tilt': orbit.tilt,
-        'debris': sorted(a.mineral for a in events().debris),
-        'shed': events().shed,
-        'swarm': len(events().swarm),
-        'swarm_left': events().swarm_clock.left,
+        'debris': sorted(a.mineral for a in events().comets.debris),
+        'shed': events().comets.shed,
+        'swarm': len(events().swarms.asteroids),
+        'swarm_left': events().swarms.clock.left,
         'ejecta': len(events().flares.ejecta),
         'flare_left': events().flares.clock.left,
     }))
@@ -109,15 +109,15 @@ def comes_back() -> None:
         abs(math.dist(canister.pos, body.pos) - offset) < 300
         for canister, offset in zip(canisters, then['offsets'], strict=True)
     ), 'around the same planet')
-    orbit = events().comet_orbit
+    orbit = events().comets.orbit
     check(orbit is not None, 'the comet is back')
     check(abs(orbit.anomaly - then['anomaly']) < .02, 'as far along')
     check(orbit.tilt == then['tilt'], 'on the same way')
-    debris = sorted(a.mineral for a in events().debris)
+    debris = sorted(a.mineral for a in events().comets.debris)
     check(len(debris) >= len(then['debris']), f'with its debris: {debris}')
-    check(events().shed >= then['shed'], 'what was mined stays gone')
-    check(len(events().swarm) == then['swarm'], 'the swarm is back')
-    left = events().swarm_clock.left
+    check(events().comets.shed >= then['shed'], 'what was mined stays gone')
+    check(len(events().swarms.asteroids) == then['swarm'], 'the swarm is back')
+    left = events().swarms.clock.left
     check(abs(left - then['swarm_left']) < 3, 'for as long')
     check(len(events().flares.ejecta) == then['ejecta'], 'the ejecta too')
     check(events().flares.clock.phase == 'ejecta', 'the flare goes on')

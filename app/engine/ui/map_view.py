@@ -168,7 +168,7 @@ class MapView(Widget):
             Rectangle(pos=(x - side / 2, y - side / 2), size=(side, side))
 
     def swarm(self, system: SolarSystem, frame: Chart) -> None:
-        spot = system.events.swarm_spot
+        spot = system.events.swarms.spot
         if spot is None:
             return
         x, y = frame.place(spot.pos)
@@ -178,7 +178,7 @@ class MapView(Widget):
 
     def comet(self, system: SolarSystem, frame: Chart) -> None:
         """ Where it is, and the whole of its way through the system """
-        orbit = system.events.comet_orbit
+        orbit = system.events.comets.orbit
         if orbit is None:
             return
         Color(*COMET_COLOR, .4)

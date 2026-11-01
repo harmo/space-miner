@@ -71,7 +71,7 @@ def draw_wave(overlay: Overlay, system: SolarSystem) -> None:
 
 def draw_comet(overlay: Overlay, system: SolarSystem) -> None:
     """ Its tail, away from the sun """
-    comet, sun = system.events.comet, system.sun
+    comet, sun = system.events.comets.comet, system.sun
     if comet is None:
         return
     distance = math.dist(comet.pos, sun.pos)
@@ -105,10 +105,10 @@ def draw_markers(overlay: Overlay, system: SolarSystem,
     """ Towards the planets, the sun, a swarm or a comet passing by, the
     ejecta of a flare and the outposts, out of the screen """
     overlay.marker(system.sun, SUN_COLOR)
-    comet = system.events.comet
+    comet = system.events.comets.comet
     if comet is not None:
         overlay.marker(comet, COMET_COLOR)
-    swarm = system.events.swarm_spot
+    swarm = system.events.swarms.spot
     if swarm is not None:
         overlay.marker(swarm, SWARM_COLOR)
     ejecta = system.events.flares.ejecta_spot

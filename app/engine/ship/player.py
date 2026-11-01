@@ -208,7 +208,7 @@ class Player:
 
     def follow_comet(self) -> None:
         """ It can be held on to while it is there. Gone, it lets go. """
-        comet = self.system.events.comet
+        comet = self.system.events.comets.comet
         ground = self.comet_ground
         if (ground.body if ground else None) is comet:
             return

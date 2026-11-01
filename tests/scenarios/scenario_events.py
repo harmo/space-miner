@@ -48,12 +48,12 @@ def grows_back() -> None:
           'with asteroids to mine')
     check(all(math.dist(asteroid.pos, ship) > REGROW_AWAY * .8
               for asteroid in new), 'out of the sight of the ship')
-    events().swarm_clock.waiting = 0.
+    events().swarms.clock.waiting = 0.
 
 
 @scenario.step(.5)
 def a_swarm_arrives() -> None:
-    swarm = events().swarm
+    swarm = events().swarms.asteroids
     check(len(swarm) == SWARM_ASTEROIDS, 'a swarm arrives')
     check(all(asteroid.mineral in RICH for asteroid in swarm), 'rich')
     check(events().headline.startswith('Essaim riche de passage'),
@@ -76,13 +76,13 @@ def mines_it() -> None:
     scenario.screenshot('swarm')
     check(scenario.player.ship is not None, 'the ship holds there')
     check(scenario.player.miner.lock is not None, 'locked on the swarm')
-    events().swarm_clock.left = .01
+    events().swarms.clock.left = .01
 
 
 @scenario.step(.5)
 def the_swarm_leaves() -> None:
     system = scenario.game.system
-    check(events().swarm == [], 'the swarm leaves')
+    check(events().swarms.asteroids == [], 'the swarm leaves')
     check(remembered['locked'] not in system.asteroids, 'with its asteroids')
     check(scenario.player.miner.lock is None,
           'the ship stops mining what left')

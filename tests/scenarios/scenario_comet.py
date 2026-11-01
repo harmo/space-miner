@@ -24,25 +24,23 @@ def events() -> Any:
 
 def jump(anomaly: float) -> None:
     """ Along its way, its body along with it """
-    orbit = events().comet_orbit
-    orbit.anomaly = anomaly
-    orbit.along = orbit.solved()
-    get_body(scenario.game.gameworld, events().comet.entity_id).position = (
-        orbit.position
-    )
+    comets = events().comets
+    comets.orbit.set_anomaly(anomaly)
+    body = get_body(scenario.game.gameworld, comets.comet.entity_id)
+    body.position = comets.orbit.position
 
 
 @scenario.step(1.)
 def waits_for_a_comet() -> None:
-    check(events().comet is None, 'none at first')
-    events().comet_clock.waiting = 0.
+    check(events().comets.comet is None, 'none at first')
+    events().comets.clock.waiting = 0.
 
 
 @scenario.step(.3)
 def a_comet_comes() -> None:
-    check(events().comet is not None, 'a comet comes')
+    check(events().comets.comet is not None, 'a comet comes')
     system = scenario.game.system
-    distance = math.dist(events().comet.pos, system.sun.pos)
+    distance = math.dist(events().comets.comet.pos, system.sun.pos)
     check(abs(distance - system.orbits[-1]) < 50,
           f'from as far as the last planet: {distance:.0f}')
     check('swarm' in played, f'heard: {played}')
@@ -59,12 +57,12 @@ def is_on_the_map() -> None:
 
 @scenario.step(.3)
 def sheds_ice_far_from_the_sun() -> None:
-    debris = events().debris
+    debris = events().comets.debris
     check(len(debris) == COMET_ICE, f'around it: {len(debris)}')
     check(all(a.mineral == 'ice' for a in debris), 'of ice')
-    check(all(a.orbit.parent is events().comet for a in debris),
+    check(all(a.orbit.parent is events().comets.comet for a in debris),
           'turning around it')
-    comet, asteroid = events().comet, debris[0]
+    comet, asteroid = events().comets.comet, debris[0]
     away = math.atan2(
         asteroid.pos[1] - comet.pos[1], asteroid.pos[0] - comet.pos[0],
     )
@@ -87,21 +85,21 @@ def mines_it() -> None:
 @scenario.step(.1)
 def races_by_the_sun() -> None:
     jump(-.08)
-    orbit = events().comet_orbit
+    orbit = events().comets.orbit
     remembered['far'] = 50.
     scenario.put_ship((orbit.position[0] + 8000, orbit.position[1]), (0, 0))
 
 
 @scenario.step(.2)
 def goes_by_with_its_tail() -> None:
-    orbit, sun = events().comet_orbit, scenario.game.system.sun
+    orbit, sun = events().comets.orbit, scenario.game.system.sun
     distance = math.dist(orbit.position, sun.pos) - sun.radius
     check(tail_length(distance) > 0, f'with its tail: {distance:.0f}')
     speed = math.hypot(*orbit.velocity)
     check(speed > remembered['far'] * 4, f'fast: {speed:.0f}')
-    rich = [a for a in events().debris if a.mineral in RICH]
+    rich = [a for a in events().comets.debris if a.mineral in RICH]
     check(len(rich) > 3, f'rich asteroids around it: {len(rich)}')
-    remembered['debris'] = list(events().debris)
+    remembered['debris'] = list(events().comets.debris)
     x, y = orbit.position
     scenario.put_ship((x + 350, y + 250), orbit.velocity)
 
@@ -121,8 +119,8 @@ def leaves() -> None:
 
 @scenario.step(.5)
 def is_gone() -> None:
-    check(events().comet is None, 'gone at the far end')
-    check(not events().debris, 'with what it shed')
+    check(events().comets.comet is None, 'gone at the far end')
+    check(not events().comets.debris, 'with what it shed')
     asteroids = scenario.game.system.asteroids
     check(not set(remembered['debris']) & set(asteroids), 'all of it')
     check(scenario.game.ids.news_label.text == '', 'told no more')

@@ -4,6 +4,7 @@ around the sun, and what the player is told about them """
 from random import Random
 from typing import TYPE_CHECKING
 
+from ...logic.world.bulletin import Bulletin
 from ...logic.world.flares import FlareClock, plan_ejecta
 from ...logic.world.space import Celestial
 from .spots import Spot, spot_of
@@ -11,7 +12,6 @@ from .spots import Spot, spot_of
 if TYPE_CHECKING:
     from .solar_system import SolarSystem
 
-NEWS_TIME = 6.                # seconds the end of the ejecta is told
 WAVES = 5                     # leaving the sun while it blazes
 
 
@@ -22,8 +22,7 @@ class SolarFlares:
         self.rng = rng
         self.clock = FlareClock(rng)
         self.ejecta: list[Celestial] = []
-        self.news = ''
-        self.news_left = 0.       # seconds it is shown still
+        self.bulletin = Bulletin()
 
     @property
     def surge(self) -> float:
@@ -48,7 +47,7 @@ class SolarFlares:
             self.eject()
         elif change == 'falls':
             self.fall()
-        self.news_left = max(0., self.news_left - dt)
+        self.bulletin.update(dt)
 
     def eject(self) -> None:
         sun = self.system.sun
@@ -62,8 +61,7 @@ class SolarFlares:
         for asteroid in list(self.ejecta):
             self.system.remove(asteroid)
         self.ejecta.clear()
-        self.news = 'Les éjectas sont retombés dans le soleil'
-        self.news_left = NEWS_TIME
+        self.bulletin.tell('Les éjectas sont retombés dans le soleil')
 
     @property
     def headline(self) -> str:
@@ -76,7 +74,7 @@ class SolarFlares:
             return 'Éruption solaire !'
         if clock.phase == 'ejecta' and self.ejecta:
             return f'Éjectas solaires  ·  {minutes}:{seconds:02d}'
-        return self.news if self.news_left > 0 else ''
+        return self.bulletin.shown
 
     @property
     def ejecta_spot(self) -> Spot | None:
