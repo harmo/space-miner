@@ -46,8 +46,10 @@ class SolarSystem:
         gameworld: GameWorld,
         plan: SystemPlan,
         center: Vec2,
-        rng: Random
+        rng: Random,
+        sun: Celestial | None = None
     ) -> None:
+        """ With the `sun` of the previous one, if any, see dispose """
         self.gameworld = gameworld
         self.planets: list[Celestial] = []
         self.looks: list[str] = []          # textures of the planets
@@ -64,7 +66,7 @@ class SolarSystem:
         # Told when an asteroid goes, mined out or leaving with its swarm
         self.on_remove: list[Callable[[Celestial], None]] = []
 
-        self.sun = self.create_sun(center)
+        self.sun = self.place_sun(sun, center)
         for index, planet_plan in enumerate(plan.planets):
             planet = self.create_orbiter(
                 planet_plan.planet, self.sun, COLLISION_PLANET
@@ -179,6 +181,25 @@ class SolarSystem:
         self.gameworld.remove_entity(celestial.entity_id)
         for listener in self.on_remove:
             listener(celestial)
+
+    def dispose(self) -> None:
+        """ All of it gone, for the solar system of another game, but its
+        sun: the physics engine can't remove a static body, and each game
+        has the same one """
+        for body in self.bodies[1:]:
+            self.gameworld.remove_entity(body.entity_id)
+
+    def place_sun(self, sun: Celestial | None, pos: Vec2) -> Celestial:
+        """ That of the previous solar system, or a new one """
+        if sun is None:
+            return self.create_sun(pos)
+        back = pos[0] - sun.pos[0], pos[1] - sun.pos[1]
+        sun.shift(back)
+        move_body(self.gameworld, sun.entity_id, back)
+        physics = self.gameworld.system_manager['cymunk_physics']
+        physics.space.reindex_static()
+        self.bodies.append(sun)
+        return sun
 
     def create_sun(self, pos: Vec2) -> Celestial:
         entity_id = create_round_entity(self.gameworld, RoundBody(

@@ -2,6 +2,30 @@
 
 #:set HELP 'Maintenir pour piloter   ·   Toucher un astéroïde pour le miner'
 
+# A game saved, or a place for one: to play it, or to erase it
+<SlotCard>:
+    orientation: 'vertical'
+    spacing: dp(4)
+    PanelButton:
+        text: root.text
+        font_size: '13sp'
+        bold: False
+        halign: 'center'
+        glow: .9 if root.current else .4
+        on_release: root.home.dispatch('on_slot', root.slot)
+    PanelButton:
+        text: 'Confirmer' if root.confirming else 'Effacer'
+        font_size: '12sp'
+        bold: False
+        corner: 8
+        glow: .9 if root.confirming else .2
+        color: (1, .55, .5, 1) if root.confirming else (1, 1, 1, .6)
+        size_hint_y: None
+        height: dp(26)
+        opacity: 1 if root.filled else 0
+        disabled: not root.filled
+        on_release: root.home.erase(root)
+
 <HomePage>:
     canvas.before:
         Color:
@@ -13,7 +37,7 @@
     BoxLayout:
         orientation: 'vertical'
         size_hint: None, None
-        width: dp(460)
+        width: dp(660)
         height: self.minimum_height
         spacing: dp(8) if root.compact else dp(14)
         center_x: root.center_x
@@ -28,22 +52,24 @@
             font_size: '44sp' if root.compact else '64sp'
             size_hint_y: None
             height: self.texture_size[1]
-        Label:
-            text: 'Minage dans le système solaire'
-            font_size: '18sp'
-            color: 1, 1, 1, .6
-            size_hint_y: None
-            height: self.texture_size[1]
         Widget:
             size_hint_y: None
-            height: dp(8) if root.compact else dp(26)
+            height: dp(2) if root.compact else dp(18)
+        BoxLayout:
+            id: slots
+            size_hint_y: None
+            height: dp(100) if root.compact else dp(116)
+            spacing: dp(10)
+        # A game to get back to, the slots starting the others
         PanelButton:
-            text: 'Reprendre' if root.paused else 'Jouer'
+            text: 'Reprendre'
             font_size: '20sp'
             glow: .9
             size_hint: None, None
-            size: dp(220), dp(54)
+            size: dp(220), (dp(54) if root.paused else 0)
             pos_hint: {'center_x': .5}
+            opacity: 1 if root.paused else 0
+            disabled: not root.paused
             on_release: root.dispatch('on_play')
         PanelButton:
             text: 'Réglages'

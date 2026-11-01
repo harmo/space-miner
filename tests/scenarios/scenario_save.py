@@ -1,5 +1,5 @@
 """ The game saved, and back as it was in the next session, with its
-solar system. Then the settings, a new game, and an unreadable save.
+solar system. Then the settings, a slot erased, and an unreadable save.
 Plays three sessions sharing their data, each in a process of its own.
 """
 
@@ -10,6 +10,7 @@ import sys
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 SESSION = os.environ.get('SESSION')
 
@@ -46,6 +47,11 @@ DATA = Path(scenario.data)
 DESIGN = Design(parts={'nose': 'laser', 'left': 'fins'})
 MISSION = Mission('Fonderie Lunaire', {'iron': 12}, 500)
 Steps = list[tuple[float, Callable[[], None]]]
+
+
+def first_slot() -> Any:
+    slots = scenario.game.ids.home.ids.slots.children
+    return next(card for card in slots if card.slot == 1)
 
 
 def planets() -> list[float]:
@@ -104,21 +110,28 @@ def changes_a_setting() -> None:
     check(preferences['orbits'] is False, 'the setting is saved')
     check(preferences['ambience'] == .3, 'so is the volume')
     check(scenario.game.preferences.ambience == .3, 'heard at once')
-    scenario.press(scenario.button(panel, 'Nouvelle partie'))
+    scenario.press(scenario.button(panel, 'Fermer'))
+    scenario.press(scenario.button(first_slot(), 'Effacer'))
 
 
 def confirms() -> None:
-    panel = scenario.game.ids.settings
-    check(panel.confirming, 'a new game takes a confirmation')
-    scenario.press(scenario.button(panel, 'Tout effacer'))
+    check(first_slot().confirming, 'erasing takes a confirmation')
+    scenario.press(scenario.button(first_slot(), 'Confirmer'))
 
 
 def starts_over() -> None:
     base, player = scenario.base, scenario.player
     check(base.wallet.credits == 0 and player.design == Design(),
-          'a new game starts over')
+          'the game starts over')
     check(base.board.validated == 0 and base.depot.stock == {},
           'with no reputation nor ore')
+    check(not (DATA / 'save.json').exists(), 'nothing left of it')
+    scenario.press(scenario.button(first_slot(), first_slot().text))
+
+
+def is_saved_again() -> None:
+    check(scenario.game.playing, 'a new game in that slot')
+    scenario.game.save()
     check(json.loads((DATA / 'save.json').read_text())['credits'] == 0,
           'and is saved')
     check(scenario.game.preferences.orbits is False,
@@ -136,7 +149,7 @@ def starts_anew() -> None:
 SESSIONS: dict[str, Steps] = {
     '1': [(1., plays), (6., saved)],
     '2': [(1., comes_back), (.4, changes_a_setting), (.3, confirms),
-          (.4, starts_over)],
+          (.4, starts_over), (.4, is_saved_again)],
     '3': [(1., starts_anew)],
 }
 for delay, step in SESSIONS[SESSION]:

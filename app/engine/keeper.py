@@ -2,18 +2,16 @@
 it back in them """
 
 from ..logic.base.board import Contracts
-from ..logic.base.outposts import Outpost, Progress, open_boards
+from ..logic.base.outposts import Outpost, Progress
 from ..logic.base.shuttles import ShuttleState
 from ..logic.mining.minerals import MINERALS
 from ..logic.save import EARTH, Landed, Save, dump
 from ..logic.ship.ground import Ground
 from ..logic.ship.hulls import HULLS
-from ..logic.ship.scanner import LOOKED_FOR
-from ..logic.ship.shipyard import Design
 from .base.earth_base import EarthBase
 from .base.quays import quays_of
 from .ship.player import Player
-from .storage import delete_save, write_save
+from .storage import write_save
 
 
 class Keeper:
@@ -21,11 +19,13 @@ class Keeper:
     def __init__(
         self,
         seed: int,
+        slot: int,
         player: Player,
         base: EarthBase,
         outposts: list[Outpost]
     ) -> None:
         self.seed = seed
+        self.slot = slot            # where it is saved
         self.player = player
         self.base = base
         self.outposts = outposts
@@ -137,25 +137,5 @@ class Keeper:
         save = self.snapshot()
         text = dump(save)
         if text != self.written:
-            write_save(save)
+            write_save(self.slot, save)
             self.written = text
-
-    def new_game(self) -> None:
-        """ Everything starts over, in the same solar system """
-        delete_save()
-        player = self.player
-        for canister in list(player.canisters.canisters):
-            player.canisters.remove(canister)
-        player.explosions.clear()
-        player.miner.ore.clear()
-        player.scan_missions = False
-        player.looked_for = set(LOOKED_FOR)
-        self.base.reset()
-        if self.base.board is not None:
-            open_boards(self.outposts, self.base.wallet)
-        for outpost in self.outposts:
-            outpost.restore(Progress())
-        player.restart(Design())
-        player.tank.fill(player.tank.capacity)
-        self.written = ''
-        self.save()

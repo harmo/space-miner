@@ -249,7 +249,7 @@ class Scenario:
             waiting = Clock.schedule_interval(run_step, 0)
 
         def start(dt: float) -> None:
-            self.game.playing = True
+            self.game.choose(self.game.slot)
             play(0)
 
         def wait_for_the_game(dt: float) -> None:

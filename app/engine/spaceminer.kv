@@ -239,7 +239,9 @@ Game:
         paused: root.paused
         mobile: root.mobile
         settings_open: root.settings_open
-        on_play: root.resume() if root.paused else root.play()
+        on_play: root.resume()
+        on_slot: root.choose(args[1])
+        on_erase: root.erase(args[1])
         on_settings: root.open_settings()
 
     # Over the home page
@@ -254,7 +256,6 @@ Game:
             x: root.center_x - self.width / 2
             y: root.center_y - self.height / 2
             on_close: root.settings_open = False
-            on_new_game: root.new_game()
 
 <GameScreenManager>:
     MainScreen:

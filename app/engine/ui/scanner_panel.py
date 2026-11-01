@@ -66,6 +66,7 @@ class ScannerPanel(BoxLayout):
     ) -> None:
         self.player, self.system, self.desks = player, system, desks
         rows = self.ids.rows
+        rows.clear_widgets()
         for name in MINED:
             mineral = MINERALS[name]
             texture = asteroid_texture(name, ICON_SHAPE)

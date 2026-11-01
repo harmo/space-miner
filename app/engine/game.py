@@ -30,7 +30,7 @@ from ..logic.config import (
 from ..logic.hud import heat_at, is_compact
 from ..logic.ship.ground import Ground, Grounds
 from ..logic.world.layout import plan_system
-from ..logic.world.space import Vec2
+from ..logic.world.space import Celestial, Vec2
 from .base.outposts import found_outposts
 from .base.post_view import PostView
 from .base.quays import quays_of
@@ -39,7 +39,12 @@ from .keeper import Keeper
 from .ship.looks import ShipLooks
 from .ship.player import Player
 from .soundtrack import Soundtrack
-from .storage import read_preferences, read_save
+from .storage import (
+    delete_save,
+    read_preferences,
+    read_save,
+    write_preferences,
+)
 from .textures import ground_edge, load_textures
 from .ui.controls import escape, steers
 from .ui.hud import show_hud
@@ -88,9 +93,11 @@ class Game(Widget):
         self.time = 0.
         self.pointer: Vec2 | None = None
         self.pointer_uid: int | None = None
-        self.looks = ShipLooks(self.rng)  # its trail and legs
         self.preferences = read_preferences()
+        self.slot = self.preferences.slot   # of the game behind the home
+        self.chosen = False     # that game, or nothing is saved
         self.keeper: Keeper | None = None   # once the game is set up
+        self.sun: Celestial | None = None   # of the previous game
         load_textures()
         Window.bind(on_keyboard=self.on_keyboard)
         # Once the kv file attached the systems to the game world, on the
@@ -103,7 +110,27 @@ class Game(Widget):
         setup_state(self.gameworld)
         self.sky = Sky(self.canvas.before)
         self.stars = StarField(self.gameworld)
-        save = read_save()
+        setup_collisions(self.gameworld, self.on_contact)
+        self.soundtrack = Soundtrack(self.rng)
+        self.open_world()
+        Clock.schedule_interval(lambda dt: self.save(), AUTOSAVE_PERIOD)
+        # Over the game world, under the widgets of the interface
+        self.overlay = Overlay(self.gameworld.canvas.after, self.camera)
+        self.ids.home.refresh(None)
+        self.gameworld.state = 'main'
+        # GameWorld steps each system on its own fixed 1/60s clock, doing 0,
+        # 1 or 2 steps per frame which makes moving objects stutter. Step
+        # everything once per frame with the actual frame time instead.
+        Clock.unschedule(self.gameworld.update)
+        Clock.schedule_interval(self.update, 0)
+
+    def on_contact(self, space: Any, arbiter: Any) -> bool:
+        return self.player.on_contact(space, arbiter)
+
+    def open_world(self) -> None:
+        """ The game of the slot, or a new one in a solar system of its
+        own """
+        save = read_save(self.slot)
         # The same solar system comes back with the saved game. Scenarios
         # pick theirs with SPACE_MINER_SEED.
         seed = save.seed if save else int(
@@ -112,6 +139,7 @@ class Game(Widget):
         self.system = SolarSystem(
             self.gameworld, plan_system(Random(seed)),
             center=(WORLD_SIZE / 2, WORLD_SIZE / 2), rng=self.rng,
+            sun=self.sun,
         )
         self.outposts = found_outposts(
             self.system, self.rng, self.ids.base.permits,
@@ -123,8 +151,8 @@ class Game(Widget):
                 *(outpost.ground for outpost in self.outposts),
             ]),
         )
-        setup_collisions(self.gameworld, self.player.on_contact)
-        self.soundtrack = Soundtrack(self.player, self.rng)
+        self.looks = ShipLooks(self.rng)  # its trail and legs
+        self.soundtrack.listen(self.player)
         self.ids.base.setup(self.player, self.rng)
         self.ids.outpost.setup(self.player, self.outposts, self.ids.base)
         self.ids.base.outposts = self.outposts
@@ -132,19 +160,22 @@ class Game(Widget):
         if base.board is not None:
             open_boards(self.outposts, base.wallet)
         self.ids.scanner.setup(self.player, self.system, lambda: self.desks)
-        self.keeper = Keeper(seed, self.player, self.ids.base, self.outposts)
+        self.keeper = Keeper(
+            seed, self.slot, self.player, self.ids.base, self.outposts,
+        )
         if save is not None:
             self.keeper.restore(save)
-        Clock.schedule_interval(lambda dt: self.save(), AUTOSAVE_PERIOD)
-        # Over the game world, under the widgets of the interface
-        self.overlay = Overlay(self.gameworld.canvas.after, self.camera)
         self.stars.wrap_all(self.player.anchor)
-        self.gameworld.state = 'main'
-        # GameWorld steps each system on its own fixed 1/60s clock, doing 0,
-        # 1 or 2 steps per frame which makes moving objects stutter. Step
-        # everything once per frame with the actual frame time instead.
-        Clock.unschedule(self.gameworld.update)
-        Clock.schedule_interval(self.update, 0)
+
+    def close_world(self) -> None:
+        """ Its entities gone, the panels left with nothing of it """
+        self.player.dispose()
+        self.system.dispose()
+        self.sun = self.system.sun
+        self.ids.base.reset()
+        self.ids.outpost.current = None
+        self.keeper = None
+        self.chosen = False
 
     @property
     def camera(self) -> Any:
@@ -222,9 +253,26 @@ class Game(Widget):
         )
         self.sky.draw(self.pos, self.size, self.camera, heat)
 
-    def play(self) -> None:
-        """ Leave the home page """
-        self.playing = True
+    def choose(self, slot: int) -> None:
+        """ Plays its game, the one playing being saved first """
+        if slot != self.slot:
+            self.save()
+            self.close_world()
+            self.slot = slot
+            self.open_world()
+        self.preferences.slot = slot
+        write_preferences(self.preferences)
+        self.chosen = True
+        self.resume()
+
+    def erase(self, slot: int) -> None:
+        """ That of the game behind the home page starts over """
+        delete_save(slot)
+        if slot == self.slot:
+            self.close_world()
+            self.open_world()
+            self.paused = False
+        self.ids.home.refresh(self.slot if self.paused else None)
 
     def pause(self) -> None:
         """ Back to the home page, the game frozen behind it """
@@ -233,19 +281,15 @@ class Game(Widget):
         self.pointer = None
         self.draw_overlay()             # once more, without the markers
         self.save()
+        self.ids.home.refresh(self.slot)
 
     def save(self) -> None:
-        if self.keeper is not None:
+        if self.keeper is not None and self.chosen:
             self.keeper.save()
 
     def open_settings(self) -> None:
         self.ids.settings.show(self.preferences)
         self.settings_open = True
-
-    def new_game(self) -> None:
-        if self.keeper is not None:
-            self.keeper.new_game()
-        self.settings_open = False
 
     def resume(self) -> None:
         self.paused = False

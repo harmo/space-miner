@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 class Soundtrack:
 
-    def __init__(self, player: Player, rng: Random) -> None:
+    def __init__(self, rng: Random) -> None:
         self.ambience = Ambience(rng)
         self.drones = [Loop(audio), Loop(audio)]    # fading into each other
         self.engine = Loop(audio)
@@ -34,6 +34,10 @@ class Soundtrack:
         self.machine = Loop(audio)            # of the post
         self.engine_volume = 0.
         self.moment: Moment | None = None   # on the previous frame
+
+    def listen(self, player: Player) -> None:
+        """ To the ship of the game played, nothing changing yet """
+        self.moment = None
         miner = player.miner
         miner.on_mined_out.append(lambda name: audio.play(break_sound(name)))
         miner.on_pick_up.append(lambda: audio.play('pickup'))

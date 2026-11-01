@@ -80,6 +80,16 @@ class Player:
         )
         self.spawn(math.radians(START_DIRECTION))
 
+    def dispose(self) -> None:
+        """ All of it gone, for the ship of another game """
+        self.miner.release()
+        for canister in list(self.canisters.canisters):
+            self.canisters.remove(canister)
+        self.camera.entity_to_focus = None
+        if self.ship is not None:
+            self.gameworld.remove_entity(self.ship.entity_id)
+            self.ship = None
+
     def spawn(self, direction: float, ground: Ground | None = None) -> None:
         """ Landed home, or on `ground`, as close to `direction` as it can """
         grounds = self.grounds

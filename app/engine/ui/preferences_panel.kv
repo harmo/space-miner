@@ -53,34 +53,6 @@
     Widget:
         size_hint_y: None
         height: dp(10)
-    Label:
-        text:
-            'Les crédits, les pièces, le minerai et les missions seront ' \
-            'perdus' if root.confirming else ''
-        font_size: '13sp'
-        color: 1, .55, .5, 1
-        size_hint_y: None
-        height: dp(36) if root.confirming else 0
-        text_size: self.width, None
-        halign: 'center'
-    BoxLayout:
-        size_hint_y: None
-        height: dp(42)
-        spacing: dp(10) if root.confirming else 0
-        PanelButton:
-            text: 'Tout effacer' if root.confirming else 'Nouvelle partie'
-            font_size: '15sp'
-            color: (1, .55, .5, 1) if root.confirming else (1, 1, 1, 1)
-            glow: .9 if root.confirming else .3
-            on_release: root.new_game()
-        PanelButton:
-            text: 'Annuler'
-            font_size: '15sp'
-            size_hint_x: 1 if root.confirming else 0
-            width: 0
-            opacity: 1 if root.confirming else 0
-            disabled: not root.confirming
-            on_release: root.confirming = False
     PanelButton:
         text: 'Fermer'
         font_size: '15sp'

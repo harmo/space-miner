@@ -28,20 +28,15 @@ class PreferencesPanel(BoxLayout):
     fullscreen = BooleanProperty(True)
     sounds = NumericProperty(1.)
     ambience = NumericProperty(1.)
-    confirming = BooleanProperty(False)     # a new game, once asked
     mobile = BooleanProperty(False)         # always full screen
 
     def __init__(self, **kwargs: Any) -> None:
-        for event in ('on_close', 'on_new_game'):
-            self.register_event_type(event)
+        self.register_event_type('on_close')
         super().__init__(**kwargs)
         self.preferences = Preferences()
 
     def on_close(self) -> None:
         """ The close button was pressed """
-
-    def on_new_game(self) -> None:
-        """ A new game was confirmed """
 
     def show(self, preferences: Preferences) -> None:
         self.preferences = preferences
@@ -50,7 +45,6 @@ class PreferencesPanel(BoxLayout):
         self.fullscreen = preferences.fullscreen
         self.sounds = preferences.sounds
         self.ambience = preferences.ambience
-        self.confirming = False
 
     def toggle(self, name: str) -> None:
         """ Of the preferences, saved at once """
@@ -67,13 +61,6 @@ class PreferencesPanel(BoxLayout):
             setattr(self.preferences, name, volume)
             setattr(self, name, volume)
             write_preferences(self.preferences)
-
-    def new_game(self) -> None:
-        if self.confirming:
-            self.confirming = False
-            self.dispatch('on_new_game')
-        else:
-            self.confirming = True
 
 
 load_style(__file__)

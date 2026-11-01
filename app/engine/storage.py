@@ -55,28 +55,38 @@ def read(name: str) -> str | None:
     return path.read_text(encoding='utf-8') if path.exists() else None
 
 
-def read_save() -> Save | None:
+def save_file(slot: int) -> str:
+    return SAVE_FILE if slot == 1 else f'save_{slot}.json'
+
+
+def read_save(slot: int) -> Save | None:
     """ None without one. One that can't be read is kept aside, and the
     game starts anew. """
-    text = read(SAVE_FILE)
+    text = read(save_file(slot))
     if text is None:
         return None
     try:
         return load(text)
     except SaveError as error:
-        path = data_dir() / SAVE_FILE
+        path = data_dir() / save_file(slot)
         aside = path.with_suffix('.unreadable.json')
         path.replace(aside)
         log.warning('Unreadable saved game moved to %s: %s', aside, error)
         return None
 
 
-def write_save(save: Save) -> None:
-    write(SAVE_FILE, dump(save))
+def write_save(slot: int, save: Save) -> None:
+    write(save_file(slot), dump(save))
 
 
-def delete_save() -> None:
-    (data_dir() / SAVE_FILE).unlink(missing_ok=True)
+def delete_save(slot: int) -> None:
+    (data_dir() / save_file(slot)).unlink(missing_ok=True)
+
+
+def saved_at(slot: int) -> float:
+    """ Seconds since the epoch, 0 without a save """
+    path = data_dir() / save_file(slot)
+    return path.stat().st_mtime if path.exists() else 0.
 
 
 def read_preferences() -> Preferences:
