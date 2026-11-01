@@ -55,6 +55,7 @@ def sees_the_bare_site() -> None:
 def lands_on_the_pad() -> None:
     player = scenario.player
     check(view().docked, 'served on the pad')
+    scenario.grant_concessions()
     check(not scenario.base.docked, 'not at the base on the Earth')
     check(view().ids.site_button.opacity == 1, 'its site can be opened')
     player.miner.ore.update({'rock': 130., 'iron': 10.})

@@ -49,15 +49,28 @@
             # Up to four missions, then they scroll
             ScrollView:
                 size_hint_y: None
-                height: min(offers.height, dp(4 * 64 + 3 * 6))
+                height: min(column.height, dp(4 * 64 + 3 * 6))
                 do_scroll_x: False
                 bar_width: dp(3)
                 BoxLayout:
-                    id: offers
+                    id: column
                     orientation: 'vertical'
                     size_hint_y: None
                     height: self.minimum_height
                     spacing: dp(6)
+                    # The concessions within reach, on the Earth
+                    BoxLayout:
+                        id: permits
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(6)
+                    BoxLayout:
+                        id: offers
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(6)
             Label:
                 text: root.coming
                 font_size: '12sp'

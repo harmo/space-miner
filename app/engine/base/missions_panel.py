@@ -16,7 +16,9 @@ from kivy.uix.boxlayout import BoxLayout
 from ...logic.base.board import Board
 from ...logic.base.config import TIER_MISSIONS
 from ...logic.base.missions import Mission, held
+from ...logic.base.permits import Permit, Permits
 from ...logic.base.reputation import next_tier, tier
+from ...logic.base.sites import PERMITS
 from ...logic.mining.minerals import MINERALS
 from ...logic.mining.ore import Hold
 from ..ui.widgets import PanelButton, load_style
@@ -79,8 +81,10 @@ class MissionCard(BoxLayout):
     can_act = BooleanProperty(False)
     accepted = BooleanProperty(False)   # can be abandoned
 
-    def __init__(self, mission: Mission, **kwargs: Any) -> None:
+    def __init__(self, mission: Mission, permit: Permit | None = None,
+                 **kwargs: Any) -> None:
         self.mission = mission
+        self.permit = permit    # the concession it stands for
         super().__init__(**kwargs)
 
 
@@ -95,6 +99,7 @@ class MissionsPanel(BoxLayout):
         self.register_event_type('on_close')
         super().__init__(**kwargs)
         self.board: Board | None = None
+        self.permits: Permits | None = None  # given here, on the Earth
         self.stock: Hold = {}   # of the depot
         self.cargo: Hold = {}   # of the ship, taken after it
         self.laser = 1                      # of the ship
@@ -124,7 +129,7 @@ class MissionsPanel(BoxLayout):
             self.refresh()
             return
         self.show_coming()
-        for card in self.ids.active.children:
+        for card in [*self.ids.active.children, *self.ids.permits.children]:
             card.wanted = progress_text(card.mission, self.stock, self.cargo)
             card.can_act = card.mission.can_validate(self.stock, self.cargo)
 
@@ -142,6 +147,7 @@ class MissionsPanel(BoxLayout):
         self.show_levels(board)
         self.show_coming()
         offers, active = self.ids.offers, self.ids.active
+        self.show_permits(board)
         offers.clear_widgets()
         for mission in board.offers:
             offers.add_widget(MissionCard(
@@ -160,6 +166,20 @@ class MissionsPanel(BoxLayout):
                 accepted=True,
             ))
         self.ids.none.opacity = 0 if board.active else 1
+
+    def show_permits(self, board: Board) -> None:
+        cards = self.ids.permits
+        cards.clear_widgets()
+        if self.permits is None:
+            return
+        for permit in self.permits.offered(PERMITS, board.tier):
+            mission = permit.mission
+            cards.add_widget(MissionCard(
+                mission, permit, panel=self, client=mission.client,
+                wanted=progress_text(mission, self.stock, self.cargo),
+                reward=credits_text(mission.reward), action='Valider',
+                can_act=mission.can_validate(self.stock, self.cargo),
+            ))
 
     def show_levels(self, board: Board) -> None:
         levels = self.ids.levels
@@ -183,7 +203,11 @@ class MissionsPanel(BoxLayout):
     def act(self, card: MissionCard) -> None:
         if self.board is None:
             return
-        if card.accepted:
+        if card.permit is not None and self.permits is not None:
+            self.permits.validate(
+                card.permit, self.board, self.stock, self.cargo,
+            )
+        elif card.accepted:
             self.board.validate(card.mission, self.stock, self.cargo)
         else:
             self.board.accept(card.mission)

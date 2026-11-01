@@ -42,6 +42,7 @@ def lands_on_its_pad() -> None:
 @scenario.step(LANDING_DURATION + .5)
 def builds_it() -> None:
     check(view().docked, 'served there')
+    scenario.grant_concessions()
     outpost = ares()
     for stage in outpost.construction.site.stages:
         outpost.deliver({name: float(n) for name, n in stage.materials})

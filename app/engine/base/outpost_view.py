@@ -65,6 +65,10 @@ class SitePanel(BoxLayout):
         self.adds = 'Apportera ' + ', '.join(
             unlocked(stage, construction.services)
         )
+        locked = construction.locked
+        if locked and stage.permit is not None:
+            permit = stage.permit.mission.client
+            self.adds = f'Concession à obtenir sur Terre : {permit}'
         needed = construction.needed
         for name, units in stage.materials:
             delivered = units - needed.get(name, 0)
@@ -77,7 +81,7 @@ class SitePanel(BoxLayout):
                 held=f'soute {held}' if held else '',
                 met=name not in needed,
             ))
-        self.can_deliver = any(
+        self.can_deliver = not locked and any(
             whole_units(cargo.get(name, 0.)) > 0 for name in needed
         )
 

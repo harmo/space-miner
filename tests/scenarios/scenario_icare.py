@@ -55,6 +55,7 @@ def docks() -> None:
 @scenario.step(LANDING_DURATION + .5)
 def is_docked() -> None:
     check(view().docked, 'docked at its port')
+    scenario.grant_concessions()
     parking, station = scenario.player.parking, icare()
     check(abs(parking.direction - station.direction) < 1e-6,
           'gone around the station')

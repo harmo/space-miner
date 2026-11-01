@@ -106,6 +106,11 @@ class Scenario:
     def player(self) -> Any:
         return self.game.player
 
+    def grant_concessions(self) -> None:
+        """ All of them, for chantiers to be built right away """
+        from app.logic.base.sites import PERMITS
+        self.base.permits.granted.update(p.key for p in PERMITS)
+
     def press(self, widget: Any, at: Vec2 | None = None) -> None:
         """ A tap at the center of the widget, or `at` that point of the
         widget """

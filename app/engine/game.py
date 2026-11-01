@@ -110,7 +110,9 @@ class Game(Widget):
             self.gameworld, plan_system(Random(seed)),
             center=(WORLD_SIZE / 2, WORLD_SIZE / 2), rng=self.rng,
         )
-        self.outposts = found_outposts(self.system, self.rng)
+        self.outposts = found_outposts(
+            self.system, self.rng, self.ids.base.permits,
+        )
         self.player = Player(
             self.gameworld, self.system, self.camera, self.rng,
             Grounds([

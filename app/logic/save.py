@@ -53,6 +53,7 @@ class Save:
     outposts: dict[str, Progress] = field(default_factory=dict)
     # Saved in flight, the ship comes back on the Earth, its cargo lost
     landed: Landed | None = None
+    concessions: list[str] = field(default_factory=list)  # granted
     canisters: list[LostCanister] = field(default_factory=list)
     # None in older saves: nothing going on
     events: EventsState | None = None
@@ -188,6 +189,7 @@ def dump(save: Save) -> str:
             'place': save.landed.place,
             'direction': save.landed.direction,
         } if save.landed else None,
+        'concessions': save.concessions,
         'canisters': [canister_data(c) for c in save.canisters],
         'events': events_data(save.events) if save.events else None,
     }, ensure_ascii=False, indent=1, sort_keys=True)
@@ -219,6 +221,7 @@ def load(text: str) -> Save:
             ],
             fuel=fuel_of(data.get('fuel')),
             outposts=outposts_of(data.get('outposts', {})),
+            concessions=[str(key) for key in data.get('concessions', [])],
             canisters=canisters_of(data.get('canisters', [])),
             events=events_of(data.get('events')),
             landed=landed_of(data.get('landed')),

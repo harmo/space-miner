@@ -11,6 +11,7 @@ from kivy.uix.widget import Widget
 
 from ...logic.base.board import Board
 from ...logic.base.crushing import Crusher
+from ...logic.base.permits import Permits
 from ...logic.base.post import Post, home_post
 from ...logic.base.refuel import tow, tow_price
 from ...logic.base.reputation import tier
@@ -40,6 +41,7 @@ class EarthBase(PostView):
         super().__init__(**kwargs)
         self.wallet = Wallet()
         self.inventory = Inventory()        # parts in the hangar
+        self.permits = Permits()            # shared with the outposts
         self.rng = Random()
         self.home = home_post(self.rng)
         self.board: Board | None = None
@@ -54,6 +56,7 @@ class EarthBase(PostView):
         """ For a new game """
         self.wallet = Wallet()
         self.inventory = Inventory()
+        self.permits.granted.clear()
         self.home = home_post(self.rng)
         self.seen_tier = 1
         self.panel = ''
@@ -74,6 +77,7 @@ class EarthBase(PostView):
         )
         market.crusher, market.depot = self.crusher, self.depot
         self.ids.missions.board = self.board
+        self.ids.missions.permits = self.permits
         self.ids.missions.stock = stock
         if player is not None:
             self.ids.missions.cargo = player.miner.ore

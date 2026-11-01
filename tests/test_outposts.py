@@ -10,6 +10,7 @@ from app.logic.base.outposts import (
     bare_outpost,
     open_boards,
 )
+from app.logic.base.permits import Permits
 from app.logic.base.post import Services
 from app.logic.base.sites import (
     CERES,
@@ -18,6 +19,7 @@ from app.logic.base.sites import (
     FUEL,
     ICARE,
     MINING,
+    PERMITS,
     TRADING_POST,
     offered,
     unlocked,
@@ -53,7 +55,9 @@ def test_a_stage_is_built_once_all_is_delivered() -> None:
 
 
 def test_each_stage_offers_more() -> None:
-    outpost = Construction(FRONTIER)
+    permits = Permits()
+    permits.granted.update(permit.key for permit in PERMITS)
+    outpost = Construction(FRONTIER, permits)
     offered = []
     for stage in FRONTIER.stages:
         outpost.deliver({name: float(units) for name, units in

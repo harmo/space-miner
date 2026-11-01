@@ -13,7 +13,8 @@ from .config import (
 )
 from .crushing import PLAIN_REFINERY, Refinery
 from .mine import Yields
-from .missions import ANY_CLIENT, Clientele
+from .missions import ANY_CLIENT, Clientele, Mission
+from .permits import Permit
 from .post import Services
 
 Form = Literal['ground', 'orbit']    # landed on, or docked to
@@ -25,6 +26,7 @@ class Stage:
     name: str                 # shown
     materials: tuple[tuple[str, int], ...]  # units to deliver, by mineral
     services: Services        # offered once built, those before included
+    permit: Permit | None = None        # needed to build it
 
 
 @dataclass(frozen=True)
@@ -56,6 +58,36 @@ class Site:
         return any(stage.services.missions for stage in self.stages)
 
 
+def concession(key: str, tier: int, name: str, wanted: dict[str, int],
+               reward: int) -> Permit:
+    return Permit(key, tier, Mission(name, wanted, reward, tier))
+
+
+ARES_MINE = concession(
+    'ares_mine', 2, 'Mine de Mars',
+    {'iron': 120, 'copper': 60}, 2000,
+)
+FRONTIER_TRADE = concession(
+    'frontier_trade', 2, 'Licence Neptune',
+    {'iron': 200, 'copper': 100}, 3000,
+)
+CERES_REFINERY = concession(
+    'ceres_refinery', 3, 'Raffinage Cérès',
+    {'iron': 300, 'copper': 150, 'gold': 30}, 6000,
+)
+ICARE_TRADE = concession(
+    'icare_trade', 3, 'Licence Icare',
+    {'gold': 60, 'crystal': 40}, 6000,
+)
+FRONTIER_MINE = concession(
+    'frontier_mine', 4, 'Mine de Neptune',
+    {'iron': 400, 'copper': 200, 'crystal': 40}, 12000,
+)
+# As shown on the Earth, the easiest first
+PERMITS = (
+    ARES_MINE, FRONTIER_TRADE, CERES_REFINERY, ICARE_TRADE, FRONTIER_MINE,
+)
+
 FUEL = Services(fuel=True)
 DEPOT = replace(FUEL, depot=True)
 TRADING_POST = replace(DEPOT, market=True, missions=True)
@@ -71,9 +103,9 @@ FRONTIER = Site('Base Frontière', 'ground', (
     Stage('Fondations', (('rock', 120),), FUEL),
     Stage('Habitat', (('rock', 160), ('iron', 40)), DEPOT),
     Stage('Comptoir', (('rock', 200), ('iron', 60), ('copper', 30)),
-          TRADING_POST),
+          TRADING_POST, FRONTIER_TRADE),
     Stage('Mine', (('rock', 260), ('iron', 100), ('copper', 60),
-                   ('crystal', 15)), MINING),
+                   ('crystal', 15)), MINING, FRONTIER_MINE),
 ), Trade(1.3, (('ice', 2.),), Clientele((
     'Colonie Thulé', 'Relais Éclipse', 'Forge Boréale', 'Halte des Confins',
 ), 1.25)))
@@ -87,7 +119,7 @@ CERES = Site('Comptoir de Cérès', 'ground', (
     Stage('Fondations', (('rock', 80),), FUEL),
     Stage('Entrepôt', (('rock', 120), ('iron', 30)), DEPOT),
     Stage('Raffinerie', (('rock', 150), ('iron', 40), ('copper', 20)),
-          REFINING),
+          REFINING, CERES_REFINERY),
 ), Trade(clientele=Clientele((
     'Chantier Vesta', 'Mines de Pallas', "Cité d'Hygie", 'Forges de Junon',
 ), 1., (('rock', 120), ('regolith', 60), ('iron', 50), ('copper', 40)))),
@@ -103,7 +135,7 @@ ICARE = Site('Station Icare', 'orbit', (
     Stage('Armature', (('rock', 100),), SHELTER),
     Stage('Anneau habitable', (('rock', 120), ('iron', 50)), _RING),
     Stage('Comptoir', (('rock', 150), ('iron', 60), ('copper', 30)),
-          replace(_RING, market=True)),
+          replace(_RING, market=True), ICARE_TRADE),
 ), Trade(dearer=(('nebulite', 1.6), ('stellarium', 1.6),
                  ('antimatter', 1.6))), pad_width=40.)
 
@@ -112,7 +144,8 @@ ICARE = Site('Station Icare', 'orbit', (
 ARES = Site('Base Ares', 'ground', (
     Stage('Fondations', (('rock', 60),), FUEL),
     Stage('Entrepôt', (('rock', 90), ('iron', 20)), DEPOT),
-    Stage('Mine', (('rock', 150), ('iron', 50), ('copper', 25)), DIGGING),
+    Stage('Mine', (('rock', 150), ('iron', 50), ('copper', 25)), DIGGING,
+          ARES_MINE),
 ), yields=ARES_YIELDS)
 
 # By the key they are saved under

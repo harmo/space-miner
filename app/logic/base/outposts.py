@@ -13,6 +13,7 @@ from ..ship.parking import Parking
 from ..world.space import Celestial, Vec2
 from .board import Board, Contracts
 from .config import PAD_DIRECTION
+from .permits import Permits
 from .post import Post, Services
 from .sites import SITES, Site, Stage
 from .wallet import Wallet
@@ -35,8 +36,9 @@ class Construction:
     """ An outpost on its site: the stages built, and what was delivered
     for the next one """
 
-    def __init__(self, site: Site) -> None:
+    def __init__(self, site: Site, permits: Permits | None = None) -> None:
         self.site = site
+        self.permits = permits or Permits()
         self.built = 0                      # stages
         self.delivered: dict[str, int] = {}  # for the next stage
 
@@ -58,6 +60,11 @@ class Construction:
         return self.site.stages[self.built - 1].services
 
     @property
+    def locked(self) -> bool:
+        """ The stage being built needs a concession not granted yet """
+        return self.stage is not None and self.permits.lacks(self.stage.permit)
+
+    @property
     def needed(self) -> dict[str, int]:
         """ Units still to deliver for the stage being built, by mineral """
         if self.stage is None:
@@ -70,7 +77,9 @@ class Construction:
 
     def deliver(self, cargo: Hold) -> Stage | None:
         """ Takes from `cargo` whole units of what is needed. Returns the
-        stage built by it, if so. """
+        stage built by it, if so. Nothing goes without its concession. """
+        if self.locked:
+            return None
         for name, units in self.needed.items():
             taken = min(units, whole_units(cargo.get(name, 0.)))
             if taken <= 0:
@@ -162,11 +171,12 @@ class Outpost:
             self.board.resume(progress.contracts)
 
 
-def bare_outpost(key: str, body: Celestial, rng: Random) -> Outpost:
+def bare_outpost(key: str, body: Celestial, rng: Random,
+                 permits: Permits | None = None) -> Outpost:
     """ On its site, nothing built """
     site = SITES[key]
     return Outpost(
-        key, body, math.radians(PAD_DIRECTION), Construction(site),
+        key, body, math.radians(PAD_DIRECTION), Construction(site, permits),
         Post(Services(), rng, site.refinery, site.yields), rng,
     )
 

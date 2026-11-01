@@ -108,6 +108,7 @@ def lands_there_again() -> None:
 @scenario.step(LANDING_DURATION + .5)
 def builds_it() -> None:
     check(view().docked, 'served on its small pad')
+    scenario.grant_concessions()
     ore = scenario.player.miner.ore
     for stage in ceres().construction.site.stages:
         ore.update({name: float(units) for name, units in stage.materials})

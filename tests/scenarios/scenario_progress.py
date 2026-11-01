@@ -89,7 +89,7 @@ def eight_missions() -> None:
           'eight offers, eight missions at a time')
     offers = missions.ids.offers
     check(len(offers.children) == 8, 'all of them shown')
-    check(offers.parent.height < offers.height, 'which scroll')
+    check(offers.parent.parent.height < offers.height, 'which scroll')
     check(missions.accepted == '0/8', missions.accepted)
     check(all(mission.level == 5 for mission in board.offers),
           'offers of the top level')

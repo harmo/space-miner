@@ -44,6 +44,7 @@ SAVE = Save(
         ),
     },
     landed=Landed('frontier', 1.5),
+    concessions=['ares_mine'],
     canisters=[LostCanister('gold', 7.5, 180., 3, (120., -40.))],
     events=EventsState(
         'ejecta', 42., [ASTEROID], 100., 25., [ASTEROID], 300.,

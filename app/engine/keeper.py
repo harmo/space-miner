@@ -42,6 +42,7 @@ class Keeper:
                 name for name in MINERALS if name in self.player.looked_for
             ],
             fuel=round(self.player.tank.level, 2),
+            concessions=sorted(base.permits.granted),
             canisters=self.player.canisters.lost(system.attractors),
             events=system.events.state(),
             outposts={
@@ -87,6 +88,7 @@ class Keeper:
         base.depot.stock.clear()
         base.depot.stock.update(save.stock)
         base.seen_tier = save.seen_tier
+        base.permits.granted.update(save.concessions)
         if board is not None:
             board.resume(save.contracts)
         for outpost in self.outposts:
