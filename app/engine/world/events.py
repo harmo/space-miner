@@ -19,6 +19,7 @@ from ...logic.world.config import REGROW_AWAY
 from ...logic.world.layout import BeltPlan
 from ...logic.world.regrowth import Regrowth
 from ...logic.world.space import Celestial, Orbit, Vec2
+from ...logic.world.state import CometState, EventsState
 from ...logic.world.swarms import SwarmClock, plan_swarm
 from .flares import SolarFlares
 from .spots import Spot, spot_of
@@ -42,7 +43,8 @@ class SystemEvents:
         self.flares = SolarFlares(system, rng)
         self.comet_clock = CometClock(rng)
         self.comet: Celestial | None = None
-        self.debris: list[Celestial] = []   # shed by it, mined or not
+        self.debris: list[Celestial] = []   # around it, those left
+        self.shed = 0             # asteroids by it, mined or not
         self.swarm: list[Celestial] = []
         self.news = ''
         self.news_left = 0.       # seconds it is shown still
@@ -89,14 +91,59 @@ class SystemEvents:
                 if asteroid in system.asteroids:
                     system.remove(asteroid)
             self.debris.clear()
+            self.shed = 0
             system.remove(comet)
             self.comet = None
             return
+        self.debris[:] = [a for a in self.debris if a in system.asteroids]
         distance = math.dist(comet.pos, system.sun.pos) - system.sun.radius
-        while len(self.debris) < debris_shed(distance):
+        while self.shed < debris_shed(distance):
             self.debris.append(system.add_asteroid(
-                plan_debris(self.rng, len(self.debris)), comet,
+                plan_debris(self.rng, self.shed), comet,
             ))
+            self.shed += 1
+
+    def state(self) -> EventsState:
+        """ To save """
+        system, flares, clock = self.system, self.flares, self.clock
+        orbit = self.comet_orbit
+        comet = None
+        if orbit is not None:
+            comet = CometState(
+                orbit.anomaly, orbit.tilt, orbit.sense, self.shed,
+                [system.plan_now(asteroid) for asteroid in self.debris],
+            )
+        return EventsState(
+            flares.clock.phase, flares.clock.left,
+            [system.plan_now(asteroid) for asteroid in flares.ejecta],
+            clock.waiting, clock.left,
+            [system.plan_now(asteroid) for asteroid in self.swarm],
+            self.comet_clock.waiting, comet,
+        )
+
+    def resume(self, state: EventsState) -> None:
+        """ As it was saved, on a solar system with nothing going on """
+        system, flares, clock = self.system, self.flares, self.clock
+        sun = system.sun
+        flares.clock.phase, flares.clock.left = (
+            state.flare_phase, state.flare_left,
+        )
+        flares.ejecta = [
+            system.add_asteroid(plan, sun) for plan in state.ejecta
+        ]
+        clock.waiting, clock.left = state.swarm_waiting, state.swarm_left
+        self.swarm = [system.add_asteroid(plan, sun) for plan in state.swarm]
+        self.comet_clock.waiting = state.comet_waiting
+        comet = state.comet
+        if comet is not None:
+            orbit = plan_comet(self.rng, sun, system.orbits)
+            orbit.tilt, orbit.sense = comet.tilt, comet.sense
+            orbit.set_anomaly(comet.anomaly)
+            self.comet = system.add_comet(orbit)
+            self.shed = comet.shed
+            self.debris = [
+                system.add_asteroid(plan, self.comet) for plan in comet.debris
+            ]
 
     @property
     def comet_orbit(self) -> CometOrbit | None:

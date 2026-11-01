@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -12,7 +13,12 @@ from app.logic.preferences import (
 from app.logic.save import Landed, Save, SaveError, dump, load
 from app.logic.ship.scanner import LOOKED_FOR
 from app.logic.ship.shipyard import Design
+from app.logic.world.layout import OrbiterPlan
+from app.logic.world.state import CometState, EventsState, LostCanister
 
+ASTEROID = OrbiterPlan(
+    'asteroid_iron_1', 8., 5., 900., 40., 1.5, mineral='iron',
+)
 MISSION = Mission('Fonderie Lunaire', {'iron': 12, 'gold': 3}, 640, 3)
 SAVE = Save(
     seed=1234, credits=5600,
@@ -37,6 +43,11 @@ SAVE = Save(
         ),
     },
     landed=Landed('frontier', 1.5),
+    canisters=[LostCanister('gold', 7.5, 180., 3, (120., -40.))],
+    events=EventsState(
+        'ejecta', 42., [ASTEROID], 100., 25., [ASTEROID], 300.,
+        CometState(-.5, 1.2, -1, 9, [ASTEROID]),
+    ),
 )
 
 
@@ -137,3 +148,25 @@ def test_older_saves_have_missions_of_the_first_level() -> None:
     save = load(json.dumps(data))
     assert save.contracts.level == 1
     assert all(mission.level == 1 for mission in save.contracts.offers)
+
+
+def test_older_saves_have_nothing_going_on() -> None:
+    data = json.loads(dump(SAVE))
+    del data['canisters'], data['events']
+    save = load(json.dumps(data))
+    assert save.canisters == [] and save.events is None
+
+
+def test_a_quiet_system_is_saved_too() -> None:
+    assert SAVE.events is not None
+    quiet = replace(SAVE, events=replace(SAVE.events, comet=None))
+    assert load(dump(quiet)).events == quiet.events
+
+
+def test_unknown_minerals_of_canisters_and_asteroids_are_left_out() -> None:
+    data = json.loads(dump(SAVE))
+    data['canisters'][0]['mineral'] = 'unobtainium'
+    data['events']['ejecta'][0]['mineral'] = 'unobtainium'
+    save = load(json.dumps(data))
+    assert save.canisters == []
+    assert save.events is not None and save.events.ejecta == []

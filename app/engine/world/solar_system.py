@@ -4,6 +4,7 @@ events.py. """
 
 import math
 from collections.abc import Callable
+from dataclasses import replace
 from random import Random
 
 from ...logic.config import (
@@ -48,6 +49,7 @@ class SolarSystem:
         self.belts: list[list[Celestial]] = [[] for _ in plan.belts]
         self.added_belts: dict[BeltPlan, Celestial] = {}  # to their parent
         belt_of = {belt.parent: index for index, belt in enumerate(plan.belts)}
+        self.planned: dict[Celestial, OrbiterPlan] = {}  # asteroids
         # Told when an asteroid goes, mined out or leaving with its swarm
         self.on_remove: list[Callable[[Celestial], None]] = []
 
@@ -104,7 +106,15 @@ class SolarSystem:
                      parent: Celestial) -> Celestial:
         asteroid = self.create_orbiter(plan, parent, COLLISION_ORBITER)
         self.asteroids.append(asteroid)
+        self.planned[asteroid] = plan
         return asteroid
+
+    def plan_now(self, asteroid: Celestial) -> OrbiterPlan:
+        """ Of it as it is, on its orbit """
+        assert asteroid.orbit is not None
+        return replace(
+            self.planned[asteroid], orbit_angle=asteroid.orbit.angle,
+        )
 
     @property
     def sunlight(self) -> Sunlight:
@@ -127,6 +137,7 @@ class SolarSystem:
         self.bodies.remove(celestial)
         if celestial in self.asteroids:
             self.asteroids.remove(celestial)
+            del self.planned[celestial]
         for belt in self.belts:
             if celestial in belt:
                 belt.remove(celestial)

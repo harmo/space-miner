@@ -26,6 +26,7 @@ from ...logic.world.space import (
     strongest,
     wrap_shift,
 )
+from ...logic.world.state import LostCanister
 from ..entities import GameWorld, create_canister_entity, get_body, move_body
 
 
@@ -72,6 +73,33 @@ class CanisterField:
             ))
         while len(self.canisters) > CANISTER_MAX:
             self.remove(self.canisters[0])
+
+    def lost(self, attractors: Sequence[Celestial]) -> list[LostCanister]:
+        """ To save: each from what it floats around """
+        states = []
+        for canister in self.canisters:
+            pos = canister.pos
+            body = closest_pulling(pos, attractors) or attractors[0]
+            states.append(LostCanister(
+                canister.mineral, canister.amount, canister.altitude,
+                attractors.index(body),
+                (pos[0] - body.pos[0], pos[1] - body.pos[1]),
+            ))
+        return states
+
+    def recover(self, lost: Iterable[LostCanister],
+                attractors: Sequence[Celestial]) -> None:
+        """ Around the same bodies, moving along with them """
+        plans = []
+        for canister in lost:
+            body = attractors[min(canister.around, len(attractors) - 1)]
+            plans.append(CanisterPlan(
+                canister.mineral, canister.amount,
+                (body.pos[0] + canister.offset[0],
+                 body.pos[1] + canister.offset[1]),
+                body.velocity, 0., 0., canister.altitude,
+            ))
+        self.add(plans)
 
     def remove(self, canister: Canister) -> None:
         self.canisters.remove(canister)

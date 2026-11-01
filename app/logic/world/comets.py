@@ -51,7 +51,10 @@ class CometOrbit(Orbit):
         return along
 
     def advance(self, dt: float) -> None:
-        self.anomaly += self.motion * dt
+        self.set_anomaly(self.anomaly + self.motion * dt)
+
+    def set_anomaly(self, anomaly: float) -> None:
+        self.anomaly = anomaly
         self.along = self.solved()
 
     def turned(self, x: float, y: float) -> Vec2:

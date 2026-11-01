@@ -26,6 +26,7 @@ class Keeper:
     def snapshot(self) -> Save:
         base, board = self.base, self.base.board
         landed = self.landed
+        system = self.player.system
         return Save(
             seed=self.seed,
             credits=base.wallet.credits,
@@ -42,6 +43,8 @@ class Keeper:
                 name for name in MINERALS if name in self.player.looked_for
             ],
             fuel=round(self.player.tank.level, 2),
+            canisters=self.player.canisters.lost(system.attractors),
+            events=system.events.state(),
             outposts={
                 outpost.key: outpost.progress for outpost in self.outposts
                 if outpost.progress.started
@@ -103,6 +106,10 @@ class Keeper:
         self.player.miner.ore.clear()
         self.player.miner.ore.update(save.cargo)
         self.player.looked_for = set(save.looked_for)
+        system = self.player.system
+        self.player.canisters.recover(save.canisters, system.attractors)
+        if save.events is not None:
+            system.events.resume(save.events)
         self.written = dump(save)
 
     def save(self) -> None:
