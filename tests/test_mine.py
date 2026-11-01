@@ -1,8 +1,15 @@
+import math
 from random import Random
 
 import pytest
 
-from app.logic.base.config import DEPOT_CAPACITY, MINE_RATE
+from app.logic.base.config import (
+    DEPOT_CAPACITY,
+    MINE_RATE,
+    SHUTTLE_LOAD,
+    SHUTTLE_SPEED,
+    SHUTTLE_SUN_CLEARANCE,
+)
 from app.logic.base.mine import Mine
 from app.logic.base.outposts import bare_outpost
 from app.logic.base.post import Docked, Post, Services
@@ -10,6 +17,8 @@ from app.logic.base.sites import ARES, FRONTIER, ICARE
 from app.logic.base.wallet import Wallet
 from app.logic.ship.fuel import Tank
 from app.logic.ship.heat import HullHeat
+from app.logic.world.config import MARS_ORBIT, SUN_RADIUS
+from app.logic.world.layout import plan_system, sun_belt_orbit
 from app.logic.world.space import Celestial
 
 
@@ -88,9 +97,31 @@ def test_only_the_frontier_ends_with_a_mine() -> None:
     assert not ICARE.stages[-1].services.mine
 
 
+def longest_way_from_neptune(seed: int) -> float:
+    """ In pixels, to the farthest post with a depot, the sun in between """
+    plan = plan_system(Random(seed))
+    neptune = plan.planets[-1].planet.orbit_radius
+    farthest = max(
+        plan.planets[MARS_ORBIT].planet.orbit_radius,
+        sun_belt_orbit(plan.orbits),
+    )
+    around = SUN_RADIUS + SHUTTLE_SUN_CLEARANCE
+    return neptune + farthest + 2 * around * (math.pi / 2 - 1)
+
+
+def test_the_frontier_never_digs_more_than_its_shuttle_carries() -> None:
+    longest = max(longest_way_from_neptune(seed) for seed in range(300))
+    round_trip = 2 * longest / SHUTTLE_SPEED
+    assert round_trip * FRONTIER.vein.rate < SHUTTLE_LOAD
+
+
+def test_ares_digs_a_shuttle_every_five_minutes() -> None:
+    assert ARES.vein.rate * 300. == pytest.approx(SHUTTLE_LOAD)
+
+
 def test_ares_digs_metals_and_dust_and_trades_nothing() -> None:
     stock: dict[str, float] = {}
-    Mine(Random(8), ARES.yields).update(stock, 900 / MINE_RATE)
+    Mine(Random(8), ARES.vein).update(stock, 900 / ARES.vein.rate)
     assert set(stock) == {'iron', 'copper', 'regolith'}
     assert stock['iron'] > stock['copper'] > stock['regolith']
     final = ARES.stages[-1].services
@@ -100,4 +131,4 @@ def test_ares_digs_metals_and_dust_and_trades_nothing() -> None:
 
 def test_an_outpost_digs_what_its_site_yields() -> None:
     outpost = bare_outpost('ares', Celestial(1, 165.), Random(9))
-    assert outpost.post.mine.yields == ARES.yields
+    assert outpost.post.mine.vein == ARES.vein

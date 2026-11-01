@@ -8,11 +8,11 @@ from .config import (
     ARES_YIELDS,
     CERES_CRUSH_RATE,
     CERES_CRUSH_YIELDS,
-    MINE_YIELDS,
+    FRONTIER_MINE_RATE,
     PAD_WIDTH,
 )
 from .crushing import PLAIN_REFINERY, Refinery
-from .mine import Yields
+from .mine import PLAIN_VEIN, Vein
 from .missions import ANY_CLIENT, Clientele, Mission
 from .permits import Permit
 from .post import Services
@@ -50,7 +50,7 @@ class Site:
     trade: Trade = Trade()
     pad_width: float = PAD_WIDTH  # pixels, where ships land
     refinery: Refinery = PLAIN_REFINERY  # once it has one
-    yields: Yields = MINE_YIELDS        # of its mine, once it has one
+    vein: Vein = PLAIN_VEIN             # of its mine, once it has one
 
     @property
     def gives_missions(self) -> bool:
@@ -122,7 +122,7 @@ FRONTIER = Site('Base Frontière', 'ground', (
     docked(MINING),
 ), Trade(1.3, (('ice', 2.),), Clientele((
     'Colonie Thulé', 'Relais Éclipse', 'Forge Boréale', 'Halte des Confins',
-), 1.25)))
+), 1.25)), vein=Vein(rate=FRONTIER_MINE_RATE))
 
 
 # In the middle of the belt around the sun: a relay to mine, keep and
@@ -163,7 +163,7 @@ ARES = Site('Base Ares', 'ground', (
     Stage('Mine', (('rock', 150), ('iron', 50), ('copper', 25)), DIGGING,
           ARES_MINE),
     docked(DIGGING),
-), yields=ARES_YIELDS)
+), vein=Vein(ARES_YIELDS))
 
 # By the key they are saved under
 SITES = {

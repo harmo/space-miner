@@ -2,6 +2,7 @@
 ship is there or not, for as long as the game runs and the depot has
 room for what it digs """
 
+from dataclasses import dataclass
 from random import Random
 
 from ..mining.ore import Hold
@@ -11,21 +12,31 @@ from .unloading import depot_room
 Yields = tuple[tuple[str, int], ...]
 
 
+@dataclass(frozen=True)
+class Vein:
+    """ What a mine digs """
+    yields: Yields = MINE_YIELDS        # how often each mineral comes up
+    rate: float = MINE_RATE             # units a second, all of them
+
+
+PLAIN_VEIN = Vein()
+
+
 class Mine:
 
     def __init__(
         self,
         rng: Random,
-        yields: Yields = MINE_YIELDS
+        vein: Vein = PLAIN_VEIN
     ) -> None:
         self.rng = rng
-        self.yields = yields      # how often each mineral comes up
+        self.vein = vein
         self.dug = 0.             # units, not in the depot yet
 
     def update(self, stock: Hold, dt: float) -> None:
         if not self.diggable(stock):
             return
-        self.dug += MINE_RATE * dt
+        self.dug += self.vein.rate * dt
         while self.dug >= 1:
             yields = self.diggable(stock)
             if not yields:
@@ -39,6 +50,6 @@ class Mine:
     def diggable(self, stock: Hold) -> Yields:
         """ What the depot has room for """
         return tuple(
-            (name, share) for name, share in self.yields
+            (name, share) for name, share in self.vein.yields
             if depot_room(stock, name) >= 1
         )

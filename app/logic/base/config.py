@@ -48,6 +48,10 @@ DOCK_ALONG = 96.              # pixels along the ground, from the pad
 SHUTTLE_LOAD = 100            # units, in all: it leaves full
 SHUTTLE_PACE = 300.           # seconds: a mine fills one that fast
 MINE_RATE = SHUTTLE_LOAD / SHUTTLE_PACE  # units a second, all it digs
+# Longer than its longest round trip, in any solar system, to Cérès when
+# Neptune is on the other side of the sun: it never digs more than leaves
+FRONTIER_PACE = 540.          # seconds
+FRONTIER_MINE_RATE = SHUTTLE_LOAD / FRONTIER_PACE
 SHUTTLE_SPEED = 150.          # pixels a second
 SHUTTLE_TURN = 3.             # radians a second, of its nose
 SHUTTLE_ARRIVAL = 6.          # pixels from a dock, it is there

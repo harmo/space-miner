@@ -8,9 +8,8 @@ from ..mining.ore import Hold, cargo_total
 from ..ship.fuel import Tank
 from ..ship.heat import HullHeat
 from .board import Board
-from .config import MINE_YIELDS
 from .crushing import PLAIN_REFINERY, Crusher, Refinery
-from .mine import Mine, Yields
+from .mine import PLAIN_VEIN, Mine, Vein
 from .refuel import fill
 from .shuttles import Shuttle
 from .unloading import Depot
@@ -61,12 +60,12 @@ class Post:
         services: Services,
         rng: Random,
         refinery: Refinery = PLAIN_REFINERY,
-        yields: Yields = MINE_YIELDS
+        vein: Vein = PLAIN_VEIN
     ) -> None:
         self.services = services
         self.depot = Depot()
         self.crusher = Crusher(rng, refinery)
-        self.mine = Mine(rng, yields)
+        self.mine = Mine(rng, vein)
         self.shuttle = Shuttle()
 
     def status(

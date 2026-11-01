@@ -208,7 +208,7 @@ def bare_outpost(
     site = SITES[key]
     return Outpost(
         key, body, math.radians(PAD_DIRECTION), Construction(site, permits),
-        Post(Services(), rng, site.refinery, site.yields), rng,
+        Post(Services(), rng, site.refinery, site.vein), rng,
     )
 
 
