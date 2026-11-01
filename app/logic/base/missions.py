@@ -79,16 +79,22 @@ class Need:
         return self.held >= self.wanted
 
 
+def summed(orders: Sequence[dict[str, int]]) -> dict[str, int]:
+    """ Units of each mineral, all the orders together """
+    wanted: dict[str, int] = {}
+    for order in orders:
+        for name, units in order.items():
+            wanted[name] = wanted.get(name, 0) + units
+    return wanted
+
+
 def needs(
     missions: list[Mission],
     *holds: Hold
 ) -> list[Need]:
     """ Wanted by all the missions, against what the `holds` hold, in the
     order of the minerals table """
-    wanted: dict[str, int] = {}
-    for mission in missions:
-        for name, units in mission.wanted.items():
-            wanted[name] = wanted.get(name, 0) + units
+    wanted = summed([mission.wanted for mission in missions])
     return [
         Need(name, held(name, holds), wanted[name])
         for name in MINERALS if name in wanted
@@ -97,9 +103,13 @@ def needs(
 
 @dataclass(frozen=True)
 class Desk:
-    """ Where missions are validated, the Earth or an outpost """
-    missions: list[Mission]   # under way there
-    stock: Hold   # of its depot
+    """ Where ore is wanted: missions under way at a post, or a site """
+    orders: list[dict[str, int]]    # units of each mineral
+    stock: Hold   # of its depot, nothing for a site
+
+    @staticmethod
+    def of(missions: Sequence[Mission], stock: Hold) -> 'Desk':
+        return Desk([mission.wanted for mission in missions], stock)
 
 
 def needs_at(
@@ -111,9 +121,8 @@ def needs_at(
     wanted: dict[str, int] = {}
     holds: dict[str, list[Hold]] = {}
     for desk in desks:
-        for need in needs(desk.missions):
-            name = need.mineral
-            wanted[name] = wanted.get(name, 0) + need.wanted
+        for name, units in summed(desk.orders).items():
+            wanted[name] = wanted.get(name, 0) + units
             holds.setdefault(name, [cargo]).append(desk.stock)
     return [
         Need(name, held(name, holds[name]), wanted[name])

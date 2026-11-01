@@ -179,13 +179,13 @@ def test_a_site_followed_tracks_what_it_lacks_stage_after_stage() -> None:
     assert site_desks([outpost]) == []
     outpost.construction.followed = True
     first = dict(outpost.construction.needed)
-    assert site_desks([outpost])[0].missions[0].wanted == first
+    assert site_desks([outpost])[0].orders == [first]
     stage = outpost.construction.stage
     assert stage is not None
     outpost.deliver({name: float(units) for name, units in stage.materials})
     assert outpost.construction.built == 1
-    wanted = site_desks([outpost])[0].missions[0].wanted
-    assert wanted == outpost.construction.needed != first
+    wanted = outpost.construction.needed
+    assert site_desks([outpost])[0].orders == [wanted] != [first]
 
 
 def test_only_the_cargo_counts_for_a_site_followed() -> None:

@@ -23,7 +23,7 @@ from .config import (
 )
 from .ship.fuel import FuelState
 from .ship.heat import Warmth, sun_heat
-from .world.space import Round, Vec2
+from .world.space import Round, Vec2, polar
 
 
 def is_on_screen(offset: Vec2, radius: float, half_size: Vec2) -> bool:
@@ -103,8 +103,7 @@ def orbit_dots(
     dots = []
     for index in indices:
         angle = index * step
-        x = center[0] + math.cos(angle) * radius
-        y = center[1] + math.sin(angle) * radius
+        x, y = polar(center, angle, radius)
         if (
             abs(x - view_center[0]) > half_size[0]
             or abs(y - view_center[1]) > half_size[1]

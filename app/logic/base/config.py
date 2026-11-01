@@ -38,26 +38,26 @@ MISSION_RARER = .2
 PAD_WIDTH = 90.               # pixels, where ships land on their site
 PAD_DIRECTION = 90.           # degrees, from the center of their body
 
-# Mines, filling the depot of their outpost
-# How often each comes up: at the Frontier, and at Ares, on Mars
-MINE_YIELDS = (('helium3', 3), ('ice', 1))
-ARES_YIELDS = (('iron', 3), ('copper', 2), ('regolith', 1))
-
 # Shuttles, carrying ore from dock to depot
 DOCK_ALONG = 96.              # pixels along the ground, from the pad
 SHUTTLE_LOAD = 100            # units, in all: it leaves full
-SHUTTLE_PACE = 300.           # seconds: a mine fills one that fast
-MINE_RATE = SHUTTLE_LOAD / SHUTTLE_PACE  # units a second, all it digs
-# Longer than its longest round trip, in any solar system, to Cérès when
-# Neptune is on the other side of the sun: it never digs more than leaves
-FRONTIER_PACE = 540.          # seconds
-FRONTIER_MINE_RATE = SHUTTLE_LOAD / FRONTIER_PACE
 SHUTTLE_SPEED = 150.          # pixels a second
 SHUTTLE_TURN = 3.             # radians a second, of its nose
 SHUTTLE_ARRIVAL = 6.          # pixels from a dock, it is there
 SHUTTLE_DOCK_HEIGHT = 18.     # pixels above the surface, where it stands
 SHUTTLE_CLEARANCE = 12.       # pixels it stays off bodies, under its dock
 SHUTTLE_SUN_CLEARANCE = 300.  # pixels it stays off the sun
+
+# Mines, filling the depot of their outpost
+# How often each comes up: at the Frontier, and at Ares, on Mars
+FRONTIER_YIELDS = (('helium3', 3), ('ice', 1))
+ARES_YIELDS = (('iron', 3), ('copper', 2), ('regolith', 1))
+MINE_PACE = 300.              # seconds: a mine fills one that fast
+MINE_RATE = SHUTTLE_LOAD / MINE_PACE  # units a second, all it digs
+# Longer than its longest round trip, in any solar system, to Cérès when
+# Neptune is on the other side of the sun: it never digs more than leaves
+FRONTIER_PACE = 540.          # seconds
+FRONTIER_MINE_RATE = SHUTTLE_LOAD / FRONTIER_PACE
 
 # Refinery: rock of the depot crushed into what little it holds
 CRUSH_RATE = 4.               # units of rock a second

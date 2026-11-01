@@ -208,19 +208,21 @@ def test_each_board_makes_its_own_reputation() -> None:
 
 
 def test_needs_add_up_across_desks_each_with_its_depot() -> None:
-    earth = Desk([Mission('Institut Cassini', {'iron': 10}, 100)],
-                 {'iron': 3., 'gold': 9.})
-    outpost = Desk([Mission('Colonie Thulé', {'iron': 5, 'ruby': 2}, 100)],
-                   {'iron': 4.})
+    earth = Desk.of([Mission('Institut Cassini', {'iron': 10}, 100)],
+                    {'iron': 3., 'gold': 9.})
+    outpost = Desk.of([Mission('Colonie Thulé', {'iron': 5, 'ruby': 2}, 100)],
+                      {'iron': 4.})
     assert needs_at([earth, outpost], {'iron': 1.}) == [
         Need('iron', 8, 15), Need('ruby', 0, 2),
     ]
 
 
 def test_a_depot_only_counts_for_what_its_desk_wants() -> None:
-    earth = Desk([Mission('Institut Cassini', {'iron': 10}, 100)],
-                 {'gold': 9.})
-    outpost = Desk([Mission('Colonie Thulé', {'gold': 5}, 100)], {'iron': 4.})
+    earth = Desk.of([Mission('Institut Cassini', {'iron': 10}, 100)],
+                    {'gold': 9.})
+    outpost = Desk.of(
+        [Mission('Colonie Thulé', {'gold': 5}, 100)], {'iron': 4.},
+    )
     assert needs_at([earth, outpost], {}) == [
         Need('iron', 0, 10), Need('gold', 0, 5),
     ]

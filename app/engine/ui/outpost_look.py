@@ -5,62 +5,15 @@ stations: a floating beacon, then a ring around a hub with its port, lit,
 solar panels. """
 
 import math
-import time
 
 from ...logic.base.outposts import Outpost
 from ...logic.config import OUTPOST_COLOR
-from ...logic.world.space import Celestial, Vec2
+from ...logic.world.space import Vec2, polar
 from .overlay import Overlay
+from .surface_look import DARK, GLASS, SEEN, STEEL, Frame, blinking
 
-STEEL = (.42, .47, .54)
-DARK = (.16, .18, .22)
-GLASS = (.7, .82, .9)
 RUBBLE = (.45, .41, .36)
 RED = (1., .3, .25)
-BLINK = 1.2                   # seconds, of the lights
-SEEN = 2000.                  # drawn only this close to the camera
-STEP = 8.                     # pixels, between points of long shapes
-
-
-class Frame:
-    """ On the surface, `along` it from `direction`, the middle of what is
-    drawn, and `up` from it, in pixels """
-
-    def __init__(self, body: Celestial, direction: float) -> None:
-        self.center = body.pos
-        self.radius = body.radius
-        self.direction = direction
-
-    def at(self, along: float, up: float) -> Vec2:
-        x, y = self.center
-        angle = self.direction + along / self.radius
-        distance = self.radius + up
-        return (
-            x + math.cos(angle) * distance, y + math.sin(angle) * distance,
-        )
-
-    def box(
-        self,
-        left: float,
-        right: float,
-        top: float,
-        bottom: float = -3.
-    ) -> tuple[list[Vec2], list[Vec2]]:
-        """ Its lower and upper edges, bending with the surface: sunk a
-        little into the ground, not to float above it """
-        steps = max(1, math.ceil((right - left) / STEP))
-        alongs = [left + (right - left) * k / steps for k in range(steps + 1)]
-        return (
-            [self.at(along, bottom) for along in alongs],
-            [self.at(along, top) for along in alongs],
-        )
-
-
-def blinking(phase: float) -> float:
-    """ From faint to bright, `phase` from 0 to 1 along the blink """
-    return .3 + .7 * (.5 + .5 * math.cos(
-        2 * math.pi * (time.monotonic() / BLINK + phase)
-    ))
 
 
 def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
@@ -171,7 +124,7 @@ def draw_station(overlay: Overlay, outpost: Outpost) -> None:
     for k in range(4):
         angle = outpost.direction + math.pi / 4 + k * math.pi / 2
         overlay.segment(
-            point(center, angle, 10), point(center, angle, radius - 4),
+            polar(center, angle, 10), polar(center, angle, radius - 4),
             STEEL, 1.5,
         )
     overlay.circle(center, radius - 4, STEEL, 4 if built >= 2 else 1.5)
@@ -181,26 +134,19 @@ def draw_station(overlay: Overlay, outpost: Outpost) -> None:
     if built >= 2:
         for k in range(12):
             angle = outpost.direction + (k + .5) * math.pi / 6
-            overlay.light(point(center, angle, radius - 4), GLASS,
+            overlay.light(polar(center, angle, radius - 4), GLASS,
                           blinking(k / 12) * .8)
     if built >= 3:
         for side in (-1, 1):
             angle = outpost.direction + side * math.pi / 2
-            overlay.segment(point(center, angle, radius),
-                            point(center, angle, radius + 10), STEEL, 1.5)
-            middle = point(center, angle, radius + 22)
+            overlay.segment(polar(center, angle, radius),
+                            polar(center, angle, radius + 10), STEEL, 1.5)
+            middle = polar(center, angle, radius + 22)
             overlay.shape(around(middle, 14, 4), GLASS, DARK)
-        foot = point(center, outpost.direction + math.pi, radius - 2)
-        tip = point(center, outpost.direction + math.pi, radius + 18)
+        foot = polar(center, outpost.direction + math.pi, radius - 2)
+        tip = polar(center, outpost.direction + math.pi, radius + 18)
         overlay.segment(foot, tip, STEEL, 1.5)
         overlay.light(tip, RED, blinking(.5))
-
-
-def point(center: Vec2, angle: float, distance: float) -> Vec2:
-    return (
-        center[0] + math.cos(angle) * distance,
-        center[1] + math.sin(angle) * distance,
-    )
 
 
 def around(
@@ -215,4 +161,4 @@ def around(
             (x - wide, y - high), (x + wide, y - high),
             (x + wide, y + high), (x - wide, y + high),
         ]
-    return [point(center, math.pi * k / 8, wide) for k in range(16)]
+    return [polar(center, math.pi * k / 8, wide) for k in range(16)]

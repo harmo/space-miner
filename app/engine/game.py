@@ -184,8 +184,8 @@ class Game(Widget):
         base = self.ids.base
         concessions = base.permits.tracked(PERMITS)
         wanted = [*base.board.active, *concessions]
-        return [Desk(wanted, base.depot.stock)] + [
-            Desk(outpost.board.active, outpost.post.depot.stock)
+        return [Desk.of(wanted, base.depot.stock)] + [
+            Desk.of(outpost.board.active, outpost.post.depot.stock)
             for outpost in self.outposts if outpost.board is not None
         ] + site_desks(self.outposts)
 

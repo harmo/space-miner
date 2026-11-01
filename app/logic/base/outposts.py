@@ -11,10 +11,10 @@ from random import Random
 from ..mining.ore import Hold, whole_units, withdraw
 from ..ship.ground import Ground, pad_edge
 from ..ship.parking import Parking
-from ..world.space import Celestial, Vec2
+from ..world.space import Celestial, Vec2, polar
 from .board import Board, Contracts
 from .config import DOCK_ALONG, PAD_DIRECTION
-from .missions import Desk, Mission
+from .missions import Desk
 from .permits import Permits
 from .post import Post, Services
 from .sites import SITES, Site, Stage
@@ -148,12 +148,7 @@ class Outpost:
     @property
     def pos(self) -> Vec2:
         """ Of the middle of the pad, on the surface """
-        x, y = self.body.pos
-        radius = self.body.radius
-        return (
-            x + math.cos(self.direction) * radius,
-            y + math.sin(self.direction) * radius,
-        )
+        return polar(self.body.pos, self.direction, self.body.radius)
 
     def serves(self, parking: Parking | None) -> bool:
         """ Ships parked on its pad """
@@ -193,7 +188,7 @@ def site_desks(outposts: Sequence[Outpost]) -> list[Desk]:
     """ What the sites followed still lack, stage after stage, as missions
     under way: only the cargo delivers to them """
     return [
-        Desk([Mission(outpost.name, outpost.construction.needed, 0)], {})
+        Desk([outpost.construction.needed], {})
         for outpost in outposts if outpost.construction.followed
     ]
 

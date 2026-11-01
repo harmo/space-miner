@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from random import Random
 
 from ..mining.ore import Hold
-from .config import MINE_RATE, MINE_YIELDS
+from .config import FRONTIER_YIELDS, MINE_RATE
 from .unloading import depot_room
 
 Yields = tuple[tuple[str, int], ...]
@@ -15,7 +15,7 @@ Yields = tuple[tuple[str, int], ...]
 @dataclass(frozen=True)
 class Vein:
     """ What a mine digs """
-    yields: Yields = MINE_YIELDS        # how often each mineral comes up
+    yields: Yields = FRONTIER_YIELDS        # how often each mineral comes up
     rate: float = MINE_RATE             # units a second, all of them
 
 

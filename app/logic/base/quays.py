@@ -1,13 +1,12 @@
 """ The posts of the solar system as a network of shuttles: where they can
 go, where their docks are, and the shuttles on their way """
 
-import math
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 
 from ..mining.minerals import MINERALS
 from ..mining.ore import Hold, whole_units
-from ..world.space import Celestial, Vec2
+from ..world.space import Celestial, Vec2, polar
 from .config import SHUTTLE_DOCK_HEIGHT
 from .post import Post
 from .shuttle_flight import Airspace
@@ -40,12 +39,8 @@ class Quay:
     @property
     def spot(self) -> Vec2:
         """ Where its shuttle stands """
-        x, y = self.body.pos
         distance = self.body.radius + SHUTTLE_DOCK_HEIGHT
-        return (
-            x + math.cos(self.direction) * distance,
-            y + math.sin(self.direction) * distance,
-        )
+        return polar(self.body.pos, self.direction, distance)
 
 
 @dataclass(frozen=True)

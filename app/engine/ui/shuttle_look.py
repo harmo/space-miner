@@ -10,8 +10,8 @@ from ...logic.base.quays import Quay, shuttle_position
 from ...logic.colors import Rgb
 from ...logic.config import SHUTTLE_COLOR
 from ...logic.world.space import Vec2
-from .outpost_look import DARK, GLASS, SEEN, STEEL, Frame, blinking
 from .overlay import Overlay
+from .surface_look import DARK, GLASS, SEEN, STEEL, Frame, blinking
 
 HOLD = (.55, .4, .16)
 FLAME = (.5, .85, 1.)

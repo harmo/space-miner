@@ -21,6 +21,14 @@ def wrap_shift(pos: Vec2, center: Vec2, period: float = WORLD_SIZE) -> Vec2:
     )
 
 
+def polar(center: Vec2, angle: float, distance: float) -> Vec2:
+    """ That far from `center`, in that direction """
+    return (
+        center[0] + math.cos(angle) * distance,
+        center[1] + math.sin(angle) * distance,
+    )
+
+
 def bearing(pos: Vec2, center: Vec2) -> float:
     """ Direction of `pos`, seen from `center` """
     return math.atan2(pos[1] - center[1], pos[0] - center[0])

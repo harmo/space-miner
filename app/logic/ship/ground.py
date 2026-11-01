@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
 
-from ..world.space import Celestial, Vec2, angle_diff, bearing
+from ..world.space import Celestial, Vec2, angle_diff, bearing, polar
 from .config import (
     GROUND_SAFETY,
     LANDED_GAP,
@@ -29,12 +29,7 @@ def landed_distance(body: Celestial, length: float) -> float:
 def landed_on(body: Celestial, direction: float, length: float) -> Vec2:
     """ Position of the ship landed on a body, in `direction` from its
     center, with its nose pointing the same way """
-    x, y = body.pos
-    distance = landed_distance(body, length)
-    return (
-        x + math.cos(direction) * distance,
-        y + math.sin(direction) * distance,
-    )
+    return polar(body.pos, direction, landed_distance(body, length))
 
 
 @dataclass(frozen=True)
