@@ -1,7 +1,7 @@
 import pytest
 
 from app.logic.base.config import UNLOAD_RATE
-from app.logic.base.unloading import Depot, load, unload
+from app.logic.base.unloading import Depot, load_ore, unload
 
 
 def test_unloads_one_mineral_after_the_other() -> None:
@@ -54,25 +54,25 @@ def test_nothing_to_unload() -> None:
 
 def test_ore_is_loaded_back_as_far_as_it_fits() -> None:
     stock, ore = {'iron': 50.}, {'rock': 5.}
-    assert load(stock, ore, 'iron', 30.) == 30
+    assert load_ore(stock, ore, 'iron', 30.) == 30
     assert stock == {'iron': 20.} and ore == {'rock': 5., 'iron': 30.}
 
 
 def test_all_of_it_when_there_is_room() -> None:
     stock: dict[str, float] = {'iron': 5.}
     ore: dict[str, float] = {}
-    assert load(stock, ore, 'iron', 30.) == 5
+    assert load_ore(stock, ore, 'iron', 30.) == 5
     assert stock == {} and ore == {'iron': 5.}
 
 
 def test_only_whole_units_are_loaded() -> None:
     stock, ore = {'iron': 5.5}, {'iron': .5}
-    assert load(stock, ore, 'iron', 2.7) == 2
+    assert load_ore(stock, ore, 'iron', 2.7) == 2
     assert stock == {'iron': 3.5} and ore == {'iron': 2.5}
 
 
 def test_nothing_without_room_or_ore() -> None:
     stock, ore = {'iron': 5.}, {'rock': 5.}
-    assert load(stock, ore, 'iron', .5) == 0
-    assert load(stock, ore, 'gold', 30.) == 0
+    assert load_ore(stock, ore, 'iron', .5) == 0
+    assert load_ore(stock, ore, 'gold', 30.) == 0
     assert stock == {'iron': 5.} and ore == {'rock': 5.}

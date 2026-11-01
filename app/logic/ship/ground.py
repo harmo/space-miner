@@ -46,7 +46,7 @@ class Ground:
     body: Celestial
     edge: tuple[bool, ...]
     kind: GroundKind = 'land'
-    port: float = 0.          # direction of the port, if it is one
+    port_direction: float = 0.  # if it is a port
 
     @property
     def docking(self) -> bool:
@@ -58,7 +58,7 @@ class Ground:
         if self.kind == 'comet':
             return []
         if self.kind == 'port':
-            return [self.port]
+            return [self.port_direction]
         return ground_spots(self.edge, ground_margin(self.body, width))
 
 

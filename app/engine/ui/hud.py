@@ -31,7 +31,7 @@ def show_hud(game: 'Game') -> None:
     show_heat(ids.heat, player.heat)
     ids.message_label.text = message(
         miner.message, player.tank.state, player.heat.warmth,
-        player.parking is not None,
+        post is not None and post.services.fuel,
     )
     events = game.system.events
     ids.news_label.text = events.headline

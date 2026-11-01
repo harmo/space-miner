@@ -63,7 +63,7 @@ def lose_cargo() -> None:
 def make_things_happen() -> None:
     lose_cargo()
     events().comet_clock.waiting = 0.
-    events().clock.waiting = 0.
+    events().swarm_clock.waiting = 0.
     flares = events().flares.clock
     flares.phase, flares.left = 'blazing', 0.
 
@@ -90,7 +90,7 @@ def remember() -> None:
         'debris': sorted(a.mineral for a in events().debris),
         'shed': events().shed,
         'swarm': len(events().swarm),
-        'swarm_left': events().clock.left,
+        'swarm_left': events().swarm_clock.left,
         'ejecta': len(events().flares.ejecta),
         'flare_left': events().flares.clock.left,
     }))
@@ -117,7 +117,8 @@ def comes_back() -> None:
     check(len(debris) >= len(then['debris']), f'with its debris: {debris}')
     check(events().shed >= then['shed'], 'what was mined stays gone')
     check(len(events().swarm) == then['swarm'], 'the swarm is back')
-    check(abs(events().clock.left - then['swarm_left']) < 3, 'for as long')
+    left = events().swarm_clock.left
+    check(abs(left - then['swarm_left']) < 3, 'for as long')
     check(len(events().flares.ejecta) == then['ejecta'], 'the ejecta too')
     check(events().flares.clock.phase == 'ejecta', 'the flare goes on')
     check(abs(events().flares.clock.left - then['flare_left']) < 3,

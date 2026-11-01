@@ -87,6 +87,8 @@ def calls_for_help() -> None:
     button = scenario.game.ids.distress_button
     check(scenario.base.stranded and button.opacity == 1,
           'stranded there, help can be called')
+    told = scenario.game.ids.message_label.text
+    check(told == 'Panne sèche', f'as nothing fills the tank here: {told}')
     scenario.press(button)
 
 

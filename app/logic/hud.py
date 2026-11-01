@@ -135,9 +135,9 @@ def fuel_color(state: FuelState) -> Rgb:
     return CARGO_ALMOST_FULL_COLOR if state == 'low' else FUEL_COLOR
 
 
-def fuel_message(state: FuelState, docked: bool) -> str:
-    """ Out in space: the base fills the tank of docked ships """
-    if docked:
+def fuel_message(state: FuelState, filling: bool) -> str:
+    """ Unless a post is `filling` the tank """
+    if filling:
         return ''
     if state == 'empty':
         return 'Panne sèche'
@@ -152,13 +152,13 @@ def heat_color(warmth: Warmth) -> Rgb:
 
 
 def message(work: str, fuel: FuelState, warmth: Warmth,
-            docked: bool) -> str:
+            filling: bool) -> str:
     """ What matters most: blowing up, then the work of the ship, its
     fuel, its heat """
     if warmth == 'overheating':
         return 'Surchauffe !'
     hot = 'Coque brûlante' if warmth == 'hot' else ''
-    return work or fuel_message(fuel, docked) or hot
+    return work or fuel_message(fuel, filling) or hot
 
 
 def pulse(time: float, period: float) -> float:

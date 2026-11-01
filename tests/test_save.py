@@ -170,3 +170,10 @@ def test_unknown_minerals_of_canisters_and_asteroids_are_left_out() -> None:
     save = load(json.dumps(data))
     assert save.canisters == []
     assert save.events is not None and save.events.ejecta == []
+
+
+def test_flares_of_an_unknown_phase_are_quiet() -> None:
+    data = json.loads(dump(SAVE))
+    data['events']['flare_phase'] = 'exploding'
+    save = load(json.dumps(data))
+    assert save.events is not None and save.events.flare_phase == 'quiet'

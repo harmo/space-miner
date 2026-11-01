@@ -4,7 +4,7 @@ the game are left out rather than failing. """
 
 import json
 from dataclasses import asdict, dataclass, field
-from typing import Any
+from typing import Any, get_args
 
 from .base.missions import Contracts, Mission
 from .base.outposts import Progress
@@ -14,6 +14,7 @@ from .ship.hulls import HULLS
 from .ship.parts import PARTS
 from .ship.scanner import LOOKED_FOR
 from .ship.shipyard import Design
+from .world.flares import Phase
 from .world.layout import OrbiterPlan
 from .world.state import CometState, EventsState, LostCanister
 
@@ -189,12 +190,17 @@ def comet_of(data: Any) -> CometState | None:
     )
 
 
+def phase_of(data: Any) -> Phase:
+    """ Quiet if unknown to this version """
+    return next((phase for phase in get_args(Phase) if phase == data), 'quiet')
+
+
 def events_of(data: Any) -> EventsState | None:
     """ Older saves have none """
     if data is None:
         return None
     return EventsState(
-        data['flare_phase'], float(data['flare_left']),
+        phase_of(data['flare_phase']), float(data['flare_left']),
         plans_of(data['ejecta']), float(data['swarm_waiting']),
         float(data['swarm_left']), plans_of(data['swarm']),
         float(data['comet_waiting']), comet_of(data['comet']),

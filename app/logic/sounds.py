@@ -76,7 +76,7 @@ class Moment:
     stranded: bool = False    # out of fuel away from the Earth
     warmth: Warmth = 'cool'   # of the hull
     flare: Phase = 'quiet'    # of the sun
-    port: bool = False        # docked to a station, or a comet
+    docking: bool = False     # to a station, or a comet
     comet: bool = False       # passing through the solar system
 
 
@@ -112,7 +112,7 @@ def heard_of_same_ship(before: Moment, now: Moment) -> list[str]:
     if now.legs_out != before.legs_out:
         sounds.append('gear_out' if now.legs_out else 'gear_in')
     if now.parked and not before.parked:
-        sounds.append('dock' if now.port else 'touchdown')
+        sounds.append('dock' if now.docking else 'touchdown')
     if now.fuel_state != before.fuel_state:
         if now.fuel_state == 'critical' and before.fuel_state != 'empty':
             sounds.append('low_fuel')

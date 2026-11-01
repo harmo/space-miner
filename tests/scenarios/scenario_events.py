@@ -48,7 +48,7 @@ def grows_back() -> None:
           'with asteroids to mine')
     check(all(math.dist(asteroid.pos, ship) > REGROW_AWAY * .8
               for asteroid in new), 'out of the sight of the ship')
-    events().clock.waiting = 0.
+    events().swarm_clock.waiting = 0.
 
 
 @scenario.step(.5)
@@ -76,7 +76,7 @@ def mines_it() -> None:
     scenario.screenshot('swarm')
     check(scenario.player.ship is not None, 'the ship holds there')
     check(scenario.player.miner.lock is not None, 'locked on the swarm')
-    events().clock.left = .01
+    events().swarm_clock.left = .01
 
 
 @scenario.step(.5)

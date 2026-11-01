@@ -77,6 +77,16 @@ class SolarSystem:
         self.attractors = [self.sun, *self.planets]
         self.events = SystemEvents(self, rng)
 
+    @property
+    def mercury(self) -> Celestial:
+        """ The closest planet to the sun """
+        return self.planets[0]
+
+    @property
+    def neptune(self) -> Celestial:
+        """ The farthest planet from the sun """
+        return self.planets[-1]
+
     def parent_of(self, belt: BeltPlan) -> Celestial:
         if belt in self.added_belts:
             return self.added_belts[belt]
@@ -119,7 +129,7 @@ class SolarSystem:
     @property
     def sunlight(self) -> Sunlight:
         """ Surging during flares, the closest planet casting its shadow """
-        sun, planet = self.sun, self.planets[0]
+        sun, planet = self.sun, self.mercury
         return Sunlight(
             sun.pos, sun.radius, self.events.flares.surge,
             shadow_of(planet.pos, planet.radius, sun.pos),

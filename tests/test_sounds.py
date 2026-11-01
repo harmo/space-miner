@@ -178,5 +178,5 @@ def test_a_flare_is_heard_told_then_blazing() -> None:
 
 def test_docking_is_heard_rather_than_touching_down() -> None:
     legs = replace(FLYING, legs_out=True)
-    docked = replace(legs, parked=True, port=True)
+    docked = replace(legs, parked=True, docking=True)
     assert heard(legs, docked) == ['dock']

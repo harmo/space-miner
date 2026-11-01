@@ -17,11 +17,11 @@ def found_outposts(system: SolarSystem, rng: Random) -> list[Outpost]:
         system.orbits, earth.angle if earth else 0.,
     ))
     system.add_belt(plan_ceres_belt(), ceres, rng)
-    first = system.planets[0]
-    icare = system.add_body(plan_station(first.radius), first)
+    mercury = system.mercury
+    icare = system.add_body(plan_station(mercury.radius), mercury)
     return [
         bare_outpost(key, body, rng) for key, body in (
-            ('frontier', system.planets[-1]), ('ceres', ceres),
+            ('frontier', system.neptune), ('ceres', ceres),
             ('icare', icare),
         )
     ]

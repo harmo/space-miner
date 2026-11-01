@@ -23,8 +23,8 @@ def unload(ore: Hold, stock: Hold,
     return mineral
 
 
-def load(stock: Hold, ore: Hold, mineral: str,
-         room: float) -> int:
+def load_ore(stock: Hold, ore: Hold, mineral: str,
+             room: float) -> int:
     """ Whole units of `mineral` back into the cargo, as many as there are
     and as fit in `room`. Returns how many. """
     units = min(whole_units(stock.get(mineral, 0.)), whole_units(room))

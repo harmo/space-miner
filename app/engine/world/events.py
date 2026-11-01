@@ -39,7 +39,7 @@ class SystemEvents:
         self.regrowths: list[Regrowth] = []
         for belt in system.belt_plans:
             self.watch(belt)
-        self.clock = SwarmClock(rng)
+        self.swarm_clock = SwarmClock(rng)
         self.flares = SolarFlares(system, rng)
         self.comet_clock = CometClock(rng)
         self.comet: Celestial | None = None
@@ -66,7 +66,7 @@ class SystemEvents:
             asteroid for asteroid in self.swarm
             if asteroid in system.asteroids
         ]
-        change = self.clock.update(dt)
+        change = self.swarm_clock.update(dt)
         if change == 'arrives':
             self.arrive()
         elif change == 'leaves':
@@ -105,7 +105,7 @@ class SystemEvents:
 
     def state(self) -> EventsState:
         """ To save """
-        system, flares, clock = self.system, self.flares, self.clock
+        system, flares, clock = self.system, self.flares, self.swarm_clock
         orbit = self.comet_orbit
         comet = None
         if orbit is not None:
@@ -123,7 +123,7 @@ class SystemEvents:
 
     def resume(self, state: EventsState) -> None:
         """ As it was saved, on a solar system with nothing going on """
-        system, flares, clock = self.system, self.flares, self.clock
+        system, flares, clock = self.system, self.flares, self.swarm_clock
         sun = system.sun
         flares.clock.phase, flares.clock.left = (
             state.flare_phase, state.flare_left,
@@ -189,8 +189,8 @@ class SystemEvents:
             return self.flares.headline
         if self.comet_orbit is not None:
             return comet_news(self.comet_orbit)
-        if self.swarm and self.clock.passing:
-            minutes, seconds = divmod(int(self.clock.left), 60)
+        if self.swarm and self.swarm_clock.passing:
+            minutes, seconds = divmod(int(self.swarm_clock.left), 60)
             return f'Essaim riche de passage  ·  {minutes}:{seconds:02d}'
         return self.news if self.news_left > 0 else ''
 

@@ -17,7 +17,7 @@ from ...logic.base.crushing import Crusher
 from ...logic.base.market import ore_price, sell_ore
 from ...logic.base.missions import Board, needs
 from ...logic.base.sites import Trade
-from ...logic.base.unloading import Depot, load
+from ...logic.base.unloading import Depot, load_ore
 from ...logic.base.wallet import Wallet
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
@@ -126,7 +126,7 @@ class MarketPanel(BoxLayout):
             return
         if self.depot is not None:
             self.depot.stop()
-        load(self.stock, self.miner.ore, mineral, self.room)
+        load_ore(self.stock, self.miner.ore, mineral, self.room)
         self.refresh()
 
     def price(self, mineral: str) -> int:
