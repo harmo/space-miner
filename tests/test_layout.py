@@ -72,8 +72,9 @@ def test_planets_keep_their_place_from_game_to_game(seed: int) -> None:
 
 
 @pytest.mark.parametrize('seed', [1, 2, 3, 4, 5, 6, 7])
-def test_the_planet_of_the_station_has_no_asteroids(seed: int) -> None:
-    assert not plan_system(Random(seed)).planets[0].satellites
+def test_the_planets_of_outposts_have_no_asteroids(seed: int) -> None:
+    planets = plan_system(Random(seed)).planets
+    assert not planets[0].satellites and not planets[-1].satellites
 
 
 def test_inner_planets_are_smaller_than_the_giants() -> None:

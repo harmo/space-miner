@@ -137,8 +137,9 @@ def orbital_speed(distance: float) -> float:
 def plan_system(rng: Random) -> SystemPlan:
     orbits = plan_orbits(rng)
     distances = planet_orbits(orbits)
-    # Not around the first planet, the refuge of its station stays safe
-    others = [i for i in range(1, len(LINEUP)) if i != EARTH_ORBIT]
+    # Not around the first and the last planets, with their outposts: the
+    # way to a refuge or to a far away pad stays safe
+    others = [i for i in range(1, len(LINEUP) - 1) if i != EARTH_ORBIT]
     belts = set(rng.sample(others, BELT_COUNT))
 
     planets = []

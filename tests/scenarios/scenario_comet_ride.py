@@ -33,6 +33,16 @@ def jump(anomaly: float) -> None:
     )
 
 
+def without_debris() -> None:
+    """ Nothing to bump into, on the way to it: riding is what is tested """
+    system = scenario.game.system
+    events = system.events
+    for asteroid in list(events.debris):
+        system.remove(asteroid)
+    events.debris.clear()
+    events.shed = 1000
+
+
 def beside() -> None:
     x, y = comet().pos
     scenario.put_ship((x + 170, y), comet().velocity, angle=0.)
@@ -47,6 +57,8 @@ def waits_for_a_comet() -> None:
 def comes_close() -> None:
     check(comet() is not None, 'a comet comes')
     remembered['grounds'] = len(scenario.player.grounds.grounds) - 1
+    without_debris()
+    jump(-2.6)                # away from the planet it comes from
     beside()
 
 
