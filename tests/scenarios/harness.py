@@ -15,6 +15,7 @@ import math
 import os
 import sys
 import tempfile
+import threading
 import time
 import traceback
 from collections.abc import Callable
@@ -23,12 +24,20 @@ from typing import Any
 from app.logic.world.space import Vec2
 
 Step = Callable[[], None]
-STARTUP = 3.                  # seconds for the game to set itself up
+SETTLING = .3                 # seconds once the game has set itself up
+SMALL_ROCK = 6.               # radius, mined within a few seconds
+# Seconds a step may take on the clock, beyond the time it asks for: it is
+# stuck past that, and takes its window down with it
+STUCK = 30.
 
 
 def loneliest(asteroids: list[Any]) -> Any:
-    """ Of rock, the farthest from the others: none to bump into """
-    rocks = [a for a in asteroids if (a.mineral or 'rock') == 'rock']
+    """ Of small rock, the farthest from the others: none to bump into,
+    and quickly mined """
+    rocks = [
+        a for a in asteroids
+        if (a.mineral or 'rock') == 'rock' and a.radius < SMALL_ROCK
+    ]
     return max(rocks, key=lambda rock: min(
         math.dist(rock.pos, other.pos)
         for other in asteroids if other is not rock
@@ -44,6 +53,10 @@ def prepare() -> None:
     os.environ.setdefault('SPACE_MINER_SEED', '1')
     # Sounds play all the same, without being heard
     os.environ.setdefault('SDL_AUDIODRIVER', 'dummy')
+    # Windows out of sight would wait for the screen, and the game hardly
+    # move on: frames are cut to MAX_FRAME_TIME
+    from kivy.config import Config
+    Config.set('graphics', 'vsync', '0')
 
 
 class Scenario:
@@ -57,7 +70,10 @@ class Scenario:
         self.app = SpaceMinerApp()
         self.steps: list[tuple[float, Step]] = []
         self.failures: list[str] = []
+        self.finished = False     # all its steps played
         self.data = os.environ['SPACE_MINER_DATA']
+        self.current = 'starting'           # what it is waiting for
+        self.deadline = time.monotonic() + STUCK
 
     # Writing scenarios
 
@@ -172,16 +188,29 @@ class Scenario:
 
     # Running
 
+    def watch(self) -> None:
+        """ From a thread of its own, as the game may be what is stuck """
+        while True:
+            time.sleep(1.)
+            if time.monotonic() > self.deadline:
+                print(f'  ✗ stuck at {self.current}', flush=True)
+                os._exit(1)
+
     def run(self) -> None:
-        """ Exits with 1 when a check failed or a step raised """
+        """ Exits with 1 when a check failed, a step raised, or the window
+        closed before the end """
         from kivy.clock import Clock
         print(f'{self.name}', flush=True)
+        threading.Thread(target=self.watch, daemon=True).start()
 
         def play(index: int) -> None:
             if index >= len(self.steps):
+                self.finished = True
                 self.app.stop()
                 return
             delay, function = self.steps[index]
+            self.current = function.__name__
+            self.deadline = time.monotonic() + delay + STUCK
             # In the time of the game, which runs slower than the clock
             # when frames are long: they are cut to MAX_FRAME_TIME. That of
             # the clock while the game stands still.
@@ -207,8 +236,16 @@ class Scenario:
             self.game.playing = True
             play(0)
 
-        Clock.schedule_once(start, STARTUP)
+        def wait_for_the_game(dt: float) -> None:
+            if self.game is not None and self.game.keeper is not None:
+                ready.cancel()
+                Clock.schedule_once(start, SETTLING)
+
+        ready = Clock.schedule_interval(wait_for_the_game, 0)
         self.app.run()
+        if not self.finished and not self.failures:
+            self.failures.append('closed before the end')
+            print('  ✗ the window closed before the end', flush=True)
         print('  ok' if not self.failures else '  FAILED', flush=True)
         sys.stdout.flush()
         # KivEnt crashes while Python tears it down, as main.py notes

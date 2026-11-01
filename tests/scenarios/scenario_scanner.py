@@ -105,8 +105,14 @@ def flies_near_asteroids() -> None:
         key=lambda rock: math.dist(rock.pos, system.earth.pos),
     )
     remembered['asteroid'] = asteroid
+    # Out of its orbit, not into what it turns around
     x, y = asteroid.pos
-    scenario.put_ship((x + 900, y), asteroid.velocity)
+    parent_x, parent_y = asteroid.orbit.parent.pos
+    away = math.atan2(y - parent_y, x - parent_x)
+    scenario.put_ship(
+        (x + math.cos(away) * 900, y + math.sin(away) * 900),
+        asteroid.velocity,
+    )
     scenario.press(scenario.game.ids.scanner_button)
 
 
@@ -117,6 +123,8 @@ def counts_them() -> None:
     check(not scenario.base.docked, 'flying')
     check(panel().reach == f'portée {REACH:,.0f}'.replace(',', ' '),
           f'with its reach: {panel().reach}')
+    # On the same frame, as what is within reach moves
+    panel().refresh()
     expected = counts(
         scenario.game.system.asteroids, scenario.player.ship.position, REACH
     )
