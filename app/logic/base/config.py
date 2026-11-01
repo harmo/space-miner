@@ -25,7 +25,9 @@ TOW_RATE = .02                # credits a pixel away from the Earth
 
 # Reputation: missions validated to reach each tier of parts
 TIER_MISSIONS = (0, 3, 8, 15, 25)
-MISSION_GROWTH = .3           # bigger orders on each level, paying as much
+MISSION_GROWTH = .5           # bigger orders on each level
+MISSION_PREMIUM = .25         # and paying more for each unit
+ORDER_GROWTH = .3             # bigger orders of building sites, on each level
 # Rarer minerals are wanted more on higher levels: their frequencies are
 # flattened by this much on each level
 MISSION_RARER = .2

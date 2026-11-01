@@ -77,7 +77,7 @@ CERES = Site('Comptoir de Cérès', 'ground', (
           REFINING),
 ), Trade(clientele=Clientele((
     'Chantier Vesta', 'Mines de Pallas', "Cité d'Hygie", 'Forges de Junon',
-), 1.25, (('rock', 120), ('regolith', 60), ('iron', 50), ('copper', 40)))),
+), 1., (('rock', 120), ('regolith', 60), ('iron', 50), ('copper', 40)))),
     pad_width=60., refinery=Refinery(
     CERES_CRUSH_RATE, CERES_CRUSH_YIELDS,
     'trois fois plus vite, et plus riche en or, cristal, rubis',

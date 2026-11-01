@@ -38,7 +38,7 @@ def test_rarer_minerals_are_wanted_in_smaller_amounts() -> None:
     rng = Random(2)
     amounts: dict[str, list[int]] = {}
     for _ in range(2000):
-        for name, units in make_mission(rng).wanted.items():
+        for name, units in make_mission(rng, 5).wanted.items():
             amounts.setdefault(name, []).append(units)
     def mean(name: str) -> float:
         return sum(amounts[name]) / len(amounts[name])
@@ -290,3 +290,38 @@ def test_an_order_is_validated_from_the_depot_and_the_cargo() -> None:
     stock = {name: float(units) for name, units in mission.wanted.items()}
     board.validate(mission, stock)
     assert wallet.credits == mission.reward and not stock
+
+
+@pytest.mark.parametrize('level', [1, 2, 3, 4, 5])
+def test_a_mission_only_wants_what_its_level_can_mine(level: int) -> None:
+    rng = Random(30 + level)
+    for _ in range(300):
+        mission = make_mission(rng, level)
+        assert all(MINERALS[name].laser <= level for name in mission.wanted)
+
+
+def test_all_ore_is_wanted_at_the_top_level() -> None:
+    rng = Random(36)
+    wanted = {
+        name for _ in range(2000) for name in make_mission(rng, 5).wanted
+    }
+    assert 'antimatter' in wanted and 'ruby' in wanted
+
+
+def test_higher_levels_pay_much_more() -> None:
+    def average(level: int) -> float:
+        rng = Random(37)
+        return sum(make_mission(rng, level).reward for _ in range(2000)) / 2000
+    assert average(5) > 5 * average(1)
+    rewards = [average(level) for level in range(1, 6)]
+    assert rewards == sorted(rewards)
+
+
+def test_higher_levels_ask_for_more() -> None:
+    def units(level: int) -> float:
+        rng = Random(38)
+        return sum(
+            sum(make_mission(rng, level).wanted.values())
+            for _ in range(2000)
+        ) / 2000
+    assert units(5) > 1.5 * units(1)

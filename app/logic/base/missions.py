@@ -14,8 +14,10 @@ from .config import (
     MISSION_BONUS,
     MISSION_GROWTH,
     MISSION_OFFERS,
+    MISSION_PREMIUM,
     MISSION_RARER,
     MISSIONS_ACTIVE,
+    ORDER_GROWTH,
 )
 from .market import ore_value
 from .reputation import Standing, tier
@@ -131,14 +133,16 @@ def make_mission(rng: Random, level: int = 1,
                  clients: Sequence[str] = CLIENTS,
                  bonus: float = 1.) -> Mission:
     """ One or two minerals, the rarer the fewer, picked as often as they
-    are found. Missions of a higher level order more of them, and rare
-    ones more often. Those of `clients` pay `bonus` times more. """
+    are found, and what a laser of that level can mine. Missions of a
+    higher level order more of them, rare ones more often, and pay more
+    for each unit. Those of `clients` pay `bonus` times more. """
     flatten = 1 - MISSION_RARER * (level - 1)
-    weights = [MINERALS[name].frequency ** flatten for name in WANTED]
+    minerals = [name for name in WANTED if MINERALS[name].laser <= level]
+    weights = [MINERALS[name].frequency ** flatten for name in minerals]
     count = rng.choice((1, 1, 2))
     names: list[str] = []
     while len(names) < count:
-        name = rng.choices(WANTED, weights)[0]
+        name = rng.choices(minerals, weights)[0]
         if name not in names:
             names.append(name)
     share = 1. if count == 1 else .6
@@ -149,14 +153,17 @@ def make_mission(rng: Random, level: int = 1,
         common = math.sqrt(mineral.frequency / MINERALS['iron'].frequency)
         amount = MISSION_AMOUNT * common * share * rng.uniform(.6, 1.4)
         wanted[name] = max(2, round(amount))
-    return Mission(rng.choice(clients), wanted, paid(wanted, bonus), level)
+    premium = 1 + MISSION_PREMIUM * (level - 1)
+    return Mission(
+        rng.choice(clients), wanted, paid(wanted, bonus * premium), level,
+    )
 
 
 def make_order(rng: Random, level: int, clientele: Clientele) -> Mission:
     """ One or two common minerals by the shipload, as big as the level """
     count = rng.choice((1, 1, 2))
     share = 1. if count == 1 else .6
-    share *= 1 + MISSION_GROWTH * (level - 1)
+    share *= 1 + ORDER_GROWTH * (level - 1)
     wanted = {
         name: round(units * share * rng.uniform(.7, 1.3))
         for name, units in rng.sample(clientele.orders, count)
