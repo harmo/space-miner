@@ -12,6 +12,7 @@ from .config import (
     CANISTER_GATHER_SPEED,
     CANISTER_ORBIT_ALTITUDE,
     CANISTER_ORBIT_DRAG,
+    CANISTER_ORBIT_PACE,
     CANISTER_SPEED,
     CANISTER_SPIN,
     CANISTER_SPREAD,
@@ -77,12 +78,15 @@ def flow_velocity(pos: Vec2, center: Vec2, center_velocity: Vec2,
 
 def orbit_flow(pos: Vec2, body: Celestial, altitude: float,
                dt: float) -> Vec2:
-    """ Velocity turning around `body`, at the speed its pull allows, and
-    closing in on the orbit at `altitude` above its surface. All turn the
-    same way: canisters are deadly, and would cross head-on otherwise. """
+    """ Velocity turning around `body`, slower than its pull would make
+    them for the ship to catch them, and closing in on the orbit at
+    `altitude` above its surface. All turn the same way: canisters are
+    deadly, and would cross head-on otherwise. """
     dx, dy = pos[0] - body.pos[0], pos[1] - body.pos[1]
     distance = math.hypot(dx, dy)
-    angular_speed = math.sqrt(math.hypot(*body.pull(*pos)) / distance)
+    angular_speed = CANISTER_ORBIT_PACE * math.sqrt(
+        math.hypot(*body.pull(*pos)) / distance
+    )
     flow_x, flow_y = flow_velocity(
         pos, body.pos, body.velocity, angular_speed, dt,
     )

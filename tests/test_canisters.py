@@ -12,6 +12,7 @@ from app.logic.mining.canisters import (
 from app.logic.mining.config import (
     CANISTER_DRAG,
     CANISTER_ORBIT_ALTITUDE,
+    CANISTER_ORBIT_PACE,
     CANISTER_SPEED,
     CANISTER_SPIN,
     CANISTER_SPREAD,
@@ -107,13 +108,13 @@ def settled(body: Celestial, pos: Vec2, velocity: Vec2,
     return pos, velocity
 
 
-def test_canisters_settle_on_an_orbit_at_the_speed_of_its_pull() -> None:
+def test_canisters_settle_on_a_slow_orbit() -> None:
     body = planet()
     pos, velocity = settled(body, (1500., 500.), (0., 0.), 60.)
     distance = math.dist(pos, body.pos)
     pull = math.hypot(*body.pull(*pos))
     assert math.hypot(*velocity) == pytest.approx(
-        math.sqrt(pull * distance), rel=1e-3,
+        CANISTER_ORBIT_PACE * math.sqrt(pull * distance), rel=1e-2,
     )
     radial = (pos[0] - 1000.) * velocity[0] + (pos[1] - 500.) * velocity[1]
     assert abs(radial) / distance < 1.

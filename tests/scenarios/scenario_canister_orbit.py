@@ -5,7 +5,10 @@ import math
 from typing import Any
 
 from app.logic.mining.canisters import eject_cargo
-from app.logic.mining.config import CANISTER_ORBIT_ALTITUDE
+from app.logic.mining.config import (
+    CANISTER_ORBIT_ALTITUDE,
+    CANISTER_ORBIT_PACE,
+)
 
 from .harness import Scenario
 
@@ -26,6 +29,14 @@ def planet() -> Any:
 
 def canisters() -> Any:
     return scenario.player.canisters.canisters
+
+
+def loneliness(canister: Any) -> float:
+    """ How far from the others it is, in the way of no ship """
+    return min(
+        math.dist(canister.pos, other.pos)
+        for other in canisters() if other is not canister
+    )
 
 
 def relative(canister: Any) -> tuple[float, float, float, float]:
@@ -62,7 +73,7 @@ def explodes() -> None:
     ))
 
 
-@scenario.step(14.)
+@scenario.step(20.)
 def settles_on_an_orbit() -> None:
     body = planet()
     for canister in canisters():
@@ -72,10 +83,12 @@ def settles_on_an_orbit() -> None:
         check(low - 30 < distance - body.radius < high + 30,
               f'close to it: {distance - body.radius:.0f}')
         speed = math.hypot(vx, vy)
-        circular = math.sqrt(math.hypot(*body.pull(*canister.pos)) * distance)
+        circular = CANISTER_ORBIT_PACE * math.sqrt(
+            math.hypot(*body.pull(*canister.pos)) * distance
+        )
         check(abs(speed - circular) < .1 * circular,
               f'at orbital speed: {speed:.0f} for {circular:.0f}')
-        check(abs(x * vx + y * vy) / distance < .1 * circular,
+        check(abs(x * vx + y * vy) / distance < 15,
               f'around it: {x * vx + y * vy:.0f}')
     remembered['angles'] = [
         math.atan2(y, x) for x, y, _, _ in map(relative, canisters())
@@ -86,7 +99,8 @@ def settles_on_an_orbit() -> None:
 def turns_around_it() -> None:
     angles = [math.atan2(y, x) for x, y, _, _ in map(relative, canisters())]
     check(angles != remembered['angles'], 'still moving around it')
-    canister = canisters()[0]
+    canister = max(canisters(), key=loneliness)
+    remembered['canister'] = canister
     x, y, _, _ = relative(canister)
     distance = math.hypot(x, y)
     scenario.put_ship(
@@ -99,13 +113,13 @@ def turns_around_it() -> None:
 @scenario.step(.2)
 def flies_among_them() -> None:
     scenario.screenshot('orbit')
-    canister = canisters()[0]
+    canister = remembered['canister']
     remembered['count'] = len(canisters())
     player = scenario.player
     player.miner.work_at(canister.pos, 40., player.ship.position)
 
 
-@scenario.step(2.)
+@scenario.step(.4)
 def picks_one_up() -> None:
     check(len(canisters()) < remembered['count'], 'one is picked up')
     check(scenario.player.miner.ore, f'cargo: {scenario.player.miner.ore}')

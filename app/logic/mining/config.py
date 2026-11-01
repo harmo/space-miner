@@ -15,6 +15,7 @@ CANISTER_MAX = 60             # beyond, the oldest ones vanish
 CANISTER_DRAG = .8
 # Near a planet, they gather on an orbit close to it, each at its height
 CANISTER_ORBIT_DRAG = .6
+CANISTER_ORBIT_PACE = .3      # of what the pull of the planet would make
 CANISTER_ORBIT_ALTITUDE = (120., 260.)  # above its surface
 CANISTER_GATHER = .5          # a second, of how far they are from their orbit
 CANISTER_GATHER_SPEED = 150.  # at most
