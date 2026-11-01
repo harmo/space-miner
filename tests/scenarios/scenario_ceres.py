@@ -2,7 +2,8 @@
 cloud of asteroids of its own which is always full, where the ship lands
 on a small pad. Landed there out of fuel before anything is built, it
 calls for help. Built up to its refinery, faster and richer than the one
-of the Earth, it crushes the rock of its depot there, with no missions. """
+of the Earth, it crushes the rock of its depot there, and takes orders of
+common ore from building sites. """
 
 import math
 from typing import Any
@@ -113,9 +114,40 @@ def builds_it() -> None:
 
 
 @scenario.step(.3)
-def has_no_missions() -> None:
-    check(view().has_market and not view().has_missions,
-          'a market, but no missions')
+def orders_ore_by_the_shipload() -> None:
+    check(view().has_market and view().has_missions, 'a market and missions')
+    board = ceres().board
+    orders = dict(ceres().construction.site.trade.clientele.orders)
+    check(all(set(m.wanted) <= set(orders) for m in board.offers),
+          f'of common ore: {board.offers}')
+    mission = board.offers[0]
+    board.accept(mission)
+    remembered['mission'] = mission
+    scenario.base.wallet.credits = 0
+    ceres().post.depot.stock.update(
+        {name: float(units) for name, units in mission.wanted.items()}
+    )
+    scenario.press(view().ids.missions_button)
+
+
+@scenario.step(.3)
+def validates_an_order() -> None:
+    mission = remembered['mission']
+    missions = view().ids.missions
+    scenario.screenshot('orders')
+    card = next(
+        card for card in missions.ids.active.children
+        if card.mission is mission
+    )
+    scenario.press(scenario.button(card, 'Valider'))
+    wallet = scenario.base.wallet
+    check(wallet.credits == mission.reward, f'paid: {wallet.credits}')
+    check(not ceres().post.depot.stock, 'the ore goes')
+    scenario.press(scenario.button(missions, 'Fermer'))
+
+
+@scenario.step(.3)
+def has_its_market_back() -> None:
     scenario.screenshot('refinery')
     scenario.player.miner.ore['rock'] = 40.
 

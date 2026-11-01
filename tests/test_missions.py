@@ -7,13 +7,16 @@ from app.logic.base.config import (
     MISSIONS_ACTIVE,
     TIER_MISSIONS,
 )
+from app.logic.base.market import ore_value
 from app.logic.base.missions import (
     Board,
+    Clientele,
     Contracts,
     Desk,
     Mission,
     Need,
     make_mission,
+    make_order,
     needs,
     needs_at,
 )
@@ -200,7 +203,9 @@ def test_local_clients_pay_more() -> None:
 def test_boards_share_the_reputation_they_make() -> None:
     wallet = Wallet()
     earth = Board(Random(8), wallet)
-    outpost = Board(Random(9), wallet, earth.standing, ('Colonie',), 1.25)
+    outpost = Board(
+        Random(9), wallet, earth.standing, Clientele(('Colonie',), 1.25),
+    )
     mission = outpost.offers[0]
     outpost.accept(mission)
     stock = {name: float(units) for name, units in mission.wanted.items()}
@@ -245,3 +250,43 @@ def test_a_board_resumes_at_a_level_its_reputation_allows() -> None:
     board.resume(Contracts(level=4))
     assert board.level == 1
     assert len(board.offers) > 0
+
+
+ORDERS = Clientele(('Chantier',), 1.5, (('rock', 120), ('regolith', 60)))
+
+
+def test_building_sites_order_common_ore_by_the_shipload() -> None:
+    board = Board(Random(20), Wallet(), clientele=ORDERS)
+    for mission in board.offers:
+        assert mission.client == 'Chantier'
+        assert set(mission.wanted) <= {'rock', 'regolith'}
+        assert sum(mission.wanted.values()) >= 20
+
+
+def test_bigger_orders_on_higher_levels() -> None:
+    def total(level: int) -> int:
+        rng = Random(21)
+        return sum(
+            sum(make_order(rng, level, ORDERS).wanted.values())
+            for _ in range(200)
+        )
+    assert total(4) > total(1) * 1.5
+
+
+def test_orders_pay_more_than_the_ore_is_worth() -> None:
+    mission = make_order(Random(22), 1, ORDERS)
+    value = sum(
+        units * ore_value(MINERALS[name])
+        for name, units in mission.wanted.items()
+    )
+    assert mission.reward >= value
+
+
+def test_an_order_is_validated_from_the_depot_and_the_cargo() -> None:
+    wallet = Wallet()
+    board = Board(Random(23), wallet, clientele=ORDERS)
+    mission = board.offers[0]
+    board.accept(mission)
+    stock = {name: float(units) for name, units in mission.wanted.items()}
+    board.validate(mission, stock)
+    assert wallet.credits == mission.reward and not stock

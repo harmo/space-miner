@@ -1,5 +1,6 @@
-""" Missions given at posts: bring back some rare ore, for money once
-validated, from what was unloaded into the depot """
+""" Missions given at posts: bring back some rare ore, or for building
+sites a lot of common ore, for money once validated, from what was
+unloaded into the depot """
 
 import math
 from collections.abc import Sequence
@@ -28,6 +29,19 @@ CLIENTS = (
 )
 # Common rock and ice are not worth a mission
 WANTED = [name for name in MINED if name not in ('rock', 'ice')]
+
+
+@dataclass(frozen=True)
+class Clientele:
+    """ Those giving the missions of a board """
+    clients: tuple[str, ...] = CLIENTS
+    bonus: float = 1.         # they pay that much more
+    # Building sites order these units of each, at the lowest level, rather
+    # than rare ore
+    orders: tuple[tuple[str, int], ...] = ()
+
+
+ANY_CLIENT = Clientele()
 
 
 @dataclass(frozen=True)
@@ -105,6 +119,14 @@ def needs_at(desks: Sequence[Desk],
     ]
 
 
+def paid(wanted: dict[str, int], bonus: float) -> int:
+    """ For that ore, more than what it is worth """
+    value = sum(
+        units * ore_value(MINERALS[name]) for name, units in wanted.items()
+    )
+    return int(max(10, round(value * MISSION_BONUS * bonus, -1)))
+
+
 def make_mission(rng: Random, level: int = 1,
                  clients: Sequence[str] = CLIENTS,
                  bonus: float = 1.) -> Mission:
@@ -127,11 +149,22 @@ def make_mission(rng: Random, level: int = 1,
         common = math.sqrt(mineral.frequency / MINERALS['iron'].frequency)
         amount = MISSION_AMOUNT * common * share * rng.uniform(.6, 1.4)
         wanted[name] = max(2, round(amount))
-    value = sum(
-        units * ore_value(MINERALS[name]) for name, units in wanted.items()
+    return Mission(rng.choice(clients), wanted, paid(wanted, bonus), level)
+
+
+def make_order(rng: Random, level: int, clientele: Clientele) -> Mission:
+    """ One or two common minerals by the shipload, as big as the level """
+    count = rng.choice((1, 1, 2))
+    share = 1. if count == 1 else .6
+    share *= 1 + MISSION_GROWTH * (level - 1)
+    wanted = {
+        name: round(units * share * rng.uniform(.7, 1.3))
+        for name, units in rng.sample(clientele.orders, count)
+    }
+    return Mission(
+        rng.choice(clientele.clients), wanted,
+        paid(wanted, clientele.bonus), level,
     )
-    reward = max(10, round(value * MISSION_BONUS * bonus, -1))
-    return Mission(rng.choice(clients), wanted, int(reward), level)
 
 
 @dataclass(frozen=True)
@@ -149,13 +182,11 @@ class Board:
 
     def __init__(self, rng: Random, wallet: Wallet,
                  standing: Standing | None = None,
-                 clients: Sequence[str] = CLIENTS,
-                 bonus: float = 1.) -> None:
+                 clientele: Clientele = ANY_CLIENT) -> None:
         self.rng = rng
         self.wallet = wallet
         self.standing = standing or Standing()
-        self.clients = clients
-        self.bonus = bonus                  # missions pay that much more
+        self.clientele = clientele
         self.offers: list[Mission] = []
         self.active: list[Mission] = []
         self.level = 1                      # of the missions offered
@@ -183,7 +214,12 @@ class Board:
         self.top_up()
 
     def make(self) -> Mission:
-        return make_mission(self.rng, self.level, self.clients, self.bonus)
+        clientele = self.clientele
+        if clientele.orders:
+            return make_order(self.rng, self.level, clientele)
+        return make_mission(
+            self.rng, self.level, clientele.clients, clientele.bonus,
+        )
 
     @property
     def tier(self) -> int:

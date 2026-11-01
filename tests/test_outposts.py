@@ -94,11 +94,12 @@ def test_the_frontier_pays_more_for_ore_ice_most_of_all() -> None:
     trade = FRONTIER.trade
     assert trade.factor('iron') == trade.markup > 1
     assert trade.factor('ice') > trade.factor('iron')
-    assert trade.bonus > 1 and trade.clients
+    assert trade.clientele.bonus > 1 and trade.clientele.clients
 
 
-def test_ceres_refines_but_gives_no_missions() -> None:
-    assert FRONTIER.gives_missions and not CERES.gives_missions
+def test_ceres_refines_and_orders_common_ore() -> None:
+    assert FRONTIER.gives_missions and CERES.gives_missions
+    assert CERES.trade.clientele.orders and not FRONTIER.trade.clientele.orders
     assert CERES.stages[-1].services.refinery
     assert CERES.pad_width < FRONTIER.pad_width
 
@@ -142,7 +143,7 @@ def test_a_station_serves_ships_docked_at_its_port() -> None:
 
 
 def test_only_sites_giving_missions_open_a_board() -> None:
-    outposts = [outpost_on('frontier'), outpost_on('ceres')]
+    outposts = [outpost_on('frontier'), outpost_on('icare')]
     open_boards(outposts, Wallet(), Standing())
     assert isinstance(outposts[0].board, Board)
     assert outposts[1].board is None
@@ -162,4 +163,4 @@ def test_the_progress_of_an_outpost_comes_back() -> None:
 
 
 def test_an_outpost_without_board_has_no_contracts() -> None:
-    assert outpost_on('ceres').progress.contracts == Contracts()
+    assert outpost_on('icare').progress.contracts == Contracts()

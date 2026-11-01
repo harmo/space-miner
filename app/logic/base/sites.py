@@ -6,6 +6,7 @@ from typing import Literal
 
 from .config import CERES_CRUSH_RATE, CERES_CRUSH_YIELDS, PAD_WIDTH
 from .crushing import PLAIN_REFINERY, Refinery
+from .missions import ANY_CLIENT, Clientele
 from .post import Services
 
 Form = Literal['ground', 'orbit']    # landed on, or docked to
@@ -24,8 +25,7 @@ class Trade:
     """ What the market and the missions of an outpost pay """
     markup: float = 1.        # times what the Earth pays for ore
     dearer: tuple[tuple[str, float], ...] = ()  # times more for these
-    bonus: float = 1.         # missions pay that much more
-    clients: tuple[str, ...] = ()
+    clientele: Clientele = ANY_CLIENT  # of its missions, if it gives any
 
     def factor(self, mineral: str) -> float:
         """ Times what the Earth pays for `mineral` """
@@ -51,7 +51,7 @@ class Site:
 FUEL = Services(fuel=True)
 DEPOT = replace(FUEL, depot=True)
 TRADING_POST = replace(DEPOT, market=True, missions=True)
-REFINING = replace(DEPOT, market=True, refinery=True)
+REFINING = replace(DEPOT, market=True, missions=True, refinery=True)
 SHELTER = replace(FUEL, shelter=True)
 
 # On the farthest planet from the sun, far from everything: ore is dearer
@@ -61,20 +61,24 @@ FRONTIER = Site('Base Frontière', 'ground', (
     Stage('Habitat', (('rock', 160), ('iron', 40)), DEPOT),
     Stage('Comptoir', (('rock', 200), ('iron', 60), ('copper', 30)),
           TRADING_POST),
-), Trade(1.3, (('ice', 2.),), 1.25, (
+), Trade(1.3, (('ice', 2.),), Clientele((
     'Colonie Thulé', 'Relais Éclipse', 'Forge Boréale', 'Halte des Confins',
-)))
+), 1.25)))
 
 
 # In the middle of the belt around the sun: a relay to mine, keep and
-# crush ore there, without missions. Its pad is small, as it is, and its
-# refinery the best there is, among so much rock.
+# crush ore there, for the building sites of the belt ordering it by the
+# shipload. Its pad is small, as it is, and its refinery the best there
+# is, among so much rock.
 CERES = Site('Comptoir de Cérès', 'ground', (
     Stage('Fondations', (('rock', 80),), FUEL),
     Stage('Entrepôt', (('rock', 120), ('iron', 30)), DEPOT),
     Stage('Raffinerie', (('rock', 150), ('iron', 40), ('copper', 20)),
           REFINING),
-), pad_width=60., refinery=Refinery(
+), Trade(clientele=Clientele((
+    'Chantier Vesta', 'Mines de Pallas', "Cité d'Hygie", 'Forges de Junon',
+), 1.25, (('rock', 120), ('regolith', 60), ('iron', 50), ('copper', 40)))),
+    pad_width=60., refinery=Refinery(
     CERES_CRUSH_RATE, CERES_CRUSH_YIELDS,
     'trois fois plus vite, et plus riche en or, cristal, rubis',
 ))

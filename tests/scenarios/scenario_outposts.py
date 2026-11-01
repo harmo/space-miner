@@ -213,7 +213,8 @@ def opens_its_missions() -> None:
 def takes_a_mission_of_its_own() -> None:
     board = frontier().board
     mission = board.offers[0]
-    check(mission.client in frontier().construction.site.trade.clients,
+    clientele = frontier().construction.site.trade.clientele
+    check(mission.client in clientele.clients,
           f'from a local client: {mission.client}')
     check(mission not in scenario.base.board.offers, 'not of the Earth')
     board.accept(mission)

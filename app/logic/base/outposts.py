@@ -103,9 +103,8 @@ class Outpost:
         if not site.gives_missions:
             self.board = None
             return
-        trade = site.trade
         self.board = Board(
-            self.rng, wallet, standing, trade.clients, trade.bonus,
+            self.rng, wallet, standing, site.trade.clientele,
         )
 
     @property
