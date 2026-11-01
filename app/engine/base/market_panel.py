@@ -1,7 +1,6 @@
-""" The market of a post, buying ore from the depot, for less than the
-missions pay, loading it back into the ship, and its refinery, crushing
-the rock of the depot. At a post with no market, the depot alone, to load
-ore back. Styled in market_panel.kv. """
+""" The depot of a post: its ore, loaded back into the ship, sold if the
+post has a market, crushed if it has a refinery, and sent away if it has a
+dock. Styled in market_panel.kv. """
 
 from typing import Any
 

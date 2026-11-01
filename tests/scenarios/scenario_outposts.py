@@ -125,7 +125,7 @@ def into_its_own_depot() -> None:
     check('gold' not in scenario.base.depot.stock, 'not on the Earth')
     scenario.screenshot('depot')
     button = view().ids.market_button
-    check(button.text == 'Entrepôt', f'no market yet: {button.text}')
+    check(button.text == 'Entrepôt', f'its depot: {button.text}')
     scenario.press(button)
 
 
@@ -187,7 +187,7 @@ def trades() -> None:
 def opens_its_market() -> None:
     check(view().has_market, 'it has a market and missions')
     button = view().ids.market_button
-    check(button.text == 'Marché', f'as told: {button.text}')
+    check(button.text == 'Entrepôt', f'the same button: {button.text}')
     remembered['credits'] = scenario.base.wallet.credits
     scenario.press(view().ids.market_button)
 
