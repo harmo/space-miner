@@ -27,6 +27,7 @@ from .config import (
     GAP_SPREAD,
     GRAVITY,
     LINEUP,
+    MARS_ORBIT,
     MOON_MASS,
     MOON_ORBIT,
     MOON_RADIUS,
@@ -135,9 +136,12 @@ def orbital_speed(distance: float) -> float:
 def plan_system(rng: Random) -> SystemPlan:
     orbits = plan_orbits(rng)
     distances = planet_orbits(orbits)
-    # Not around the first and the last planets, with their outposts: the
-    # way to a refuge or to a far away pad stays safe
-    others = [i for i in range(1, len(LINEUP) - 1) if i != EARTH_ORBIT]
+    # Not around the Earth, its moon being there, nor around the planets
+    # of outposts: the way to their pads and their ports stays safe
+    others = [
+        i for i in range(1, len(LINEUP) - 1)
+        if i not in (EARTH_ORBIT, MARS_ORBIT)
+    ]
     belts = set(rng.sample(others, BELT_COUNT))
 
     planets = []

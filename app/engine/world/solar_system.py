@@ -19,6 +19,7 @@ from ...logic.ship.heat import Sunlight
 from ...logic.world.comets import CometOrbit
 from ...logic.world.config import (
     COMET_RADIUS,
+    MARS_ORBIT,
     ORBIT_PULL,
     PLANET_MASS,
     SUN_GRAVITY,
@@ -91,6 +92,10 @@ class SolarSystem:
     def mercury(self) -> Celestial:
         """ The closest planet to the sun """
         return self.planets[0]
+
+    @property
+    def mars(self) -> Celestial:
+        return self.planets[MARS_ORBIT]
 
     @property
     def neptune(self) -> Celestial:

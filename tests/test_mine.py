@@ -4,11 +4,13 @@ import pytest
 
 from app.logic.base.config import DEPOT_CAPACITY, MINE_RATE
 from app.logic.base.mine import Mine
+from app.logic.base.outposts import bare_outpost
 from app.logic.base.post import Docked, Post, Services
-from app.logic.base.sites import FRONTIER, ICARE
+from app.logic.base.sites import ARES, FRONTIER, ICARE
 from app.logic.base.wallet import Wallet
 from app.logic.ship.fuel import Tank
 from app.logic.ship.heat import HullHeat
+from app.logic.world.space import Celestial
 
 
 def test_a_mine_digs_slowly() -> None:
@@ -68,3 +70,18 @@ def test_a_mine_digs_while_a_ship_is_there() -> None:
 def test_only_the_frontier_ends_with_a_mine() -> None:
     assert FRONTIER.stages[-1].services.mine
     assert not ICARE.stages[-1].services.mine
+
+
+def test_ares_digs_metals_and_dust_and_trades_nothing() -> None:
+    stock: dict[str, float] = {}
+    Mine(Random(8), ARES.yields).update(stock, 900 / MINE_RATE)
+    assert set(stock) == {'iron', 'copper', 'regolith'}
+    assert stock['iron'] > stock['copper'] > stock['regolith']
+    final = ARES.stages[-1].services
+    assert final.mine and final.depot and not final.market
+    assert not ARES.gives_missions
+
+
+def test_an_outpost_digs_what_its_site_yields() -> None:
+    outpost = bare_outpost('ares', Celestial(1, 165.), Random(9))
+    assert outpost.post.mine.yields == ARES.yields

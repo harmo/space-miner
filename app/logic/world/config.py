@@ -13,6 +13,7 @@ FIRST_ORBIT = 2200.           # distance of the closest planet to the sun
 ORBIT_GAPS = (1600., 1700., 1900., 2800., 2800., 3300., 3800., 4400.)
 GAP_SPREAD = (.9, 1.15)       # each gap times as much, game after game
 EARTH_ORBIT = 2               # the Earth is the third planet
+MARS_ORBIT = 3                # and Mars the fourth
 BELT_AFTER = 3                # the belt around the sun, after the fourth
 PLANET_SPEED = 40.            # on the first orbit, slower farther out
 PLANET_MASS = 1e6             # heavy enough not to be pushed by the ship

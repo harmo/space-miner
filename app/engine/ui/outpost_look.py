@@ -77,11 +77,12 @@ def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
         dome(overlay, frame, -half - 30)
         overlay.band(*frame.box(-half - 70, -half - 58, 12), STEEL, DARK)
         overlay.band(*frame.box(-half - 84, -half - 74, 9), STEEL, DARK)
-    if built >= 3:
+    services = outpost.construction.services
+    if services.market:
         towers(overlay, frame, half + 22)
-    if built >= 4:
+    if services.mine:
         derrick(overlay, frame, -half - 124)
-    beacon(overlay, frame, half + 10 if built < 3 else half + 50)
+    beacon(overlay, frame, half + 50 if services.market else half + 10)
 
 
 def corners(overlay: Overlay, frame: Frame, half: float) -> None:

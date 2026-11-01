@@ -38,9 +38,11 @@ MISSION_RARER = .2
 PAD_WIDTH = 90.               # pixels, where ships land on their site
 PAD_DIRECTION = 90.           # degrees, from the center of their body
 
-# Mine of the Frontier, filling its depot
+# Mines, filling the depot of their outpost
 MINE_RATE = .05               # units a second
-MINE_YIELDS = (('helium3', 3), ('ice', 1))   # how often each comes up
+# How often each comes up: at the Frontier, and at Ares, on Mars
+MINE_YIELDS = (('helium3', 3), ('ice', 1))
+ARES_YIELDS = (('iron', 3), ('copper', 2), ('regolith', 1))
 
 # Refinery: rock of the depot crushed into what little it holds
 CRUSH_RATE = 4.               # units of rock a second

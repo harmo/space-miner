@@ -10,8 +10,8 @@ from ..world.solar_system import SolarSystem
 
 def found_outposts(system: SolarSystem, rng: Random) -> list[Outpost]:
     """ On their sites, nothing built yet: the Frontier on the farthest
-    planet, Cérès in the belt around the sun, and Icare orbiting the
-    first planet, both added to the system """
+    planet, Cérès in the belt around the sun and Icare orbiting the first
+    planet, both added to the system, and Ares on Mars """
     earth = system.earth.orbit
     ceres = system.add_body(plan_ceres(
         system.orbits, earth.angle if earth else 0.,
@@ -22,6 +22,6 @@ def found_outposts(system: SolarSystem, rng: Random) -> list[Outpost]:
     return [
         bare_outpost(key, body, rng) for key, body in (
             ('frontier', system.neptune), ('ceres', ceres),
-            ('icare', icare),
+            ('icare', icare), ('ares', system.mars),
         )
     ]

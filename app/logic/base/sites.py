@@ -4,8 +4,15 @@ offers the ships landing: fuel, a depot, then a market and missions. """
 from dataclasses import dataclass, replace
 from typing import Literal
 
-from .config import CERES_CRUSH_RATE, CERES_CRUSH_YIELDS, PAD_WIDTH
+from .config import (
+    ARES_YIELDS,
+    CERES_CRUSH_RATE,
+    CERES_CRUSH_YIELDS,
+    MINE_YIELDS,
+    PAD_WIDTH,
+)
 from .crushing import PLAIN_REFINERY, Refinery
+from .mine import Yields
 from .missions import ANY_CLIENT, Clientele
 from .post import Services
 
@@ -41,6 +48,7 @@ class Site:
     trade: Trade = Trade()
     pad_width: float = PAD_WIDTH  # pixels, where ships land
     refinery: Refinery = PLAIN_REFINERY  # once it has one
+    yields: Yields = MINE_YIELDS        # of its mine, once it has one
 
     @property
     def gives_missions(self) -> bool:
@@ -52,6 +60,7 @@ FUEL = Services(fuel=True)
 DEPOT = replace(FUEL, depot=True)
 TRADING_POST = replace(DEPOT, market=True, missions=True)
 MINING = replace(TRADING_POST, mine=True)
+DIGGING = replace(DEPOT, mine=True)
 REFINING = replace(DEPOT, market=True, missions=True, refinery=True)
 SHELTER = replace(FUEL, shelter=True)
 
@@ -98,8 +107,18 @@ ICARE = Site('Station Icare', 'orbit', (
 ), Trade(dearer=(('nebulite', 1.6), ('stellarium', 1.6),
                  ('antimatter', 1.6))), pad_width=40.)
 
+# On Mars, next to the Earth: a mine of metals and dust, for the ore to be
+# carried away as there is nothing to trade there
+ARES = Site('Base Ares', 'ground', (
+    Stage('Fondations', (('rock', 60),), FUEL),
+    Stage('Entrepôt', (('rock', 90), ('iron', 20)), DEPOT),
+    Stage('Mine', (('rock', 150), ('iron', 50), ('copper', 25)), DIGGING),
+), yields=ARES_YIELDS)
+
 # By the key they are saved under
-SITES = {'frontier': FRONTIER, 'ceres': CERES, 'icare': ICARE}
+SITES = {
+    'frontier': FRONTIER, 'ceres': CERES, 'icare': ICARE, 'ares': ARES,
+}
 
 # As told to the player
 OFFERED = (

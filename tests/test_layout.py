@@ -18,6 +18,7 @@ from app.logic.world.config import (
     EARTH_RADIUS,
     GRAVITY,
     LINEUP,
+    MARS_ORBIT,
     MOON_ORBIT,
     STATION_ALTITUDE,
     SUN_BELT_ASTEROIDS,
@@ -74,7 +75,8 @@ def test_planets_keep_their_place_from_game_to_game(seed: int) -> None:
 @pytest.mark.parametrize('seed', [1, 2, 3, 4, 5, 6, 7])
 def test_the_planets_of_outposts_have_no_asteroids(seed: int) -> None:
     planets = plan_system(Random(seed)).planets
-    assert not planets[0].satellites and not planets[-1].satellites
+    for planet in (planets[0], planets[MARS_ORBIT], planets[-1]):
+        assert not planet.satellites
 
 
 def test_inner_planets_are_smaller_than_the_giants() -> None:
