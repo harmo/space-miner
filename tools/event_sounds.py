@@ -120,8 +120,7 @@ SHIP_EVENTS = {
 # At the base
 
 def unloading(rng: Random) -> Samples:
-    """ A loop of UNLOAD_LOOP seconds: a conveyor humming and ticking as
-    ore rattles along it """
+    """ A loop of UNLOAD_LOOP seconds: a conveyor humming and ticking """
     seconds = UNLOAD_LOOP
     n = length(seconds)
     motor = saw(looping(90., seconds), n)
@@ -134,9 +133,10 @@ def unloading(rng: Random) -> Samples:
     ticks = mix(*(
         (1., delayed(tick, k * seconds / 15)) for k in range(15)
     ))
-    ore = lowpass(crackle(rng, n, 40), 2500., loop=True)
-    ore = normalized(highpass(ore, 300., loop=True))
-    return mix((.6, motor), (.5, normalized(ticks)), (.4, ore))
+    # Ore rattling along it, not heard any more: its random numbers stay
+    # drawn, or the sounds composed after this one would change
+    crackle(rng, n, 40)
+    return mix((.6, motor), (.5, normalized(ticks)))
 
 
 def crushing(rng: Random) -> Samples:
