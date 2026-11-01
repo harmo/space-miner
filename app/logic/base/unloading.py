@@ -3,18 +3,24 @@ to empty it, and loading it back from there """
 
 from ..mining.minerals import MINERALS
 from ..mining.ore import EPSILON, Hold, cargo_load, whole_units, withdraw
-from .config import UNLOAD_RATE
+from .config import DEPOT_CAPACITY, UNLOAD_RATE
+
+
+def depot_room(stock: Hold) -> float:
+    """ Ore that still fits in a depot """
+    return max(0., DEPOT_CAPACITY - cargo_load(stock))
 
 
 def unload(ore: Hold, stock: Hold,
            amount: float) -> str | None:
     """ Move up to `amount` of the cargo into the stock, one mineral after
     the other in the order of the minerals table. Returns the mineral
-    moved, None once the cargo is empty. """
+    moved, None once the cargo is empty or the depot full. """
     mineral = next((name for name in MINERALS if ore.get(name, 0.) > 0), None)
-    if mineral is None:
+    room = depot_room(stock)
+    if mineral is None or room <= EPSILON:
         return None
-    moved = min(amount, ore[mineral])
+    moved = min(amount, ore[mineral], room)
     stock[mineral] = stock.get(mineral, 0.) + moved
     ore[mineral] -= moved
     if ore[mineral] <= EPSILON:
@@ -44,8 +50,12 @@ class Depot:
         self.unloading = False
         self.mineral: str | None = None      # being unloaded right now
 
+    @property
+    def full(self) -> bool:
+        return depot_room(self.stock) <= EPSILON
+
     def start(self, ore: Hold) -> None:
-        self.unloading = cargo_load(ore) > 0
+        self.unloading = cargo_load(ore) > 0 and not self.full
 
     def stop(self) -> None:
         self.unloading = False

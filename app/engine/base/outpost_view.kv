@@ -44,7 +44,9 @@
 
     BaseButton:
         id: unload_button
-        text: 'Déchargement…' if root.unloading else 'Décharger'
+        text:
+            'Entrepôt plein' if root.depot_full else \
+            'Déchargement…' if root.unloading else 'Décharger'
         glow: .9 if root.can_unload else .3
         x:
             root.center_x - self.width / 2 \

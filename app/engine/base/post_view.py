@@ -18,6 +18,7 @@ class PostView(Widget):
     panel = StringProperty('')          # open, or none
     shown = BooleanProperty(False)      # its buttons, with no panel open
     can_unload = BooleanProperty(False)
+    depot_full = BooleanProperty(False)
     unloading = BooleanProperty(False)
     crushing = BooleanProperty(False)   # rock, at the refinery
     to_validate = BooleanProperty(False)  # a mission can be validated
@@ -48,6 +49,7 @@ class PostView(Widget):
         self.unloading = status.unloading
         self.can_unload = self.docked and status.can_unload
         self.to_validate = status.to_validate
+        self.depot_full = status.full
         self.money = credits_text(wallet.credits)
         if self.docked:
             show_depot(self.ids.depot, post.depot, status.crushing)

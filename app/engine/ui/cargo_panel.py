@@ -9,6 +9,7 @@ from kivy.properties import (
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 
+from ...logic.base.config import DEPOT_CAPACITY
 from ...logic.base.unloading import Depot
 from ...logic.colors import Rgb
 from ...logic.config import IMAGES
@@ -85,7 +86,8 @@ def show_depot(panel: CargoPanel, depot: Depot, crushing: bool) -> None:
     """ What is unloaded highlighted, or the rock being crushed """
     stock = depot.stock
     mineral = depot.mineral or ('rock' if crushing else None)
-    panel.show(stock, mineral, 0., str(cargo_total(stock)), (1, 1, 1))
+    load = f'{cargo_total(stock)} / {DEPOT_CAPACITY}'
+    panel.show(stock, mineral, 0., load, (1, 1, 1))
 
 
 load_style(__file__)

@@ -1,7 +1,7 @@
 import pytest
 
-from app.logic.base.config import UNLOAD_RATE
-from app.logic.base.unloading import Depot, load_ore, unload
+from app.logic.base.config import DEPOT_CAPACITY, UNLOAD_RATE
+from app.logic.base.unloading import Depot, depot_room, load_ore, unload
 
 
 def test_unloads_one_mineral_after_the_other() -> None:
@@ -76,3 +76,38 @@ def test_nothing_without_room_or_ore() -> None:
     assert load_ore(stock, ore, 'iron', .5) == 0
     assert load_ore(stock, ore, 'gold', 30.) == 0
     assert stock == {'iron': 5.} and ore == {'rock': 5.}
+
+
+def test_a_depot_takes_what_fits() -> None:
+    ore, stock = {'iron': 20.}, {'gold': DEPOT_CAPACITY - 5.}
+    assert unload(ore, stock, 15.) == 'iron'
+    assert stock['iron'] == 5. and ore == {'iron': 15.}
+
+
+def test_a_full_depot_takes_nothing() -> None:
+    ore, stock = {'iron': 20.}, {'gold': float(DEPOT_CAPACITY)}
+    assert unload(ore, stock, 15.) is None
+    assert ore == {'iron': 20.}
+
+
+def test_unloading_stops_once_the_depot_is_full() -> None:
+    depot = Depot()
+    depot.stock['gold'] = DEPOT_CAPACITY - 5.
+    ore = {'iron': 20.}
+    depot.start(ore)
+    for _ in range(20):
+        depot.update(ore, .1, True)
+    assert not depot.unloading and depot.full
+    assert ore == {'iron': 15.}
+
+
+def test_nothing_starts_unloading_into_a_full_depot() -> None:
+    depot = Depot()
+    depot.stock['gold'] = float(DEPOT_CAPACITY)
+    depot.start({'iron': 20.})
+    assert not depot.unloading
+
+
+def test_older_saves_may_hold_more_and_take_nothing() -> None:
+    stock = {'gold': DEPOT_CAPACITY + 500.}
+    assert depot_room(stock) == 0.

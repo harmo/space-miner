@@ -2,7 +2,7 @@ from random import Random
 
 import pytest
 
-from app.logic.base.config import MINE_RATE
+from app.logic.base.config import DEPOT_CAPACITY, MINE_RATE
 from app.logic.base.mine import Mine
 from app.logic.base.post import Docked, Post, Services
 from app.logic.base.sites import FRONTIER, ICARE
@@ -22,15 +22,28 @@ def test_a_mine_digs_slowly() -> None:
 
 def test_a_mine_digs_mostly_helium() -> None:
     stock: dict[str, float] = {}
-    Mine(Random(2)).update(stock, 4000 / MINE_RATE)
-    assert sum(stock.values()) == 4000.
+    Mine(Random(2)).update(stock, 800 / MINE_RATE)
+    assert sum(stock.values()) == 800.
     assert stock['helium3'] == pytest.approx(3 * stock['ice'], rel=.1)
 
 
-def test_a_mine_has_no_limit() -> None:
-    stock = {'helium3': 100000.}
-    Mine(Random(3)).update(stock, 100 / MINE_RATE)
-    assert sum(stock.values()) >= 100100.
+def test_a_mine_stops_when_the_depot_is_full() -> None:
+    stock = {'rock': DEPOT_CAPACITY - 3.}
+    mine = Mine(Random(3))
+    mine.update(stock, 100 / MINE_RATE)
+    assert sum(stock.values()) == DEPOT_CAPACITY
+    mine.update(stock, 100 / MINE_RATE)
+    assert sum(stock.values()) == DEPOT_CAPACITY
+
+
+def test_a_full_mine_gets_going_again_once_there_is_room() -> None:
+    stock = {'rock': float(DEPOT_CAPACITY)}
+    mine = Mine(Random(7))
+    mine.update(stock, 100 / MINE_RATE)
+    assert mine.dug == 0.
+    stock['rock'] -= 5.
+    mine.update(stock, 5 / MINE_RATE)
+    assert sum(stock.values()) == DEPOT_CAPACITY
 
 
 def test_a_mine_digs_with_no_ship_around() -> None:

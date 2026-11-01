@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from app.logic.base.config import UNLOAD_RATE
+from app.logic.base.config import DEPOT_CAPACITY, UNLOAD_RATE
 
 from .harness import Scenario
 
@@ -61,6 +61,29 @@ def stopped() -> None:
     check(not base.unloading, 'taking off stops unloading')
     check(0 < ice < 40, f'the rest stays in the cargo: {ice:.1f}')
     check(base.ids.depot.opacity == 0, 'the depot hides once flying')
+    base.depot.stock.clear()
+    base.depot.stock['gold'] = DEPOT_CAPACITY - 5.
+    scenario.player.restart(scenario.player.design)
+    scenario.player.miner.ore.clear()
+    scenario.player.miner.ore['iron'] = 20.
+
+
+@scenario.step(.3)
+def fills_the_depot() -> None:
+    base = scenario.base
+    check(base.ids.depot.load == '995 / 1000', f'{base.ids.depot.load}')
+    scenario.press(base.ids.unload_button)
+
+
+@scenario.step(1.)
+def as_far_as_it_goes() -> None:
+    base = scenario.base
+    check(base.ids.depot.load == '1000 / 1000', f'{base.ids.depot.load}')
+    check(scenario.player.miner.ore == {'iron': 15.},
+          f'the rest stays: {scenario.player.miner.ore}')
+    button = base.ids.unload_button
+    check(button.text == 'Entrepôt plein', f'told: {button.text}')
+    check(button.disabled, 'nothing more goes in')
 
 
 remembered: list[Any] = []

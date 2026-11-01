@@ -1,6 +1,7 @@
 """ Settings of the posts, the Earth and outposts """
 
 UNLOAD_RATE = 15.             # units per second, into the depot
+DEPOT_CAPACITY = 1000         # units, of all minerals, in any depot
 
 # Missions
 # By tier of reputation: more of them for players who proved themselves

@@ -1,6 +1,7 @@
 from random import Random
 
 from app.logic.base.board import Board
+from app.logic.base.config import DEPOT_CAPACITY
 from app.logic.base.missions import Mission
 from app.logic.base.post import Docked, Post, Services, home_post
 from app.logic.base.wallet import Wallet
@@ -77,3 +78,10 @@ def test_a_mission_can_be_validated_from_the_depot_and_the_cargo() -> None:
     assert not post.status({}, board).to_validate
     assert post.status({'iron': 4.}, board).to_validate
     assert not post.status({'iron': 4.}, None).to_validate
+
+
+def test_a_full_depot_tells_so_and_takes_no_cargo() -> None:
+    post = Post(Services(depot=True), Random(11))
+    post.depot.stock['gold'] = float(DEPOT_CAPACITY)
+    status = post.status({'iron': 5.}, None)
+    assert status.full and not status.can_unload
