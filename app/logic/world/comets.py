@@ -6,15 +6,24 @@ from collections.abc import Sequence
 from random import Random
 
 from .config import (
+    COMET_DEBRIS,
+    COMET_DEBRIS_ORBIT,
+    COMET_DEBRIS_SPEED,
     COMET_EVERY,
+    COMET_ICE,
     COMET_PERIHELION,
     COMET_TAIL,
     COMET_TAIL_RANGE,
     COMET_TIME,
 )
+from .layout import OrbiterPlan, plan_asteroid
 from .space import Celestial, Orbit, Vec2
+from .swarms import RICH
 
 SOLVING = 12                  # steps, Newton's method on Kepler's equation
+# What it sheds: ice, then the richer the closer to the sun
+ICE = ('ice',)
+THAWING = ('ice', 'gold', 'crystal', 'helium3')
 
 
 class CometOrbit(Orbit):
@@ -105,10 +114,33 @@ def plan_comet(rng: Random, sun: Celestial,
     )
 
 
+def thaw(distance: float) -> float:
+    """ From 0 far from the sun, to 1 on its surface """
+    return float(max(0., 1 - distance / COMET_TAIL_RANGE) ** 1.5)
+
+
 def tail_length(distance: float) -> float:
     """ At `distance` from the sun surface: longer the closer it gets """
-    closeness = max(0., 1 - distance / COMET_TAIL_RANGE)
-    return float(COMET_TAIL * closeness ** 1.5)
+    return COMET_TAIL * thaw(distance)
+
+
+def debris_shed(distance: float) -> int:
+    """ Asteroids around it once at `distance` from the sun surface, as
+    the sun thaws it """
+    return COMET_ICE + round(COMET_DEBRIS * thaw(distance))
+
+
+def plan_debris(rng: Random, count: int) -> OrbiterPlan:
+    """ The next one around it, `count` of them being there: richer and
+    richer, as the sun thaws it deeper """
+    extra = count - COMET_ICE
+    minerals = (
+        ICE if extra < 0 else THAWING if extra < COMET_DEBRIS / 2 else RICH
+    )
+    return plan_asteroid(
+        rng, rng.uniform(*COMET_DEBRIS_ORBIT),
+        rng.uniform(*COMET_DEBRIS_SPEED), minerals=minerals,
+    )
 
 
 class CometClock:

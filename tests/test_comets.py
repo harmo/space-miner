@@ -6,17 +6,23 @@ import pytest
 from app.logic.world.comets import (
     CometClock,
     CometOrbit,
+    debris_shed,
     plan_comet,
+    plan_debris,
     tail_length,
 )
 from app.logic.world.config import (
+    COMET_DEBRIS,
+    COMET_DEBRIS_ORBIT,
     COMET_EVERY,
+    COMET_ICE,
     COMET_PERIHELION,
     COMET_TAIL,
     COMET_TAIL_RANGE,
     COMET_TIME,
 )
 from app.logic.world.space import Celestial
+from app.logic.world.swarms import RICH
 
 CLOSEST, FARTHEST = 1100., 25000.
 
@@ -114,3 +120,21 @@ def test_comets_come_now_and_then() -> None:
     assert not clock.due(COMET_EVERY[0] - 1)
     assert clock.due(COMET_EVERY[1])
     assert COMET_EVERY[0] <= clock.waiting <= COMET_EVERY[1]
+
+
+def test_a_comet_sheds_more_and_more_on_its_way_to_the_sun() -> None:
+    assert debris_shed(COMET_TAIL_RANGE * 2) == COMET_ICE
+    assert COMET_ICE < debris_shed(6000.) < debris_shed(1000.)
+    assert debris_shed(0.) == COMET_ICE + COMET_DEBRIS
+
+
+def test_a_comet_sheds_ice_first_then_richer_and_richer() -> None:
+    rng = Random(3)
+    assert plan_debris(rng, 0).mineral == 'ice'
+    last = [plan_debris(rng, COMET_ICE + COMET_DEBRIS - 1) for _ in range(40)]
+    assert all(plan.mineral in RICH for plan in last)
+
+
+def test_what_it_sheds_turns_around_it() -> None:
+    low, high = COMET_DEBRIS_ORBIT
+    assert low <= plan_debris(Random(4), 0).orbit_radius <= high

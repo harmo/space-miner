@@ -8,7 +8,13 @@ from typing import TYPE_CHECKING
 
 from ...logic.colors import Rgb
 from ...logic.config import COMET_COLOR, FLARE_COLOR, SWARM_COLOR
-from ...logic.world.comets import CometClock, CometOrbit, plan_comet
+from ...logic.world.comets import (
+    CometClock,
+    CometOrbit,
+    debris_shed,
+    plan_comet,
+    plan_debris,
+)
 from ...logic.world.config import REGROW_AWAY
 from ...logic.world.layout import BeltPlan
 from ...logic.world.regrowth import Regrowth
@@ -36,6 +42,7 @@ class SystemEvents:
         self.flares = SolarFlares(system, rng)
         self.comet_clock = CometClock(rng)
         self.comet: Celestial | None = None
+        self.debris: list[Celestial] = []   # shed by it, mined or not
         self.swarm: list[Celestial] = []
         self.news = ''
         self.news_left = 0.       # seconds it is shown still
@@ -67,16 +74,29 @@ class SystemEvents:
         self.update_comet(dt)
 
     def update_comet(self, dt: float) -> None:
-        """ One at a time, gone once back at the far end """
+        """ One at a time, gone once back at the far end, with what it
+        shed on its way """
         system, comet = self.system, self.comet
-        if comet is None:
+        orbit = self.comet_orbit
+        if comet is None or orbit is None:
             if self.comet_clock.due(dt):
                 self.comet = system.add_comet(
                     plan_comet(self.rng, system.sun, system.orbits)
                 )
-        elif isinstance(comet.orbit, CometOrbit) and comet.orbit.over:
+            return
+        if orbit.over:
+            for asteroid in self.debris:
+                if asteroid in system.asteroids:
+                    system.remove(asteroid)
+            self.debris.clear()
             system.remove(comet)
             self.comet = None
+            return
+        distance = math.dist(comet.pos, system.sun.pos) - system.sun.radius
+        while len(self.debris) < debris_shed(distance):
+            self.debris.append(system.add_asteroid(
+                plan_debris(self.rng, len(self.debris)), comet,
+            ))
 
     @property
     def comet_orbit(self) -> CometOrbit | None:

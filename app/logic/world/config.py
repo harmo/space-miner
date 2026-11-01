@@ -79,6 +79,10 @@ COMET_PERIHELION = 500.       # from the sun surface, at the closest
 COMET_RADIUS = 45.
 COMET_TAIL = 1800.            # long, at most
 COMET_TAIL_RANGE = 12000.     # from the sun surface, where it starts
+COMET_ICE = 4                 # asteroids around it, wherever it is
+COMET_DEBRIS = 16             # more of them, once by the sun
+COMET_DEBRIS_ORBIT = (180., 600.)  # from its center
+COMET_DEBRIS_SPEED = (20., 50.)
 
 # Swarms of rich asteroids, passing between the orbits of the planets
 SWARM_EVERY = (300., 540.)    # seconds between them
