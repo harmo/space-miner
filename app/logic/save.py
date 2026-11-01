@@ -118,6 +118,10 @@ def contracts_of(data: Any) -> Contracts:
     return Contracts(
         missions(data.get('offers', [])), missions(data.get('active', [])),
         max(1, int(data.get('mission_level', 1))),
+        {
+            int(level): float(left)
+            for level, left in dict(data.get('mission_waits', {})).items()
+        },
     )
 
 
@@ -126,6 +130,9 @@ def contracts_data(contracts: Contracts) -> dict[str, Any]:
         'offers': [mission_data(mission) for mission in contracts.offers],
         'active': [mission_data(mission) for mission in contracts.active],
         'mission_level': contracts.level,
+        'mission_waits': {
+            str(level): left for level, left in contracts.waits.items()
+        },
     }
 
 

@@ -39,7 +39,7 @@ def accepts_the_first() -> None:
 @scenario.step(.3)
 def accepts_the_second() -> None:
     check(scenario.base.board.active == [FIRST], 'the first is accepted')
-    scenario.press(scenario.button(cards('offers')[1], 'Accepter'))
+    scenario.press(scenario.button(cards('offers')[0], 'Accepter'))
 
 
 @scenario.step(.3)
@@ -48,9 +48,19 @@ def no_more_than_two() -> None:
     check(board.active == [FIRST, SECOND], 'two missions under way')
     check(not any(card.can_act for card in cards('offers')),
           'a third one can not be accepted')
-    check(len(board.offers) == 3, 'accepted offers are replaced')
+    check(len(board.offers) == 1, 'accepted offers are not replaced yet')
+    coming = scenario.base.ids.missions.coming
+    check('Prochaine mission' in coming, f'one comes later: {coming}')
     check(not any(card.can_act for card in cards('active')),
           'nothing to validate without the ore')
+    scenario.screenshot('recharging')
+    board.waits[1] = .1
+
+
+@scenario.step(.8)
+def an_offer_comes_back() -> None:
+    check(len(scenario.base.board.offers) == 2, 'an offer comes back')
+    check(len(cards('offers')) == 2, 'and shows at once')
     scenario.escape()
 
 

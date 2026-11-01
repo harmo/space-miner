@@ -4,6 +4,7 @@ import pytest
 
 from app.logic.base.config import (
     MISSION_OFFERS,
+    MISSION_REFILL,
     MISSIONS_ACTIVE,
     TIER_MISSIONS,
 )
@@ -75,17 +76,9 @@ def test_more_missions_with_more_reputation() -> None:
     board.accept(mission)
     board.validate(mission, {'iron': 2.})
     assert board.most == MISSIONS_ACTIVE[-1] == 8
-    assert len(board.offers) == MISSION_OFFERS[-1] == 8
+    assert board.room == MISSION_OFFERS[-1] == 8
     assert MISSIONS_ACTIVE == tuple(sorted(MISSIONS_ACTIVE))
     assert MISSION_OFFERS == tuple(sorted(MISSION_OFFERS))
-
-
-def test_accepted_offer_is_replaced() -> None:
-    board = Board(Random(4), Wallet())
-    taken = board.offers[1]
-    board.accept(taken)
-    assert board.active == [taken]
-    assert len(board.offers) == MISSION_OFFERS[0]
 
 
 def test_validating_takes_the_ore_and_pays() -> None:
@@ -164,7 +157,7 @@ def test_levels_go_up_to_the_reputation() -> None:
     assert all(mission.level == 3 for mission in board.offers)
     board.choose_level(1)
     assert all(mission.level == 1 for mission in board.offers)
-    assert len(board.offers) == MISSION_OFFERS[2]
+    assert board.room == MISSION_OFFERS[2]
 
 
 def test_at_the_top_missions_stay_at_the_top() -> None:
@@ -325,3 +318,88 @@ def test_higher_levels_ask_for_more() -> None:
             for _ in range(2000)
         ) / 2000
     assert units(5) > 1.5 * units(1)
+
+
+def test_an_offer_taken_is_not_replaced_at_once() -> None:
+    board = Board(Random(40), Wallet())
+    count = len(board.offers)
+    board.accept(board.offers[0])
+    assert len(board.offers) == count - 1
+    assert board.next_offer == MISSION_REFILL
+
+
+def test_it_comes_back_after_a_while() -> None:
+    board = Board(Random(41), Wallet())
+    count = len(board.offers)
+    board.accept(board.offers[0])
+    board.update(MISSION_REFILL - 1.)
+    assert len(board.offers) == count - 1
+    assert board.next_offer == pytest.approx(1.)
+    board.update(2.)
+    assert len(board.offers) == count
+    assert board.next_offer is None
+
+
+def test_offers_come_back_one_at_a_time() -> None:
+    board = Board(Random(42), Wallet())
+    count = len(board.offers)
+    board.accept(board.offers[0])
+    board.accept(board.offers[0])
+    board.update(MISSION_REFILL + 1.)
+    assert len(board.offers) == count - 1
+    assert board.next_offer is not None
+
+
+def test_looking_at_another_level_gives_no_new_offers() -> None:
+    board = Board(Random(43), Wallet())
+    board.validated = 3
+    before = list(board.offers)
+    board.choose_level(2)
+    assert all(mission.level == 2 for mission in board.offers)
+    board.choose_level(1)
+    assert board.offers == before
+
+
+def test_each_level_recharges_on_its_own() -> None:
+    board = Board(Random(44), Wallet())
+    board.validated = 8
+    board.choose_level(2)
+    board.accept(board.offers[0])
+    level_two = len(board.offers)
+    board.update(100.)
+    board.choose_level(3)
+    board.accept(board.offers[0])
+    level_three = len(board.offers)
+    board.update(MISSION_REFILL - 99.)
+    assert len(board.shelf(2)) == level_two + 1
+    assert len(board.shelf(3)) == level_three
+
+
+def test_offers_recharge_while_looking_elsewhere() -> None:
+    board = Board(Random(45), Wallet())
+    board.validated = 3
+    board.accept(board.offers[0])
+    left = len(board.offers)
+    board.choose_level(2)
+    board.update(MISSION_REFILL + 1.)
+    assert len(board.shelf(1)) == left + 1
+
+
+def test_a_better_reputation_brings_room_for_more_in_time() -> None:
+    board = Board(Random(46), Wallet())
+    count = len(board.offers)
+    board.validated = 3
+    assert board.room > count and len(board.offers) == count
+    board.update(MISSION_REFILL + 1.)
+    assert len(board.offers) == count + 1
+
+
+def test_what_is_recharging_comes_back_saved() -> None:
+    board = Board(Random(47), Wallet())
+    board.accept(board.offers[0])
+    board.update(30.)
+    contracts = board.contracts
+    other = Board(Random(48), Wallet())
+    other.resume(contracts)
+    assert other.offers == board.offers
+    assert other.next_offer == pytest.approx(MISSION_REFILL - 30.)

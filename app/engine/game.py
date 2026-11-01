@@ -15,7 +15,7 @@ from kivy.properties import BooleanProperty, NumericProperty, ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.utils import platform
 
-from ..logic.base.missions import Desk
+from ..logic.base.missions import Board, Desk
 from ..logic.base.outposts import Outpost, open_boards
 from ..logic.config import (
     AUTOSAVE_PERIOD,
@@ -152,6 +152,13 @@ class Game(Widget):
         return None
 
     @property
+    def boards(self) -> list[Board]:
+        """ Of the Earth and the outposts giving missions """
+        boards = [self.ids.base.board]
+        boards += [outpost.board for outpost in self.outposts]
+        return [board for board in boards if board is not None]
+
+    @property
     def desks(self) -> list[Desk]:
         """ Where missions are validated, the Earth first """
         base = self.ids.base
@@ -179,6 +186,8 @@ class Game(Widget):
         # being stranded
         self.ids.outpost.update(dt)
         self.ids.base.update(dt)
+        for board in self.boards:
+            board.update(dt)
         self.scanning = self.player.stats.scan > 0
         self.system.update(dt, self.player.anchor)
         shift = recenter(self.player, self.camera, self.system, self.stars)

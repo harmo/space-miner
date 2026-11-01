@@ -1,6 +1,7 @@
 """ The missions of the base: offers to accept, and accepted ones to
 validate once the depot holds the ore. Styled in missions_panel.kv. """
 
+import math
 from typing import Any
 
 from kivy.clock import Clock, ClockEvent
@@ -43,6 +44,11 @@ def progress_text(mission: Mission, *holds: Hold) -> str:
     )
 
 
+def coming_text(seconds: float) -> str:
+    minutes, left = divmod(math.ceil(seconds), 60)
+    return f'Prochaine mission dans {minutes}:{left:02d}'
+
+
 def reputation_text(validated: int) -> str:
     """ The tier reached, and what the next one takes """
     text = f'Réputation : palier {tier(validated)}'
@@ -82,6 +88,7 @@ class MissionsPanel(BoxLayout):
     money = StringProperty('')
     accepted = StringProperty('')       # how many, out of how many
     reputation = StringProperty('')
+    coming = StringProperty('')         # the next offer, if one is due
 
     def __init__(self, **kwargs: Any) -> None:
         self.register_event_type('on_close')
@@ -108,10 +115,21 @@ class MissionsPanel(BoxLayout):
 
     def follow(self) -> None:
         """ What the missions under way have, without making the cards
-        anew under a finger """
+        anew under a finger, unless an offer came """
+        board = self.board
+        if board is not None and len(board.offers) != len(
+            self.ids.offers.children
+        ):
+            self.refresh()
+            return
+        self.show_coming()
         for card in self.ids.active.children:
             card.wanted = progress_text(card.mission, self.stock, self.cargo)
             card.can_act = card.mission.can_validate(self.stock, self.cargo)
+
+    def show_coming(self) -> None:
+        left = self.board.next_offer if self.board else None
+        self.coming = '' if left is None else coming_text(left)
 
     def refresh(self) -> None:
         board = self.board
@@ -121,6 +139,7 @@ class MissionsPanel(BoxLayout):
         self.accepted = f'{len(board.active)}/{board.most}'
         self.reputation = reputation_text(board.validated)
         self.show_levels(board)
+        self.show_coming()
         offers, active = self.ids.offers, self.ids.active
         offers.clear_widgets()
         for mission in board.offers:
@@ -155,7 +174,7 @@ class MissionsPanel(BoxLayout):
             button.reached = button.level <= board.tier
 
     def choose(self, level: int) -> None:
-        """ Offers of that level, anew """
+        """ The offers of that level """
         if self.board is not None:
             self.board.choose_level(level)
             self.refresh()

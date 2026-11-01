@@ -6,6 +6,7 @@ UNLOAD_RATE = 15.             # units per second, into the depot
 # By tier of reputation: more of them for players who proved themselves
 MISSION_OFFERS = (3, 4, 5, 6, 8)    # to choose from
 MISSIONS_ACTIVE = (2, 3, 4, 6, 8)   # accepted at most
+MISSION_REFILL = 240.         # seconds for a new one, on each level
 MISSION_AMOUNT = 15.          # units wanted of a mineral as common as iron
 MISSION_BONUS = 1.5           # reward, times what the ore is worth
 

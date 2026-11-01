@@ -16,6 +16,7 @@ from .config import (
     MISSION_OFFERS,
     MISSION_PREMIUM,
     MISSION_RARER,
+    MISSION_REFILL,
     MISSIONS_ACTIVE,
     ORDER_GROWTH,
 )
@@ -180,12 +181,15 @@ class Contracts:
     offers: list[Mission] = field(default_factory=list)
     active: list[Mission] = field(default_factory=list)
     level: int = 1                      # of the missions offered
+    # Seconds before the next offer, by level
+    waits: dict[int, float] = field(default_factory=dict)
 
 
 class Board:
-    """ Missions offered, and those accepted, paid into the wallet. Boards
-    share the reputation they make: that of the Earth and those of the
-    outposts. """
+    """ Missions offered on each level, and those accepted, paid into the
+    wallet. An offer taken comes back after a while, level by level, and
+    looking at another level changes nothing. Boards share the reputation
+    they make: that of the Earth and those of the outposts. """
 
     def __init__(self, rng: Random, wallet: Wallet,
                  standing: Standing | None = None,
@@ -194,10 +198,11 @@ class Board:
         self.wallet = wallet
         self.standing = standing or Standing()
         self.clientele = clientele
-        self.offers: list[Mission] = []
+        self.shelves: dict[int, list[Mission]] = {}  # offers, by level
+        self.waits: dict[int, float] = {}   # before the next, by level
         self.active: list[Mission] = []
-        self.level = 1                      # of the missions offered
-        self.top_up()
+        self.level = 1                      # of the missions shown
+        self.shelf(self.level)
 
     @property
     def validated(self) -> int:
@@ -210,35 +215,75 @@ class Board:
 
     @property
     def contracts(self) -> Contracts:
-        return Contracts(list(self.offers), list(self.active), self.level)
+        return Contracts(
+            [m for shelf in self.shelves.values() for m in shelf],
+            list(self.active), self.level, dict(self.waits),
+        )
 
     def resume(self, contracts: Contracts) -> None:
-        """ As they were, its reputation known: fresh offers rather than
-        none, as many as the reputation brings """
+        """ As they were, its reputation known: levels never looked at get
+        their offers when they are, as many as the reputation brings """
         self.level = max(1, min(contracts.level, self.tier))
         self.active[:] = contracts.active
-        self.offers[:] = contracts.offers
-        self.top_up()
+        self.shelves.clear()
+        for mission in contracts.offers:
+            self.shelves.setdefault(mission.level, []).append(mission)
+        self.waits = dict(contracts.waits)
+        self.shelf(self.level)
 
-    def make(self) -> Mission:
+    def make(self, level: int) -> Mission:
         clientele = self.clientele
         if clientele.orders:
-            return make_order(self.rng, self.level, clientele)
+            return make_order(self.rng, level, clientele)
         return make_mission(
-            self.rng, self.level, clientele.clients, clientele.bonus,
+            self.rng, level, clientele.clients, clientele.bonus,
         )
+
+    def shelf(self, level: int) -> list[Mission]:
+        """ Its offers, full the first time it is looked at """
+        if level not in self.shelves:
+            self.shelves[level] = [
+                self.make(level) for _ in range(self.room)
+            ]
+        return self.shelves[level]
+
+    @property
+    def offers(self) -> list[Mission]:
+        """ Those of the level shown """
+        return self.shelf(self.level)
+
+    @property
+    def room(self) -> int:
+        """ For offers on a level, at this reputation """
+        return MISSION_OFFERS[self.tier - 1]
+
+    def update(self, dt: float) -> None:
+        """ Each level gets its offers back, one after the other """
+        for level, shelf in self.shelves.items():
+            if len(shelf) >= self.room:
+                self.waits.pop(level, None)
+                continue
+            left = self.waits.get(level, MISSION_REFILL) - dt
+            if left <= 0:
+                shelf.append(self.make(level))
+                left = MISSION_REFILL
+            self.waits[level] = left
+
+    @property
+    def next_offer(self) -> float | None:
+        """ Seconds before one comes on the level shown, None if it is
+        full """
+        if len(self.offers) >= self.room:
+            return None
+        return self.waits.get(self.level, MISSION_REFILL)
 
     @property
     def tier(self) -> int:
         return tier(self.validated)
 
     def choose_level(self, level: int) -> None:
-        """ Up to the tier of the reputation, with offers of that level """
-        level = max(1, min(level, self.tier))
-        if level != self.level:
-            self.level = level
-            self.offers.clear()
-            self.top_up()
+        """ Up to the tier of the reputation """
+        self.level = max(1, min(level, self.tier))
 
     @property
     def most(self) -> int:
@@ -249,17 +294,11 @@ class Board:
     def full(self) -> bool:
         return len(self.active) >= self.most
 
-    def top_up(self) -> None:
-        """ As many offers as the reputation brings """
-        while len(self.offers) < MISSION_OFFERS[self.tier - 1]:
-            self.offers.append(self.make())
-
     def accept(self, mission: Mission) -> None:
-        """ A new offer takes its place """
+        """ Another offer comes after a while """
         if self.full or mission not in self.offers:
             return
-        index = self.offers.index(mission)
-        self.offers[index] = self.make()
+        self.offers.remove(mission)
         self.active.append(mission)
 
     def validate(self, mission: Mission, *holds: Hold) -> None:
@@ -275,7 +314,6 @@ class Board:
         # At the top, missions stay at the top
         if self.level == reached < self.tier:
             self.choose_level(self.tier)
-        self.top_up()
 
     def abandon(self, mission: Mission) -> None:
         if mission in self.active:
