@@ -16,7 +16,15 @@ from app.logic.mining.config import (
     CANISTER_SPEED,
     CANISTER_SPIN,
     CANISTER_SPREAD,
+    CANISTER_SUN_ALTITUDE,
     CANISTER_UNITS,
+)
+from app.logic.world.config import (
+    FIRST_ORBIT,
+    GRAVITY_RANGE,
+    LINEUP,
+    SUN_GRAVITY,
+    SUN_GRAVITY_FALLOFF,
 )
 from app.logic.world.space import Celestial, Orbit, Vec2, angle_diff
 
@@ -175,3 +183,31 @@ def test_canisters_keep_up_with_a_moving_planet() -> None:
     assert math.dist(pos, body.pos) == pytest.approx(
         body.radius + ALTITUDE, rel=.05,
     )
+
+
+def the_sun() -> Celestial:
+    return Celestial(
+        0, 600., pos=(0., 0.), gravity=SUN_GRAVITY,
+        gravity_falloff=SUN_GRAVITY_FALLOFF, gravity_range=None,
+    )
+
+
+@pytest.mark.parametrize('distance', [100., 900., 1500.])
+def test_canisters_gather_around_the_sun(
+        distance: float) -> None:
+    sun = the_sun()
+    altitude = CANISTER_SUN_ALTITUDE + 200.
+    pos, velocity = (600. + distance, 0.), (0., 0.)
+    for _ in range(round(60 / DT)):
+        velocity = settle(pos, velocity, sun, altitude, DT)
+        pos = (pos[0] + velocity[0] * DT, pos[1] + velocity[1] * DT)
+    assert math.hypot(*pos) - sun.radius == pytest.approx(altitude, abs=8.)
+    assert math.hypot(*velocity) > 20.
+
+
+def test_those_around_the_sun_stay_out_of_reach_of_the_first_planet() -> None:
+    _, high = CANISTER_ORBIT_ALTITUDE
+    planet_reach = FIRST_ORBIT - max(radius for _, radius in LINEUP[:1]) * (
+        GRAVITY_RANGE
+    )
+    assert 600. + CANISTER_SUN_ALTITUDE + high < planet_reach

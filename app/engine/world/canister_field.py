@@ -1,5 +1,6 @@
 """ Canisters floating in space, as KivEnt entities """
 
+import math
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
@@ -15,6 +16,8 @@ from ...logic.mining.config import (
     CANISTER_MAX,
     CANISTER_NEIGHBOR_PERIOD,
     CANISTER_SIZE,
+    CANISTER_SUN_ALTITUDE,
+    CANISTER_SUN_REACH,
 )
 from ...logic.world.space import (
     Celestial,
@@ -111,8 +114,9 @@ class CanisterField:
     def update(self, dt: float, asteroids: Sequence[Celestial],
                attractors: Sequence[Celestial]) -> None:
         """ Canisters gather on an orbit around the closest planet in
-        reach. Away from planets, they slow down relative to the asteroids
-        around them and turn with them, or stop along with the sun. """
+        reach, or around the sun inside the orbit of the first planet.
+        Elsewhere, they slow down relative to the asteroids around them
+        and turn with them, or stop along with the sun. """
         self.neighbors_in -= dt
         if self.neighbors_in <= 0:
             self.neighbors_in = CANISTER_NEIGHBOR_PERIOD
@@ -125,11 +129,17 @@ class CanisterField:
         for canister in self.canisters:
             pos, velocity = canister.pos, canister.velocity
             planet = closest_pulling(pos, attractors)
+            sun = attractors[0]
             neighbor = canister.neighbor
             orbit = neighbor.orbit if neighbor in alive and neighbor else None
             if planet is not None:
                 canister.body.velocity = settle(
                     pos, velocity, planet, canister.altitude, dt,
+                )
+            elif math.dist(pos, sun.pos) - sun.radius < CANISTER_SUN_REACH:
+                canister.body.velocity = settle(
+                    pos, velocity, sun,
+                    CANISTER_SUN_ALTITUDE + canister.altitude, dt,
                 )
             elif orbit is not None:
                 parent = orbit.parent

@@ -17,6 +17,10 @@ CANISTER_DRAG = .8
 CANISTER_ORBIT_DRAG = .6
 CANISTER_ORBIT_PACE = .3      # of what the pull of the planet would make
 CANISTER_ORBIT_ALTITUDE = (120., 260.)  # above its surface
+# Lost inside the orbit of the first planet, around the sun, out of the
+# reach of that planet
+CANISTER_SUN_REACH = 1600.    # from its surface
+CANISTER_SUN_ALTITUDE = 420.  # added to their own
 CANISTER_GATHER = .5          # a second, of how far they are from their orbit
 CANISTER_GATHER_SPEED = 150.  # at most
 CANISTER_FOLLOW_RANGE = 2000.
