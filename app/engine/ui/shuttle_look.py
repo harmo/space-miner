@@ -1,6 +1,7 @@
 """ How docks and their shuttles look: a pad on the surface, or on the ring
 of a station, between two lit pylons, and a stubby amber barge, nothing like
-the ship, its shuttle standing there or flying its way """
+the ship, its shuttle standing there or flying its way. The Earth only takes
+those of others. """
 
 import math
 from collections.abc import Iterable
@@ -72,6 +73,8 @@ def draw_quay(overlay: Overlay, quay: Quay, sun: Vec2) -> None:
     shuttle = quay.post.shuttle
     if math.dist(center, quay.spot) < SEEN:
         draw_dock(overlay, quay)
+    if not quay.docks:
+        return
     flying = shuttle_position(quay, sun)
     pos = quay.spot if flying is None else flying
     heading = quay.direction if flying is None else shuttle.heading

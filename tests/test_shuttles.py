@@ -178,7 +178,10 @@ def test_its_nose_turns_the_short_way_little_by_little() -> None:
     assert turned(3., -3., .1) > 3.
 
 
-def quay(key: str, x: float, services: Services = HOME_SERVICES) -> Quay:
+DOCKED = Services(depot=True, dock=True)
+
+
+def quay(key: str, x: float, services: Services = DOCKED) -> Quay:
     return Quay(
         key, key.upper(), Post(services, Random(1)),
         Celestial(1, 100., pos=(x, 0.)),
@@ -189,6 +192,31 @@ def test_a_shuttle_stands_above_its_dock_clear_of_the_body() -> None:
     assert SHUTTLE_DOCK_HEIGHT > SHUTTLE_CLEARANCE
     start = quay('a', 0.)
     assert start.spot == (100. + SHUTTLE_DOCK_HEIGHT, 0.)
+
+
+def test_the_earth_takes_shuttles_and_sends_none() -> None:
+    earth, ares = quay('earth', 0., HOME_SERVICES), quay('ares', 500.)
+    assert earth.berths and earth.takes and not earth.docks
+    assert not can_send(earth, [earth, ares])
+    assert can_send(ares, [earth, ares])
+    earth.post.depot.stock['iron'] = FULL
+    earth.post.shuttle.route = Route('ares', ('iron',))
+    update_shuttles([earth, ares], OPEN, DT)
+    assert earth.post.shuttle.leg == 'waiting'
+    assert earth.post.depot.stock == {'iron': FULL}
+
+
+def test_a_post_with_neither_dock_nor_berth_shows_no_pad() -> None:
+    assert not quay('a', 0., Services(depot=True)).berths
+
+
+def test_a_shuttle_saved_at_the_earth_gives_its_ore_back() -> None:
+    carrier, stock = shuttle(), {'iron': 5.}
+    carrier.load = {'iron': 60.}
+    carrier.leg, carrier.offset = 'out', (10., 20.)
+    carrier.retire(stock)
+    assert stock == {'iron': 65.}
+    assert carrier.state == ShuttleState()
 
 
 def test_only_posts_with_a_depot_are_destinations() -> None:

@@ -28,6 +28,11 @@ class Quay:
         return self.post.services.dock
 
     @property
+    def berths(self) -> bool:
+        """ A pad can be seen there """
+        return self.docks or self.post.services.berth
+
+    @property
     def takes(self) -> bool:
         """ Shuttles can come: it has a depot """
         return self.post.services.depot

@@ -113,6 +113,12 @@ class Shuttle:
         if math.dist(pos, goal) <= step + SHUTTLE_ARRIVAL:
             self.arrive(here, there)
 
+    def retire(self, stock: Hold) -> None:
+        """ Its post has no dock anymore, in a game saved when it had: what
+        it carried is back in `stock` """
+        self.unload(stock)
+        self.resume(ShuttleState())
+
     @property
     def state(self) -> ShuttleState:
         return ShuttleState(

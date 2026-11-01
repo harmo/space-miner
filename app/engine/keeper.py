@@ -129,6 +129,8 @@ class Keeper:
         for quay in quays_of(base, self.outposts):
             if quay.key in save.shuttles:
                 quay.post.shuttle.resume(save.shuttles[quay.key])
+                if not quay.docks:
+                    quay.post.shuttle.retire(quay.post.depot.stock)
         self.player.canisters.recover(save.canisters, system.attractors)
         if save.events is not None:
             system.events.resume(save.events)

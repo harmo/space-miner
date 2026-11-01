@@ -14,7 +14,6 @@ from ...logic.base.crushing import Crusher
 from ...logic.base.outposts import Outpost
 from ...logic.base.permits import Permits
 from ...logic.base.post import Post, home_post
-from ...logic.base.quays import can_send
 from ...logic.base.refuel import tow, tow_price
 from ...logic.base.reputation import tier
 from ...logic.base.shop import Inventory
@@ -30,7 +29,6 @@ from .hangar import HangarPanel  # noqa: F401
 from .market_panel import MarketPanel  # noqa: F401
 from .missions_panel import MissionsPanel, credits_text  # noqa: F401
 from .post_view import PostView
-from .quays import quays_of
 from .shuttle_panel import ShuttlePanel  # noqa: F401
 
 
@@ -145,17 +143,11 @@ class EarthBase(PostView):
     def open(self, panel: str) -> None:
         if self.player is None or not self.player.docked:
             return
-        if panel == 'shuttles':
-            quays = quays_of(self, self.outposts)
-            self.show_dock(quays[0], quays)
-            return
         if panel == 'hangar':
             self.ids.hangar.open()
             if self.board is not None:
                 self.seen_tier = tier(self.board.validated)
         elif panel == 'market':
-            quays = quays_of(self, self.outposts)
-            self.ids.market.shuttles = can_send(quays[0], quays)
             self.ids.market.refresh()
         else:
             self.ids.missions.laser = self.player.stats.laser

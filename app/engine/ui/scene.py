@@ -65,7 +65,7 @@ def draw_scene(overlay: Overlay, size: Vec2, view: SceneView) -> None:
     for outpost in outposts:
         draw_outpost(overlay, outpost)
     for quay in view.quays:
-        if quay.docks:
+        if quay.berths:
             draw_quay(overlay, quay, system.sun.pos)
     ship.exhaust.draw(overlay)
     ship.gear.draw(overlay, player)

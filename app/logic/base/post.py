@@ -27,11 +27,12 @@ class Services:
     shelter: bool = False     # their hull cooled, out of the heat
     mine: bool = False        # ore dug into the depot
     dock: bool = False        # a shuttle, carrying ore of the depot away
+    berth: bool = False       # a pad for shuttles coming, without any of its
 
 
 HOME_SERVICES = Services(
     fuel=True, depot=True, market=True, missions=True, refinery=True,
-    dock=True,
+    berth=True,
 )
 
 

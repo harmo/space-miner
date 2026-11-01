@@ -48,7 +48,7 @@ class PostView(Widget):
             return
         status = post.status(self.player.miner.ore, board)
         if self.panel == 'shuttles':
-            self.ids.shuttles.follow()
+            self.ids.shuttles.follow()      # only outposts send any
         if self.panel == 'market' and (
             found or self.crushing != status.crushing
         ):
