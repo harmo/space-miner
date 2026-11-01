@@ -35,6 +35,9 @@ from ..textures import make_texture, star_pixel
 
 SOFT_DOT = 1.8               # size of the dots of the sparks, times theirs
 SHADOW_OPACITY = .45         # of what lies in the shadow of a planet
+TAIL_DOTS = 40               # of the tail of a comet
+TAIL_SPREAD = 4.             # wider at its end, times its width
+TAIL_OPACITY = .22           # at its head
 CHEVRON_OPENING = math.radians(40)    # between each arm and its axis
 CHEVRON_THICKNESS = .45               # of the V, for its size
 
@@ -135,6 +138,23 @@ class Overlay:
                     for value in point
                 ],
                 width=1, close=True,
+            ))
+
+    def tail(self, head: Vec2, tip: Vec2, width: float, color: Rgb) -> None:
+        """ Soft dots from `head` to `tip`, spreading out and fading away,
+        `width` in the world """
+        scale = self.camera.camera_scale
+        for index in range(1, TAIL_DOTS + 1):
+            share = index / TAIL_DOTS
+            x, y = self.to_screen((
+                head[0] + (tip[0] - head[0]) * share,
+                head[1] + (tip[1] - head[1]) * share,
+            ))
+            side = width * (1 + TAIL_SPREAD * share) / scale
+            self.group.add(Color(*color, TAIL_OPACITY * (1 - share) ** .7))
+            self.group.add(Rectangle(
+                texture=self.dot, pos=(x - side / 2, y - side / 2),
+                size=(side, side),
             ))
 
     def shadow(self, shadow: Shadow) -> None:

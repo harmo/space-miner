@@ -17,6 +17,7 @@ from kivy.uix.widget import Widget
 from ...logic.base.outposts import Outpost
 from ...logic.colors import Rgb
 from ...logic.config import (
+    COMET_COLOR,
     FLARE_COLOR,
     HOME_COLOR,
     OUTPOST_COLOR,
@@ -35,6 +36,7 @@ from ..world.solar_system import SolarSystem
 FRAME_MARGIN = 20             # dp, above and below the round map
 CANISTER_COLOR = (1., .6, .3)
 SHADOW_MAP_COLOR = (1., 1., 1., .14)
+COMET_PATH_POINTS = 120
 SHIP_COLOR = (1., 1., 1.)
 
 
@@ -93,6 +95,7 @@ class MapView(Widget):
             self.bodies(system, frame)
             self.lost(player, frame)
             self.swarm(system, frame)
+            self.comet(system, frame)
             self.ejecta(system, frame)
             self.shadow(system, frame)
             self.outposts(self.shown.outposts, frame)
@@ -172,6 +175,21 @@ class MapView(Widget):
         Color(*SWARM_COLOR, 1)
         Line(circle=(x, y, dp(9)), width=1.4)
         self.label('Essaim', (x, y + dp(18)), SWARM_COLOR)
+
+    def comet(self, system: SolarSystem, frame: Chart) -> None:
+        """ Where it is, and the whole of its way through the system """
+        orbit = system.events.comet_orbit
+        if orbit is None:
+            return
+        Color(*COMET_COLOR, .4)
+        Line(points=[
+            value for pos in orbit.path(COMET_PATH_POINTS)
+            for value in frame.place(pos)
+        ], width=1)
+        x, y = frame.place(orbit.position)
+        Color(*COMET_COLOR, 1)
+        Line(circle=(x, y, dp(9)), width=1.4)
+        self.label('Comète', (x, y + dp(18)), COMET_COLOR)
 
     def ejecta(self, system: SolarSystem, frame: Chart) -> None:
         spot = system.events.flares.ejecta_spot

@@ -5,6 +5,7 @@ import math
 
 from ...logic.base.outposts import Outpost
 from ...logic.config import (
+    COMET_COLOR,
     FLARE_COLOR,
     HEAT_RANGE,
     HOME_COLOR,
@@ -21,6 +22,7 @@ from ...logic.mining.minerals import MINERALS
 from ...logic.preferences import Preferences
 from ...logic.ship.lasers import laser
 from ...logic.ship.scanner import found, mineral_name
+from ...logic.world.comets import tail_length
 from ...logic.world.space import Vec2
 from ..ship.looks import ShipLooks
 from ..ship.player import Player
@@ -41,6 +43,7 @@ def draw_scene(overlay: Overlay, size: Vec2, system: SolarSystem,
     if preferences.orbits:
         draw_orbits(overlay, size, system)
     draw_wave(overlay, system)
+    draw_comet(overlay, system)
     shadow = system.sunlight.shadow
     if shadow is not None:
         overlay.shadow(shadow)
@@ -66,6 +69,21 @@ def draw_wave(overlay: Overlay, system: SolarSystem) -> None:
                      1 - wave)
 
 
+def draw_comet(overlay: Overlay, system: SolarSystem) -> None:
+    """ Its tail, away from the sun """
+    comet, sun = system.events.comet, system.sun
+    if comet is None:
+        return
+    distance = math.dist(comet.pos, sun.pos)
+    length = tail_length(distance - sun.radius)
+    if length > 0:
+        x, y = comet.pos
+        overlay.tail(comet.pos, (
+            x + (x - sun.pos[0]) / distance * length,
+            y + (y - sun.pos[1]) / distance * length,
+        ), comet.radius * 1.3, COMET_COLOR)
+
+
 def draw_orbits(overlay: Overlay, size: Vec2, system: SolarSystem) -> None:
     """ Of the planets, in the view """
     camera = overlay.camera
@@ -84,9 +102,12 @@ def draw_orbits(overlay: Overlay, size: Vec2, system: SolarSystem) -> None:
 
 def draw_markers(overlay: Overlay, system: SolarSystem,
                  outposts: list[Outpost]) -> None:
-    """ Towards the planets, the sun, a swarm passing by, the ejecta of a
-    flare and the outposts, out of the screen """
+    """ Towards the planets, the sun, a swarm or a comet passing by, the
+    ejecta of a flare and the outposts, out of the screen """
     overlay.marker(system.sun, SUN_COLOR)
+    comet = system.events.comet
+    if comet is not None:
+        overlay.marker(comet, COMET_COLOR)
     swarm = system.events.swarm_spot
     if swarm is not None:
         overlay.marker(swarm, SWARM_COLOR)

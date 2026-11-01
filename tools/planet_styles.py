@@ -91,4 +91,10 @@ STYLES = {
         hex_color('#ffffff'), rocky=True, craters=34, glow=0.,
         seas=.7, sea=hex_color('#584e46'), shadow=(30, 24, 20), dents=.12,
     ),
+    # A comet: dirty ice, pale and bluish, misshapen
+    'comet': Style(
+        colors('#7f8a94', '#a3b0ba', '#c4d2da', '#e2edf2'),
+        hex_color('#ffffff'), rocky=True, craters=12, glow=0.,
+        seas=.6, sea=hex_color('#5c6670'), shadow=(35, 42, 50), dents=.2,
+    ),
 }

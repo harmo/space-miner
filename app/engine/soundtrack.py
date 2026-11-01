@@ -126,6 +126,7 @@ def moment_of(game: 'Game') -> Moment:
         credits=base.wallet.credits,
         validated=base.board.validated if base.board else 0,
         swarm=bool(events.swarm),
+        comet=events.comet is not None,
         fuel=player.tank.level,
         fuel_state=player.tank.state,
         stranded=player.stranded,

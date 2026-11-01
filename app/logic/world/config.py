@@ -72,6 +72,14 @@ REGROW_THRESHOLD = .4
 REGROW_TIME = 300.            # seconds for a whole belt
 REGROW_AWAY = 3000.           # from the ship, out of its sight
 
+# Comets, on long ellipses reaching as far as the last planet
+COMET_EVERY = (720., 1200.)   # seconds between them
+COMET_TIME = 480.             # seconds through the solar system
+COMET_PERIHELION = 500.       # from the sun surface, at the closest
+COMET_RADIUS = 45.
+COMET_TAIL = 1800.            # long, at most
+COMET_TAIL_RANGE = 12000.     # from the sun surface, where it starts
+
 # Swarms of rich asteroids, passing between the orbits of the planets
 SWARM_EVERY = (300., 540.)    # seconds between them
 SWARM_STAYS = 240.            # seconds

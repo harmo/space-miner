@@ -9,13 +9,17 @@ from random import Random
 from ...logic.config import (
     COLLISION_ORBITER,
     COLLISION_PLANET,
+    COMET,
     PLANET_IMAGE_SCALE,
     SUN_DISC,
 )
 from ...logic.mining.minerals import display_scale
 from ...logic.ship.heat import Sunlight
+from ...logic.world.comets import CometOrbit
 from ...logic.world.config import (
+    COMET_RADIUS,
     ORBIT_PULL,
+    PLANET_MASS,
     SUN_GRAVITY,
     SUN_GRAVITY_FALLOFF,
     SUN_RADIUS,
@@ -147,6 +151,17 @@ class SolarSystem:
     def create_orbiter(self, plan: OrbiterPlan, parent: Celestial,
                        collision_type: int) -> Celestial:
         orbit = Orbit(parent, plan.orbit_radius, plan.speed, plan.orbit_angle)
+        return self.create_on(plan, orbit, collision_type)
+
+    def add_comet(self, orbit: CometOrbit) -> Celestial:
+        """ Going through the planets and whatever turns around them """
+        plan = OrbiterPlan(
+            COMET, COMET_RADIUS, PLANET_MASS, 0., 0., orbit_angle=0.,
+        )
+        return self.create_on(plan, orbit, COLLISION_ORBITER)
+
+    def create_on(self, plan: OrbiterPlan, orbit: Orbit,
+                  collision_type: int) -> Celestial:
         entity_id = create_round_entity(
             self.gameworld, plan.texture, orbit.position, plan.radius,
             mass=plan.mass, collision_type=collision_type,
