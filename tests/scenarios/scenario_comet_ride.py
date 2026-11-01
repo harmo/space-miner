@@ -5,12 +5,14 @@ thrusting, and is let go when the comet leaves """
 import math
 from typing import Any
 
-from app.engine.entities import get_body
 from app.logic.ship.config import LANDING_DURATION
 
 from .harness import Scenario
 
 scenario = Scenario('comet_ride')
+# Opens the window: once the scenario has set it up
+from app.engine.entities import get_body  # noqa: E402
+
 check = scenario.check
 remembered: dict[str, Any] = {}
 played = scenario.record_sounds()

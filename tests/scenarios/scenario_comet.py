@@ -5,7 +5,6 @@ the ship mines, then richer asteroids, all gone with it. """
 import math
 from typing import Any
 
-from app.engine.entities import get_body
 from app.logic.config import COMET_COLOR, SWARM_COLOR
 from app.logic.world.comets import tail_length
 from app.logic.world.config import COMET_ICE
@@ -14,6 +13,9 @@ from app.logic.world.swarms import RICH
 from .harness import Scenario
 
 scenario = Scenario('comet')
+# Opens the window: once the scenario has set it up
+from app.engine.entities import get_body  # noqa: E402
+
 check = scenario.check
 remembered: dict[str, Any] = {}
 played = scenario.record_sounds()

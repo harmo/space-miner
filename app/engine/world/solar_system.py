@@ -59,6 +59,9 @@ class SolarSystem:
         # Parents always come before their satellites
         self.bodies: list[Celestial] = []
         self.locked: list[Celestial] = []   # facing their parent
+        # What always turns there, the planets and what the outposts added,
+        # neither asteroids nor comets. Always in the same order.
+        self.lasting: list[Celestial] = []
         # The asteroids of each belt of the plan, mined or not
         self.belt_plans = list(plan.belts)
         self.orbits = plan.orbits           # of the planets and the belt
@@ -74,12 +77,13 @@ class SolarSystem:
                 planet_plan.planet, self.sun, COLLISION_PLANET
             )
             self.planets.append(planet)
+            self.lasting.append(planet)
             self.looks.append(planet_plan.planet.texture)
             for satellite_plan in planet_plan.satellites:
                 if index == plan.earth:   # the moon
-                    self.create_orbiter(
+                    self.lasting.append(self.create_orbiter(
                         satellite_plan, planet, COLLISION_ORBITER
-                    )
+                    ))
                 else:
                     self.belts[belt_of[index]].append(
                         self.add_asteroid(satellite_plan, planet)
@@ -119,6 +123,7 @@ class SolarSystem:
         """ Around `parent`, the sun without any, solid as the planets and
         pulling if it has gravity """
         body = self.create_orbiter(plan, parent or self.sun, COLLISION_PLANET)
+        self.lasting.append(body)
         if plan.gravity:
             self.attractors.append(body)
         return body
@@ -248,16 +253,6 @@ class SolarSystem:
         comet = Celestial(entity_id, COMET_RADIUS, orbit=orbit)
         self.bodies.append(comet)
         return comet
-
-    @property
-    def lasting(self) -> list[Celestial]:
-        """ What always turns there, the planets and what the outposts
-        added, neither asteroids nor comets. Always in the same order. """
-        comet = self.events.comets.comet
-        return [
-            body for body in self.bodies
-            if body.orbit and body not in self.planned and body is not comet
-        ]
 
     @property
     def angles(self) -> list[float]:

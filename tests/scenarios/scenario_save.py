@@ -37,13 +37,15 @@ if SESSION is None:
     sys.exit(drive())
 
 # Imported once the session has its data folder
-from app.engine.entities import get_body  # noqa: E402
 from app.logic.base.missions import Mission  # noqa: E402
 from app.logic.ship.shipyard import Design  # noqa: E402
 
 from .harness import Scenario  # noqa: E402
 
 scenario = Scenario(f'save, session {SESSION}')
+# Opens the window: once the scenario has set it up
+from app.engine.entities import get_body  # noqa: E402
+
 check = scenario.check
 DATA = Path(scenario.data)
 DESIGN = Design(parts={'nose': 'laser', 'left': 'fins'})

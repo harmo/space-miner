@@ -89,6 +89,14 @@ class Scenario:
             self.failures.append(message)
             print(f'  ✗ {message}', flush=True)
 
+    def check_window(self) -> None:
+        """ Importing the engine too early opens one of the default size """
+        from kivy.core.window import Window
+        if os.environ.get('SPACE_MINER_UNSEEN'):
+            size = 'x'.join(str(side) for side in Window.size)
+            wanted = os.environ['SPACE_MINER_WINDOW']
+            self.check(size == wanted, f'a window of {size}, not {wanted}')
+
     def log(self, *values: object) -> None:
         print('   ', *values, flush=True)
 
@@ -249,6 +257,7 @@ class Scenario:
             waiting = Clock.schedule_interval(run_step, 0)
 
         def start(dt: float) -> None:
+            self.check_window()
             self.game.choose(self.game.slot)
             play(0)
 

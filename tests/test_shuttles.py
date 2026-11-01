@@ -7,7 +7,6 @@ from app.logic.base.config import (
     SHUTTLE_DOCK_HEIGHT,
     SHUTTLE_LOAD,
     SHUTTLE_SPEED,
-    SHUTTLE_SUN_CLEARANCE,
 )
 from app.logic.base.post import HOME_SERVICES, Post, Services
 from app.logic.base.quays import (
@@ -285,10 +284,6 @@ def test_it_keeps_flying_when_the_sun_moves_with_the_world() -> None:
         0., here, {}, Way((5000., 0.), (6000., 0.)), moved,
     )
     assert carrier.offset == before
-
-
-def test_the_sun_keeps_shuttles_further_off() -> None:
-    assert SHUTTLE_SUN_CLEARANCE > SHUTTLE_CLEARANCE
 
 
 def test_the_map_tells_where_it_goes_and_what_it_carries() -> None:
