@@ -4,12 +4,14 @@ from random import Random
 
 from app.logic.base.board import Board, Contracts
 from app.logic.base.config import PAD_DIRECTION
+from app.logic.base.missions import needs_at
 from app.logic.base.outposts import (
     Construction,
     Outpost,
     Progress,
     bare_outpost,
     open_boards,
+    site_desks,
 )
 from app.logic.base.permits import Permits
 from app.logic.base.post import Services
@@ -170,6 +172,38 @@ def test_the_progress_of_an_outpost_comes_back() -> None:
     assert again.progress == outpost.progress
     assert again.post.services == FUEL
     assert again.progress.started
+
+
+def test_a_site_followed_tracks_what_it_lacks_stage_after_stage() -> None:
+    outpost = outpost_on('frontier')
+    assert site_desks([outpost]) == []
+    outpost.construction.followed = True
+    first = dict(outpost.construction.needed)
+    assert site_desks([outpost])[0].missions[0].wanted == first
+    stage = outpost.construction.stage
+    assert stage is not None
+    outpost.deliver({name: float(units) for name, units in stage.materials})
+    assert outpost.construction.built == 1
+    wanted = site_desks([outpost])[0].missions[0].wanted
+    assert wanted == outpost.construction.needed != first
+
+
+def test_only_the_cargo_counts_for_a_site_followed() -> None:
+    outpost = outpost_on('frontier')
+    outpost.construction.followed = True
+    outpost.post.depot.stock['rock'] = 500.
+    held = {need.mineral: need.held
+            for need in needs_at(site_desks([outpost]), {'rock': 7.})}
+    assert held['rock'] == 7
+
+
+def test_following_a_site_comes_back() -> None:
+    outpost = outpost_on('frontier')
+    outpost.construction.followed = True
+    assert outpost.progress.started
+    again = outpost_on('frontier')
+    again.restore(outpost.progress)
+    assert again.construction.followed
 
 
 def test_an_outpost_without_board_has_no_contracts() -> None:

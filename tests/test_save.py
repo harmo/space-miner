@@ -41,7 +41,7 @@ SAVE = Save(
             3, {}, {'ice': 4.5}, Contracts(
                 [Mission('Colonie des Confins', {'gold': 4}, 700, 2)],
                 [MISSION], 2,
-            ),
+            ), followed=True,
         ),
     },
     landed=Landed('frontier', 1.5),

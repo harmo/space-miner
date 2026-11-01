@@ -4,6 +4,7 @@ of the pad ships land on, with the post serving them once built far
 enough """
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from random import Random
 
@@ -13,6 +14,7 @@ from ..ship.parking import Parking
 from ..world.space import Celestial, Vec2
 from .board import Board, Contracts
 from .config import PAD_DIRECTION
+from .missions import Desk, Mission
 from .permits import Permits
 from .post import Post, Services
 from .sites import SITES, Site, Stage
@@ -26,10 +28,13 @@ class Progress:
     delivered: dict[str, int] = field(default_factory=dict)
     stock: Hold = field(default_factory=dict)  # of its depot
     contracts: Contracts = field(default_factory=Contracts)
+    followed: bool = False              # its site tracked in flight
 
     @property
     def started(self) -> bool:
-        return bool(self.built or self.delivered or self.stock)
+        return bool(
+            self.built or self.delivered or self.stock or self.followed
+        )
 
 
 class Construction:
@@ -41,10 +46,12 @@ class Construction:
         self.permits = permits or Permits()
         self.built = 0                      # stages
         self.delivered: dict[str, int] = {}  # for the next stage
+        self.followed = False               # tracked in flight
 
     def restore(self, progress: Progress) -> None:
         self.built = min(progress.built, len(self.site.stages))
         self.delivered = dict(progress.delivered)
+        self.followed = progress.followed
 
     @property
     def stage(self) -> Stage | None:
@@ -153,6 +160,7 @@ class Outpost:
             construction.built, dict(construction.delivered),
             dict(self.post.depot.stock),
             board.contracts if board else Contracts(),
+            construction.followed,
         )
 
     def deliver(self, cargo: Hold) -> Stage | None:
@@ -169,6 +177,15 @@ class Outpost:
         stock.update(progress.stock)
         if self.board is not None:
             self.board.resume(progress.contracts)
+
+
+def site_desks(outposts: Sequence[Outpost]) -> list[Desk]:
+    """ What the sites followed still lack, stage after stage, as missions
+    under way: only the cargo delivers to them """
+    return [
+        Desk([Mission(outpost.name, outpost.construction.needed, 0)], {})
+        for outpost in outposts if outpost.construction.followed
+    ]
 
 
 def bare_outpost(

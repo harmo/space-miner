@@ -163,6 +163,7 @@ def outposts_of(data: Any) -> dict[str, Progress]:
             },
             ores(progress.get('stock', {})),
             contracts_of(progress),
+            bool(progress.get('followed', False)),
         )
         for site, progress in dict(data).items()
     }
@@ -192,7 +193,7 @@ def dump(save: Save) -> str:
         'outposts': {
             site: {
                 'built': progress.built, 'delivered': progress.delivered,
-                'stock': progress.stock,
+                'stock': progress.stock, 'followed': progress.followed,
                 **contracts_data(progress.contracts),
             }
             for site, progress in save.outposts.items()

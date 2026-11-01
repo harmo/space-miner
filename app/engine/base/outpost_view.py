@@ -52,9 +52,11 @@ class SitePanel(BoxLayout):
     adds = StringProperty('')           # once built
     news = StringProperty('')           # a stage just built
     can_deliver = BooleanProperty(False)
+    followed = BooleanProperty(False)   # tracked in flight
 
     def show(self, outpost: Outpost, cargo: Hold) -> None:
         construction = outpost.construction
+        self.followed = construction.followed
         self.title = f'CHANTIER  ·  {outpost.name}'
         stage = construction.stage
         rows = self.ids.rows
@@ -175,6 +177,14 @@ class OutpostView(PostView):
         panel = self.ids.site
         panel.news = f'{built.name} construit' if built else ''
         panel.show(self.current, self.player.miner.ore)
+
+    def follow_site(self) -> None:
+        """ What it lacks is tracked in flight, or not anymore """
+        if self.current is None or self.player is None:
+            return
+        construction = self.current.construction
+        construction.followed = not construction.followed
+        self.ids.site.show(self.current, self.player.miner.ore)
 
     def open(self, panel: str) -> None:
         current, player, base = self.current, self.player, self.base

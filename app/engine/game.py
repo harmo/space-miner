@@ -17,7 +17,7 @@ from kivy.utils import platform
 
 from ..logic.base.board import Board
 from ..logic.base.missions import Desk
-from ..logic.base.outposts import Outpost, open_boards
+from ..logic.base.outposts import Outpost, open_boards, site_desks
 from ..logic.base.quays import Quay, shuttle_position, update_shuttles
 from ..logic.base.sites import PERMITS
 from ..logic.config import (
@@ -203,14 +203,15 @@ class Game(Widget):
     @property
     def desks(self) -> list[Desk]:
         """ Where missions are validated, the Earth first, with the
-        concessions followed: a depot counts once, whatever it serves """
+        concessions followed: a depot counts once, whatever it serves.
+        Then the sites followed. """
         base = self.ids.base
         active = base.board.active if base.board is not None else []
         concessions = base.permits.tracked(PERMITS)
         return [Desk([*active, *concessions], base.depot.stock)] + [
             Desk(outpost.board.active, outpost.post.depot.stock)
             for outpost in self.outposts if outpost.board is not None
-        ]
+        ] + site_desks(self.outposts)
 
     # Game loop
 

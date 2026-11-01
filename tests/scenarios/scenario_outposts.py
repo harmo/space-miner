@@ -11,6 +11,7 @@ import os
 from typing import Any
 
 from app.logic.base.market import ore_price
+from app.logic.base.missions import needs_at
 from app.logic.ship.config import LANDING_DURATION
 
 from .harness import Scenario
@@ -95,6 +96,23 @@ def delivers_part_of_the_habitat() -> None:
     check(construction.delivered == {'rock': 10, 'iron': 10},
           f'but delivered: {construction.delivered}')
     check(played[-1:] == ['deliver'], f'as heard: {played}')
+    scenario.press(scenario.button(view().ids.site, 'Suivre'))
+
+
+@scenario.step(.3)
+def tracks_what_the_site_lacks() -> None:
+    game, construction = scenario.game, frontier().construction
+    check(construction.followed, 'the site is followed')
+    scenario.button(view().ids.site, 'Ne plus suivre')
+    check(game.ids.tracker.shown, 'and shown in flight')
+    wanted = {need.mineral: need.wanted for need in needs_at(game.desks, {})}
+    check(wanted == construction.needed, f'what it lacks: {wanted}')
+    game.ids.scanner.for_missions()
+    check(scenario.player.looked_for == set(construction.needed),
+          f'looked for: {scenario.player.looked_for}')
+    saved = game.keeper.snapshot().outposts['frontier']
+    check(saved.followed, 'and saved')
+    scenario.screenshot('followed')
     scenario.player.miner.ore.update({'rock': 150., 'iron': 30., 'gold': 3.})
     view().open('site')                 # showing the new cargo
 
@@ -108,7 +126,12 @@ def delivers_the_rest() -> None:
 def builds_the_habitat() -> None:
     check(frontier().construction.built == 2, 'the habitat is built')
     check(frontier().post.services.depot, 'with a depot')
+    needed = frontier().construction.needed
+    wanted = {n.mineral for n in needs_at(scenario.game.desks, {})}
+    check(needed and wanted == set(needed), f'the next stage: {wanted}')
     scenario.screenshot('habitat')
+    scenario.press(scenario.button(view().ids.site, 'Ne plus suivre'))
+    check(not frontier().construction.followed, 'followed no more')
     scenario.press(scenario.button(view().ids.site, 'Fermer'))
 
 

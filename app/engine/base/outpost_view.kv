@@ -186,6 +186,11 @@
             disabled: not root.can_deliver
             on_release: root.view.deliver()
         PanelButton:
+            text: 'Ne plus suivre' if root.followed else 'Suivre'
+            font_size: '15sp'
+            glow: .9 if root.followed else .3
+            on_release: root.view.follow_site()
+        PanelButton:
             text: 'Fermer'
             font_size: '15sp'
             on_release: root.view.close()
