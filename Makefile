@@ -26,8 +26,8 @@ check:  ## Lint, type-check and test
 	uv run mypy
 	uv run pytest -q
 
-scenarios:  ## Play scripted scenarios in windows, PHONE=1 as on phones
-	uv run python -m tests.scenarios.run $(if $(PHONE),--phone)
+scenarios:  ## Play scripted scenarios, unseen: PHONE=1 as on phones, VISIBLE=1 in windows
+	uv run python -m tests.scenarios.run $(if $(PHONE),--phone) $(if $(VISIBLE),--visible)
 
 assets:  ## Recolor asteroids, paint planets and sky, draw ships, compose sounds
 	uv run python -m tools.recolor

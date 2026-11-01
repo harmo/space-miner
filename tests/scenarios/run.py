@@ -1,18 +1,24 @@
-""" Plays every scenario, each in a process of its own, several at a time:
-a window opens for each of them.
+""" Plays every scenario, each in a process of its own, several at a time,
+on a screen of their own which nobody sees: Xvfb draws them in software.
 
-    uv run python -m tests.scenarios.run [--phone] [--one] [name ...]
+    uv run python -m tests.scenarios.run [--phone] [--one] [--visible]
+        [name ...]
 
 --phone plays them with the interface of phones, in a phone sized window.
---one plays them one after the other, to watch them.
+--one plays them one after the other.
+--visible opens their windows on the real screen, to watch them, which is
+what happens without Xvfb.
 Names pick scenarios, by part of their name.
 """
 
 import os
+import shutil
 import subprocess
 import sys
 import time
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -20,6 +26,30 @@ ROOT = HERE.parent.parent
 PHONE = {'SPACE_MINER_PLATFORM': 'android', 'SPACE_MINER_WINDOW': '960x432'}
 TIMEOUT = 120                 # seconds for a scenario
 TOGETHER = 4                  # scenarios at a time
+SCREEN = '1280x720x24'        # the unseen one
+
+
+@contextmanager
+def unseen_screen() -> Iterator[dict[str, str]]:
+    """ What scenarios need to run on it, Xvfb telling its display """
+    read, write = os.pipe()
+    screen = subprocess.Popen(
+        ['Xvfb', '-displayfd', str(write), '-screen', '0', SCREEN,
+         '+extension', 'GLX', '-nolisten', 'tcp'],
+        pass_fds=[write], stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    os.close(write)
+    display = os.read(read, 16).decode().strip()
+    os.close(read)
+    try:
+        yield {
+            'DISPLAY': f':{display}', 'SDL_VIDEODRIVER': 'x11',
+            'LIBGL_ALWAYS_SOFTWARE': '1', 'SPACE_MINER_UNSEEN': '1',
+        }
+    finally:
+        screen.terminate()
+        screen.wait()
 
 
 def scenarios(names: list[str]) -> list[str]:
@@ -29,9 +59,11 @@ def scenarios(names: list[str]) -> list[str]:
     return [name for name in found if any(part in name for part in names)]
 
 
-def play(name: str, phone: bool) -> bool:
-    env = {**os.environ, **(PHONE if phone else {})}
+def play(name: str, phone: bool, screen: dict[str, str]) -> bool:
+    env = {**os.environ, **(PHONE if phone else {}), **screen}
     env.pop('SPACE_MINER_DATA', None)       # a fresh folder for each
+    if screen:
+        env.pop('WAYLAND_DISPLAY', None)
     started = time.monotonic()
     try:
         result = subprocess.run(
@@ -60,8 +92,17 @@ def main() -> None:
         [name for name in arguments if not name.startswith('--')]
     )
     started = time.monotonic()
-    with ThreadPoolExecutor(1 if '--one' in arguments else TOGETHER) as pool:
-        results = list(pool.map(lambda name: play(name, phone), names))
+    together = 1 if '--one' in arguments else TOGETHER
+
+    def play_all(screen: dict[str, str]) -> list[bool]:
+        with ThreadPoolExecutor(together) as pool:
+            return list(pool.map(lambda n: play(n, phone, screen), names))
+
+    if '--visible' in arguments or shutil.which('Xvfb') is None:
+        results = play_all({})
+    else:
+        with unseen_screen() as screen:
+            results = play_all(screen)
     failed = results.count(False)
     minutes, seconds = divmod(round(time.monotonic() - started), 60)
     print(f'\n{len(results) - failed} / {len(results)} scenarios passed'

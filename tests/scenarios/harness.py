@@ -188,6 +188,13 @@ class Scenario:
 
     # Running
 
+    def draw_nothing(self) -> None:
+        """ Nobody sees it, and drawing without a graphics card would slow
+        the game down. Unless pictures are wanted: the game then draws. """
+        if not os.environ.get('SPACE_MINER_SHOTS'):
+            from kivy.core.window import Window
+            Window.bind(on_draw=lambda *_: True, on_flip=lambda *_: True)
+
     def watch(self) -> None:
         """ From a thread of its own, as the game may be what is stuck """
         while True:
@@ -242,6 +249,8 @@ class Scenario:
                 Clock.schedule_once(start, SETTLING)
 
         ready = Clock.schedule_interval(wait_for_the_game, 0)
+        if os.environ.get('SPACE_MINER_UNSEEN'):
+            self.draw_nothing()
         self.app.run()
         if not self.finished and not self.failures:
             self.failures.append('closed before the end')
