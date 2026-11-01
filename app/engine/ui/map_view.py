@@ -38,7 +38,8 @@ FRAME_MARGIN = 20             # dp, above and below the round map
 CANISTER_COLOR = (1., .6, .3)
 SHADOW_MAP_COLOR = (1., 1., 1., .14)
 COMET_PATH_POINTS = 120
-OFFERED_FONT = 10             # sp, of what outposts offer
+OFFERED_FONT = 11             # sp, of what outposts offer
+TAP_REACH = 24                # dp, around an outpost
 SHIP_COLOR = (1., 1., 1.)
 
 
@@ -58,9 +59,11 @@ class MapView(Widget):
         super().__init__(**kwargs)
         self.shown: Charted | None = None
         self.chart: Chart | None = None     # as drawn last
+        self.picked: Outpost | None = None  # telling what it offers
 
     def show(self, charted: Charted) -> None:
         self.shown = charted
+        self.picked = None
         self.draw()
 
     def zoom_by(self, closer: bool) -> None:
@@ -68,11 +71,33 @@ class MapView(Widget):
         self.draw()
 
     def on_touch_down(self, touch: MotionEvent) -> bool:
-        """ The mouse wheel zooms """
+        """ The mouse wheel zooms, and tapping an outpost tells what it
+        offers, until tapping anywhere else """
         if self.collide_point(*touch.pos) and touch.is_mouse_scrolling:
             self.zoom_by(touch.button == 'scrolldown')
             return True
-        return bool(super().on_touch_down(touch))
+        if super().on_touch_down(touch):
+            return True
+        if self.collide_point(*touch.pos):
+            picked = self.outpost_at(touch.pos)
+            self.picked = None if picked is self.picked else picked
+            self.draw()
+            return True
+        return False
+
+    def outpost_at(self, pos: Vec2) -> Outpost | None:
+        """ The closest to `pos`, within the reach of a finger """
+        if self.shown is None or self.chart is None:
+            return None
+        frame = self.chart
+        return min(
+            (
+                outpost for outpost in self.shown.outposts
+                if math.dist(frame.place(outpost.pos), pos) < dp(TAP_REACH)
+            ),
+            key=lambda outpost: math.dist(frame.place(outpost.pos), pos),
+            default=None,
+        )
 
     def draw(self) -> None:
         if self.shown is None:
@@ -214,10 +239,12 @@ class MapView(Widget):
                 Line(rectangle=(x - side / 2, y - side / 2, side, side),
                      width=1.2)
             self.label(outpost.name, (x, y + dp(16)), OUTPOST_COLOR)
-            self.label(
-                offered(outpost.construction.services), (x, y - dp(16)),
-                OUTPOST_COLOR, OFFERED_FONT,
-            )
+            if outpost is self.picked:
+                Line(circle=(x, y, dp(9)), width=1.4)
+                self.label(
+                    offered(outpost.construction.services), (x, y - dp(18)),
+                    OUTPOST_COLOR, OFFERED_FONT,
+                )
 
     def ship(self, player: Player, frame: Chart) -> None:
         """ Pointing where it heads, within the reach of its scanner """

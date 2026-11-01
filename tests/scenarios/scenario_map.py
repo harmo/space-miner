@@ -41,7 +41,22 @@ def stands_still() -> None:
     check(scenario.player.ship.position == remembered['ship'],
           'and the ship with it')
     check(len(view().canvas.children) > 20, 'the map is drawn')
+    check(view().picked is None, 'no outpost is picked at first')
+    outpost = scenario.game.outposts[0]
+    scenario.press(view(), view().chart.place(outpost.pos))
+    check(view().picked is outpost, 'tapping one tells what it offers')
+
+
+@scenario.step(.3)
+def tells_what_it_offers() -> None:
+    game = scenario.game
     scenario.screenshot('map')
+    outpost = game.outposts[0]
+    scenario.press(view(), view().chart.place(outpost.pos))
+    check(view().picked is None, 'tapping it again hides it')
+    scenario.press(view(), view().chart.place(outpost.pos))
+    scenario.press(view(), (view().x + 80, view().center_y))
+    check(view().picked is None, 'and so does tapping anywhere else')
     for _ in range(2):
         scenario.press(scenario.button(game.ids.map, '+'))
 
