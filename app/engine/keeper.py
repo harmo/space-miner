@@ -8,6 +8,7 @@ from ..logic.mining.minerals import MINERALS
 from ..logic.save import EARTH, Landed, Save, dump
 from ..logic.ship.ground import Ground
 from ..logic.ship.hulls import HULLS
+from ..logic.ship.scanner import LOOKED_FOR
 from ..logic.ship.shipyard import Design
 from .base.earth_base import EarthBase
 from .base.quays import quays_of
@@ -50,6 +51,8 @@ class Keeper:
             ],
             fuel=round(self.player.tank.level, 2),
             concessions=sorted(base.permits.granted),
+            followed=sorted(base.permits.followed),
+            scan_missions=self.player.scan_missions,
             shuttles={
                 quay.key: quay.post.shuttle.state
                 for quay in quays_of(base, self.outposts)
@@ -101,6 +104,7 @@ class Keeper:
         base.depot.stock.update(save.stock)
         base.seen_tier = save.seen_tier
         base.permits.granted.update(save.concessions)
+        base.permits.followed.update(save.followed)
         if board is not None:
             board.resume(save.contracts)
         for outpost in self.outposts:
@@ -118,6 +122,7 @@ class Keeper:
         self.player.miner.ore.clear()
         self.player.miner.ore.update(save.cargo)
         self.player.looked_for = set(save.looked_for)
+        self.player.scan_missions = save.scan_missions
         for quay in quays_of(base, self.outposts):
             if quay.key in save.shuttles:
                 quay.post.shuttle.resume(save.shuttles[quay.key])
@@ -143,6 +148,8 @@ class Keeper:
             player.canisters.remove(canister)
         player.explosions.clear()
         player.miner.ore.clear()
+        player.scan_missions = False
+        player.looked_for = set(LOOKED_FOR)
         self.base.reset()
         if self.base.board is not None:
             open_boards(self.outposts, self.base.wallet)

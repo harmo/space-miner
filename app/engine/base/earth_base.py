@@ -62,6 +62,7 @@ class EarthBase(PostView):
         self.wallet = Wallet()
         self.inventory = Inventory()
         self.permits.granted.clear()
+        self.permits.followed.clear()
         self.home = home_post(self.rng)
         self.seen_tier = 1
         self.panel = ''

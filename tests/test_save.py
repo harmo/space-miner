@@ -46,6 +46,8 @@ SAVE = Save(
     },
     landed=Landed('frontier', 1.5),
     concessions=['ares_mine'],
+    followed=['ceres_refinery'],
+    scan_missions=True,
     shuttles={'ares': ShuttleState(
         Route('earth', ('iron', 'copper')), 'out', 12.5, 20., {'iron': 60.},
     )},

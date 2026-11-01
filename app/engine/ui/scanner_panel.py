@@ -15,7 +15,7 @@ from kivy.properties import (
 )
 from kivy.uix.boxlayout import BoxLayout
 
-from ...logic.base.missions import Desk
+from ...logic.base.missions import Desk, lacking, needs_at
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINED, MINERALS, asteroid_texture
 from ...logic.ship.scanner import counts
@@ -48,6 +48,7 @@ class ScannerPanel(BoxLayout):
 
     open = BooleanProperty(False)
     reach = StringProperty('')
+    missions = BooleanProperty(False)   # following what they lack
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -98,12 +99,15 @@ class ScannerPanel(BoxLayout):
             counts(system.asteroids, player.ship.position, reach)
             if player.ship is not None else dict.fromkeys(MINED, 0)
         )
+        self.missions = player.scan_missions
         for name, row in self.rows.items():
             row.count = found[name]
             row.looked_for = name in player.looked_for
 
     def look_for(self, minerals: set[str]) -> None:
+        """ Chosen by hand: missions are not followed anymore """
         if self.player is not None:
+            self.player.scan_missions = False
             self.player.looked_for = minerals
             self.refresh()
 
@@ -118,11 +122,14 @@ class ScannerPanel(BoxLayout):
         self.look_for(set())
 
     def for_missions(self) -> None:
-        """ What the missions under way want, wherever they are """
-        self.look_for({
-            name for desk in self.desks() for mission in desk.missions
-            for name in mission.wanted
-        })
+        """ What the missions under way still lack, wherever they are, and
+        goes on following it, see show_needs """
+        if self.player is not None:
+            self.player.scan_missions = True
+            self.player.looked_for = lacking(
+                needs_at(self.desks(), self.player.miner.ore)
+            )
+            self.refresh()
 
 
 load_style(__file__)

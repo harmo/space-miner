@@ -5,6 +5,7 @@ import math
 from typing import Any
 
 from app.logic.base.config import TIER_MISSIONS
+from app.logic.base.missions import needs_at
 from app.logic.base.sites import ARES_MINE
 from app.logic.ship.config import LANDING_DURATION
 
@@ -92,6 +93,21 @@ def offers_the_concession() -> None:
     scenario.screenshot('offered')
     card = next(c for c in cards if c.permit is ARES_MINE)
     check(card.can_act, 'it can be validated')
+    scenario.press(scenario.button(card, 'Suivre'))
+
+
+@scenario.step(.3)
+def follows_it() -> None:
+    base, game = scenario.base, scenario.game
+    check(base.permits.followed == {ARES_MINE.key}, 'followed')
+    wanted = {need.mineral for need in needs_at(game.desks, {})}
+    check(wanted == set(ARES_MINE.mission.wanted), f'tracked: {wanted}')
+    check(game.ids.tracker.shown, 'shown in flight')
+    check(not base.board.active, 'taking no place among the missions')
+    check(game.keeper.snapshot().followed == [ARES_MINE.key], 'and saved')
+    card = next(c for c in permit_cards() if c.permit is ARES_MINE)
+    scenario.button(card, 'Ne plus suivre')
+    scenario.screenshot('followed')
     scenario.press(scenario.button(card, 'Valider'))
 
 
@@ -99,6 +115,7 @@ def offers_the_concession() -> None:
 def grants_it() -> None:
     base = scenario.base
     check(not base.permits.lacks(ARES_MINE), 'the concession is granted')
+    check(not base.permits.followed, 'not followed anymore')
     # Some of it filling the tank right away
     reward = ARES_MINE.mission.reward
     check(reward - 50 < base.wallet.credits <= reward,

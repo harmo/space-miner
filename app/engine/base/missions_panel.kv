@@ -207,15 +207,15 @@
             disabled: not root.can_act
             on_release: root.panel.act(root)
         PanelButton:
-            text: 'Abandonner'
+            text: root.aside
             bold: False
             font_size: '11sp'
             corner: 8
-            glow: .2
-            color: 1, 1, 1, .6
-            opacity: 1 if root.accepted else 0
-            disabled: not root.accepted
-            on_release: root.panel.abandon(root)
+            glow: .8 if root.followed else .2
+            color: 1, 1, 1, 1 if root.followed else .6
+            opacity: 1 if root.aside else 0
+            disabled: not root.aside
+            on_release: root.panel.act_aside(root)
 
 # A level of missions: the one chosen glows, those out of reach are dim
 <LevelButton>:

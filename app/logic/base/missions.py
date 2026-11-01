@@ -121,6 +121,11 @@ def needs_at(
     ]
 
 
+def lacking(wanted: Sequence[Need]) -> set[str]:
+    """ The minerals there is not enough of yet """
+    return {need.mineral for need in wanted if not need.met}
+
+
 def paid(wanted: dict[str, int], bonus: float) -> int:
     """ For that ore, more than what it is worth """
     value = sum(

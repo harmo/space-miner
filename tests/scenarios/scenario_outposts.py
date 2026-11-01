@@ -233,9 +233,16 @@ def validates_it_there() -> None:
     tracker = scenario.game.ids.tracker
     check(tracker.shown, 'the mission is tracked, wherever it was taken')
     scanner = scenario.game.ids.scanner
+    stock = frontier().post.depot.stock
+    delivered = dict(stock)
+    stock.clear()
     scanner.for_missions()
     check(scenario.player.looked_for == set(mission.wanted),
           'and looked for by the scanner')
+    stock.update(delivered)
+    scanner.for_missions()
+    check(scenario.player.looked_for == set(),
+          'unless its own depot holds it')
     earth = scenario.base.board.validated
     card = next(
         card for card in view().ids.missions.ids.active.children

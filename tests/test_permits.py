@@ -109,6 +109,30 @@ def test_a_concession_counts_once() -> None:
     assert board.validated == 1
 
 
+def test_following_a_concession_tracks_what_it_wants() -> None:
+    permits = Permits()
+    assert permits.tracked(PERMITS) == []
+    permits.follow(ARES_MINE)
+    assert permits.tracked(PERMITS) == [ARES_MINE.mission]
+    permits.follow(ARES_MINE)
+    assert permits.tracked(PERMITS) == []
+
+
+def test_a_concession_granted_is_not_followed_anymore() -> None:
+    permits = Permits()
+    permits.follow(ARES_MINE)
+    wanted = ARES_MINE.mission.wanted
+    permits.validate(ARES_MINE, Board(Random(3), Wallet()), full(wanted))
+    assert permits.tracked(PERMITS) == []
+
+
+def test_following_a_concession_takes_no_place_on_the_board() -> None:
+    permits = Permits()
+    board = Board(Random(3), Wallet())
+    permits.follow(ARES_MINE)
+    assert board.active == []
+
+
 def test_concessions_are_much_bigger_than_missions() -> None:
     for permit in PERMITS:
         assert sum(permit.mission.wanted.values()) >= 100

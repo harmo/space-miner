@@ -22,6 +22,7 @@ class Permits:
 
     def __init__(self) -> None:
         self.granted: set[str] = set()
+        self.followed: set[str] = set()     # tracked in flight
 
     def lacks(self, permit: Permit | None) -> bool:
         return permit is not None and permit.key not in self.granted
@@ -37,6 +38,17 @@ class Permits:
             if self.lacks(permit) and permit.tier <= tier
         ]
 
+    def follow(self, permit: Permit) -> None:
+        """ Tracked in flight, or not anymore """
+        self.followed ^= {permit.key}
+
+    def tracked(self, permits: Sequence[Permit]) -> list[Mission]:
+        """ What those followed want, as missions under way """
+        return [
+            permit.mission for permit in permits
+            if permit.key in self.followed
+        ]
+
     def validate(self, permit: Permit, board: Board, *holds: Hold) -> None:
         """ Takes the ore from the holds, the first ones first, pays and
         makes the reputation of the `board` as any mission """
@@ -48,3 +60,4 @@ class Permits:
         board.wallet.earn(mission.reward)
         board.validated += 1
         self.granted.add(permit.key)
+        self.followed.discard(permit.key)

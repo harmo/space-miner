@@ -1,9 +1,10 @@
 """ A scanner bought, finding asteroids, the minerals it looks for picked
-in its menu """
+in its menu, or following what the missions under way still lack """
 
 import math
 from typing import Any
 
+from app.logic.base.missions import Mission
 from app.logic.ship.parts import PARTS
 from app.logic.ship.scanner import counts, mineral_name
 
@@ -158,6 +159,46 @@ def points_at_it() -> None:
     check(not panel().open, 'escape closes the scanner')
     check(scenario.game.playing, 'the game goes on')
     scenario.screenshot('chevrons')
+    wanted = {'iron': 5, 'copper': 5, 'gold': 5}
+    scenario.base.board.active.append(Mission('Institut', wanted, 100))
+    scenario.base.depot.stock['iron'] = 5.
+    scenario.player.miner.ore['copper'] = 5.
+    scenario.press(scenario.game.ids.scanner_button)
+
+
+@scenario.step(.3)
+def asks_for_the_missions() -> None:
+    scenario.press(scenario.button(panel(), 'Missions'))
+
+
+@scenario.step(.3)
+def looks_only_for_what_they_lack() -> None:
+    check(scenario.player.looked_for == {'gold'},
+          f'neither the depot nor the cargo: {scenario.player.looked_for}')
+    check(not panel().rows['iron'].looked_for, 'and shown so')
+    check(panel().missions, 'the button tells it')
+    scenario.screenshot('missions')
+    scenario.escape()
+    scenario.player.miner.ore['gold'] = 5.
+
+
+@scenario.step(.3)
+def stops_looking_for_what_came_in() -> None:
+    check(scenario.player.looked_for == set(),
+          f'with the scanner closed: {scenario.player.looked_for}')
+    scenario.press(scenario.game.ids.scanner_button)
+
+
+@scenario.step(.3)
+def chooses_by_hand_again() -> None:
+    scenario.press(scenario.button(panel(), 'Tout'))
+
+
+@scenario.step(.3)
+def does_not_follow_them_anymore() -> None:
+    check(not panel().missions, 'the button tells it')
+    check(not scenario.player.scan_missions, 'missions are not followed')
+    check(scenario.player.looked_for, 'what was chosen stays')
 
 
 scenario.run()

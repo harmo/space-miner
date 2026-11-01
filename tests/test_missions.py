@@ -15,6 +15,7 @@ from app.logic.base.missions import (
     Desk,
     Mission,
     Need,
+    lacking,
     make_mission,
     make_order,
     needs,
@@ -223,6 +224,11 @@ def test_a_depot_only_counts_for_what_its_desk_wants() -> None:
     assert needs_at([earth, outpost], {}) == [
         Need('iron', 0, 10), Need('gold', 0, 5),
     ]
+
+
+def test_only_what_is_short_is_lacking() -> None:
+    assert lacking([Need('iron', 8, 8), Need('ruby', 1, 2)]) == {'ruby'}
+    assert lacking([Need('gold', 9, 2)]) == set()
 
 
 def test_a_board_resumes_its_contracts() -> None:

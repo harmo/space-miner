@@ -79,7 +79,9 @@ class MissionCard(BoxLayout):
     reward = StringProperty('')
     action = StringProperty('')         # "Accepter" or "Valider"
     can_act = BooleanProperty(False)
-    accepted = BooleanProperty(False)   # can be abandoned
+    accepted = BooleanProperty(False)
+    aside = StringProperty('')          # "Abandonner" or "Suivre", if any
+    followed = BooleanProperty(False)   # a concession tracked in flight
 
     def __init__(
         self,
@@ -167,7 +169,7 @@ class MissionsPanel(BoxLayout):
                 wanted=progress_text(mission, self.stock, self.cargo),
                 reward=credits_text(mission.reward), action='Valider',
                 can_act=mission.can_validate(self.stock, self.cargo),
-                accepted=True,
+                accepted=True, aside='Abandonner',
             ))
         self.ids.none.opacity = 0 if board.active else 1
 
@@ -178,11 +180,14 @@ class MissionsPanel(BoxLayout):
             return
         for permit in self.permits.offered(PERMITS, board.tier):
             mission = permit.mission
+            followed = permit.key in self.permits.followed
             cards.add_widget(MissionCard(
                 mission, permit, panel=self, client=mission.client,
                 wanted=progress_text(mission, self.stock, self.cargo),
                 reward=credits_text(mission.reward), action='Valider',
                 can_act=mission.can_validate(self.stock, self.cargo),
+                aside='Ne plus suivre' if followed else 'Suivre',
+                followed=followed,
             ))
 
     def show_levels(self, board: Board) -> None:
@@ -217,10 +222,13 @@ class MissionsPanel(BoxLayout):
             self.board.accept(card.mission)
         self.refresh()
 
-    def abandon(self, card: MissionCard) -> None:
-        if self.board is not None:
+    def act_aside(self, card: MissionCard) -> None:
+        """ A concession is followed in flight, a mission abandoned """
+        if card.permit is not None and self.permits is not None:
+            self.permits.follow(card.permit)
+        elif self.board is not None:
             self.board.abandon(card.mission)
-            self.refresh()
+        self.refresh()
 
 
 load_style(__file__)

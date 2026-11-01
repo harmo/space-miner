@@ -73,6 +73,7 @@ class Player:
         self.stats = ship_stats(self.design)
         self.condition = Condition(self.stats)
         self.looked_for = set(LOOKED_FOR)   # by its scanner
+        self.scan_missions = False          # what missions lack, as it goes
         grounds.fit(self.stats.size.width)
         self.miner = Miner(
             system, self.canisters, rng, self.explosions, self.stats

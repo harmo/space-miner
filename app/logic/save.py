@@ -62,6 +62,8 @@ class Save:
     # Saved in flight, the ship comes back on the Earth, its cargo lost
     landed: Landed | None = None
     concessions: list[str] = field(default_factory=list)  # granted
+    followed: list[str] = field(default_factory=list)     # tracked in flight
+    scan_missions: bool = False         # the scanner looks for what they lack
     # By post, those with a route or on their way
     shuttles: dict[str, ShuttleState] = field(default_factory=dict)
     canisters: list[LostCanister] = field(default_factory=list)
@@ -200,6 +202,8 @@ def dump(save: Save) -> str:
             'direction': save.landed.direction,
         } if save.landed else None,
         'concessions': save.concessions,
+        'followed': save.followed,
+        'scan_missions': save.scan_missions,
         'shuttles': {
             post: shuttle_data(state) for post, state in save.shuttles.items()
         },
@@ -235,6 +239,8 @@ def load(text: str) -> Save:
             fuel=fuel_of(data.get('fuel')),
             outposts=outposts_of(data.get('outposts', {})),
             concessions=[str(key) for key in data.get('concessions', [])],
+            followed=[str(key) for key in data.get('followed', [])],
+            scan_missions=bool(data.get('scan_missions', False)),
             shuttles=shuttles_of(data.get('shuttles', {})),
             canisters=canisters_of(data.get('canisters', [])),
             events=events_of(data.get('events')),

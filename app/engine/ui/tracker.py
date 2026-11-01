@@ -8,7 +8,7 @@ from kivy.properties import (
 )
 from kivy.uix.boxlayout import BoxLayout
 
-from ...logic.base.missions import Desk, Need, needs_at
+from ...logic.base.missions import Desk, Need, lacking, needs_at
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
 from ..ship.player import Player
@@ -53,8 +53,12 @@ def show_needs(
     desks: list[Desk],
     player: Player
 ) -> None:
-    """ Of the missions under way wherever they are """
-    tracker.show(needs_at(desks, player.miner.ore), player.stats.laser)
+    """ Of the missions under way wherever they are. The scanner follows
+    what they still lack, if it was told to. """
+    needs = needs_at(desks, player.miner.ore)
+    tracker.show(needs, player.stats.laser)
+    if player.scan_missions:
+        player.looked_for = lacking(needs)
 
 
 load_style(__file__)
