@@ -13,6 +13,7 @@ Names pick scenarios, by part of their name.
 
 import os
 import shutil
+import socket
 import subprocess
 import sys
 import time
@@ -27,21 +28,47 @@ PHONE = {'SPACE_MINER_PLATFORM': 'android', 'SPACE_MINER_WINDOW': '960x432'}
 TIMEOUT = 120                 # seconds for a scenario
 TOGETHER = 4                  # scenarios at a time
 SCREEN = '1280x720x24'        # the unseen one
+STARTS = 3                    # tries to get it
+
+
+def answers(display: str) -> bool:
+    """ Whether a screen takes connections, which comes after it says its
+    number """
+    with socket.socket(socket.AF_UNIX) as client:
+        try:
+            client.connect(f'/tmp/.X11-unix/X{display}')
+        except OSError:
+            return False
+    return True
+
+
+def start_screen() -> tuple[subprocess.Popen[bytes], str]:
+    """ Xvfb, and the display it found free, once it answers """
+    for _ in range(STARTS):
+        read, write = os.pipe()
+        screen = subprocess.Popen(
+            ['Xvfb', '-displayfd', str(write), '-screen', '0', SCREEN,
+             '+extension', 'GLX', '-nolisten', 'tcp'],
+            pass_fds=[write], stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        os.close(write)
+        display = os.read(read, 16).decode().strip()
+        os.close(read)
+        deadline = time.monotonic() + 3.
+        while display and time.monotonic() < deadline:
+            if answers(display):
+                return screen, display
+            time.sleep(.02)
+        screen.terminate()
+        screen.wait()
+    sys.exit('Xvfb does not start')
 
 
 @contextmanager
 def unseen_screen() -> Iterator[dict[str, str]]:
-    """ What scenarios need to run on it, Xvfb telling its display """
-    read, write = os.pipe()
-    screen = subprocess.Popen(
-        ['Xvfb', '-displayfd', str(write), '-screen', '0', SCREEN,
-         '+extension', 'GLX', '-nolisten', 'tcp'],
-        pass_fds=[write], stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    os.close(write)
-    display = os.read(read, 16).decode().strip()
-    os.close(read)
+    """ What scenarios need to run on it """
+    screen, display = start_screen()
     try:
         yield {
             'DISPLAY': f':{display}', 'SDL_VIDEODRIVER': 'x11',
