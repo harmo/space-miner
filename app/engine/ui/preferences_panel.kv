@@ -84,6 +84,30 @@
         width: dp(80)
         on_release: root.panel.toggle(root.name)
 
+# Drawn here, the track of Kivy's theme being off center in its image
+<-VolumeSlider@Slider>:
+    canvas:
+        Color:
+            rgba: 1, 1, 1, .25
+        RoundedRectangle:
+            pos: self.x + self.padding, self.center_y - dp(2)
+            size: self.width - self.padding * 2, dp(4)
+            radius: [dp(2)]
+        Color:
+            rgba: (*HOME_COLOR, 1)
+        RoundedRectangle:
+            pos: self.x + self.padding, self.center_y - dp(2)
+            size: self.value_pos[0] - self.x - self.padding, dp(4)
+            radius: [dp(2)]
+        Ellipse:
+            pos: self.value_pos[0] - dp(9), self.center_y - dp(9)
+            size: dp(18), dp(18)
+        Color:
+            rgba: 1, 1, 1, 1
+        Ellipse:
+            pos: self.value_pos[0] - dp(5), self.center_y - dp(5)
+            size: dp(10), dp(10)
+
 # A volume, from silent to full, by steps of a tenth
 <VolumeRow@BoxLayout>:
     label: ''
@@ -99,13 +123,11 @@
         text_size: self.size
         halign: 'left'
         valign: 'middle'
-    Slider:
+    VolumeSlider:
         min: 0
         max: 1
         step: .1
         value: root.volume
-        value_track: True
-        value_track_color: (*HOME_COLOR, 1)
         size_hint_x: None
         width: dp(150)
         # Set at first by the panel, not there yet
