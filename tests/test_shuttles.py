@@ -166,6 +166,16 @@ def test_it_leaves_and_reaches_docks_on_the_far_sides_of_bodies() -> None:
     assert all(math.dist(pos, second.pos) >= 211.9 for pos in trail)
 
 
+def test_it_gets_away_from_a_body_moving_after_it() -> None:
+    """ Pushed on its edge frame after frame, heading straight away """
+    pos, x = (200., 0.), 0.
+    for _ in range(600):
+        x += .4
+        obstacles = [Obstacle((x, 0.), 200.)]
+        pos, _angle = fly(pos, (5000., 0.), obstacles, 2.5)
+    assert pos[0] > 200. + 2.5 * 500.
+
+
 def test_it_is_pushed_out_of_what_comes_upon_it() -> None:
     planet = Obstacle((0., 0.), 200.)
     pos, _angle = fly((10., 0.), (50., 0.), [planet], 1.)

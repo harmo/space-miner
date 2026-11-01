@@ -25,13 +25,16 @@ class Airspace:
 
 
 def crosses(start: Vec2, end: Vec2, obstacle: Obstacle) -> bool:
-    """ The way from `start` to `end` goes through it """
+    """ The way from `start` to `end` goes through it. Never when leaving
+    it, even from its edge, where it pushes what it moves against. """
     x, y = start
     dx, dy = end[0] - x, end[1] - y
     squared = dx * dx + dy * dy
     cx, cy = obstacle.pos
     along = ((cx - x) * dx + (cy - y) * dy) / squared if squared else 0.
-    along = max(0., min(along, 1.))
+    if along <= 0:
+        return False
+    along = min(along, 1.)
     closest = (x + dx * along, y + dy * along)
     return math.dist(closest, obstacle.pos) < obstacle.reach
 
