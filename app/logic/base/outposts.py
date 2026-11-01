@@ -14,7 +14,6 @@ from ..world.space import Celestial, Vec2
 from .board import Board, Contracts
 from .config import PAD_DIRECTION
 from .post import Post, Services
-from .reputation import Standing
 from .sites import SITES, Site, Stage
 from .wallet import Wallet
 
@@ -96,15 +95,14 @@ class Outpost:
     rng: Random
     board: Board | None = None          # its missions, once it can trade
 
-    def open_board(self, wallet: Wallet, standing: Standing) -> None:
-        """ Its missions, paid into `wallet`, making the same reputation
-        as those of the Earth: none for sites giving none """
+    def open_board(self, wallet: Wallet) -> None:
+        """ Its missions, paid into `wallet`: none for sites giving none """
         site = self.construction.site
         if not site.gives_missions:
             self.board = None
             return
         self.board = Board(
-            self.rng, wallet, standing, site.trade.clientele,
+            self.rng, wallet, clientele=site.trade.clientele,
         )
 
     @property
@@ -173,8 +171,7 @@ def bare_outpost(key: str, body: Celestial, rng: Random) -> Outpost:
     )
 
 
-def open_boards(outposts: list[Outpost], wallet: Wallet,
-                standing: Standing) -> None:
+def open_boards(outposts: list[Outpost], wallet: Wallet) -> None:
     """ For a game, new or saved """
     for outpost in outposts:
-        outpost.open_board(wallet, standing)
+        outpost.open_board(wallet)

@@ -14,7 +14,7 @@ from .missions import (
     make_order,
     take,
 )
-from .reputation import Standing, tier
+from .reputation import tier
 from .wallet import Wallet
 
 
@@ -26,20 +26,20 @@ class Contracts:
     level: int = 1                      # of the missions offered
     # Seconds before the next offer, by level
     waits: dict[int, float] = field(default_factory=dict)
+    validated: int = 0                  # making its reputation
 
 
 class Board:
     """ Missions offered on each level, and those accepted, paid into the
     wallet. An offer taken comes back after a while, level by level, and
-    looking at another level changes nothing. Boards share the reputation
-    they make: that of the Earth and those of the outposts. """
+    looking at another level changes nothing. Each board makes a
+    reputation of its own. """
 
     def __init__(self, rng: Random, wallet: Wallet,
-                 standing: Standing | None = None,
                  clientele: Clientele = ANY_CLIENT) -> None:
         self.rng = rng
         self.wallet = wallet
-        self.standing = standing or Standing()
+        self.validated = 0                  # its reputation
         self.clientele = clientele
         self.shelves: dict[int, list[Mission]] = {}  # offers, by level
         self.waits: dict[int, float] = {}   # before the next, by level
@@ -48,24 +48,16 @@ class Board:
         self.shelf(self.level)
 
     @property
-    def validated(self) -> int:
-        """ Missions, here and on the other boards """
-        return self.standing.validated
-
-    @validated.setter
-    def validated(self, count: int) -> None:
-        self.standing.validated = count
-
-    @property
     def contracts(self) -> Contracts:
         return Contracts(
             [m for shelf in self.shelves.values() for m in shelf],
-            list(self.active), self.level, dict(self.waits),
+            list(self.active), self.level, dict(self.waits), self.validated,
         )
 
     def resume(self, contracts: Contracts) -> None:
         """ As they were, its reputation known: levels never looked at get
         their offers when they are, as many as the reputation brings """
+        self.validated = contracts.validated
         self.level = max(1, min(contracts.level, self.tier))
         self.active[:] = contracts.active
         self.shelves.clear()

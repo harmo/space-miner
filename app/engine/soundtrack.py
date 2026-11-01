@@ -124,7 +124,7 @@ def moment_of(game: 'Game') -> Moment:
         legs_out=game.looks.gear.out,
         cargo_full=player.miner.cargo_full,
         credits=base.wallet.credits,
-        validated=base.board.validated if base.board else 0,
+        validated=sum(board.validated for board in game.boards),
         swarm=bool(events.swarms.asteroids),
         comet=events.comets.comet is not None,
         fuel=player.tank.level,

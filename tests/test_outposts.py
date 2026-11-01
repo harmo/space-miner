@@ -11,7 +11,6 @@ from app.logic.base.outposts import (
     open_boards,
 )
 from app.logic.base.post import Services
-from app.logic.base.reputation import Standing
 from app.logic.base.sites import (
     CERES,
     DEPOT,
@@ -146,18 +145,18 @@ def test_a_station_serves_ships_docked_at_its_port() -> None:
 
 def test_only_sites_giving_missions_open_a_board() -> None:
     outposts = [outpost_on('frontier'), outpost_on('icare')]
-    open_boards(outposts, Wallet(), Standing())
+    open_boards(outposts, Wallet())
     assert isinstance(outposts[0].board, Board)
     assert outposts[1].board is None
 
 
 def test_the_progress_of_an_outpost_comes_back() -> None:
     outpost = outpost_on('frontier')
-    open_boards([outpost], Wallet(), Standing())
+    open_boards([outpost], Wallet())
     outpost.deliver({'rock': 150.})
     outpost.post.depot.stock['gold'] = 2.
     again = outpost_on('frontier')
-    open_boards([again], Wallet(), Standing())
+    open_boards([again], Wallet())
     again.restore(outpost.progress)
     assert again.progress == outpost.progress
     assert again.post.services == FUEL
@@ -166,3 +165,14 @@ def test_the_progress_of_an_outpost_comes_back() -> None:
 
 def test_an_outpost_without_board_has_no_contracts() -> None:
     assert outpost_on('icare').progress.contracts == Contracts()
+
+
+def test_an_outpost_gets_its_reputation_back() -> None:
+    outpost = outpost_on('frontier')
+    open_boards([outpost], Wallet())
+    assert outpost.board is not None
+    outpost.board.validated = 5
+    again = outpost_on('frontier')
+    open_boards([again], Wallet())
+    again.restore(outpost.progress)
+    assert again.board is not None and again.board.validated == 5

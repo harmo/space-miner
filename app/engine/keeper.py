@@ -36,7 +36,6 @@ class Keeper:
             stock=dict(base.depot.stock),
             # Lost when leaving in flight
             cargo=dict(self.player.miner.ore) if landed else {},
-            validated=board.validated if board else 0,
             seen_tier=base.seen_tier,
             contracts=board.contracts if board else Contracts(),
             looked_for=[
@@ -89,7 +88,6 @@ class Keeper:
         base.depot.stock.update(save.stock)
         base.seen_tier = save.seen_tier
         if board is not None:
-            board.validated = save.validated
             board.resume(save.contracts)
         for outpost in self.outposts:
             outpost.restore(save.outposts.get(outpost.key, Progress()))
@@ -130,9 +128,7 @@ class Keeper:
         player.miner.ore.clear()
         self.base.reset()
         if self.base.board is not None:
-            open_boards(
-                self.outposts, self.base.wallet, self.base.board.standing,
-            )
+            open_boards(self.outposts, self.base.wallet)
         for outpost in self.outposts:
             outpost.restore(Progress())
         player.restart(Design())

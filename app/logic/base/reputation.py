@@ -1,16 +1,10 @@
-""" Reputation, earned by validating missions: higher tiers of parts are
-sold to those who proved themselves, and clients order more of them """
+""" Reputation, earned at each post by validating its missions: its
+clients order more of them, and at the Earth higher tiers of parts are
+sold to those who proved themselves """
 
 from ..ship.hulls import Hull
 from ..ship.parts import Part
 from .config import TIER_MISSIONS
-
-
-class Standing:
-    """ The reputation of the player: missions validated, wherever """
-
-    def __init__(self) -> None:
-        self.validated = 0
 
 
 def tier(validated: int) -> int:

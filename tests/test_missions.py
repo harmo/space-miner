@@ -192,17 +192,17 @@ def test_local_clients_pay_more() -> None:
     assert local.reward == pytest.approx(plain.reward * 1.25, abs=10)
 
 
-def test_boards_share_the_reputation_they_make() -> None:
+def test_each_board_makes_its_own_reputation() -> None:
     wallet = Wallet()
     earth = Board(Random(8), wallet)
     outpost = Board(
-        Random(9), wallet, earth.standing, Clientele(('Colonie',), 1.25),
+        Random(9), wallet, clientele=Clientele(('Colonie',), 1.25),
     )
     mission = outpost.offers[0]
     outpost.accept(mission)
     stock = {name: float(units) for name, units in mission.wanted.items()}
     outpost.validate(mission, stock)
-    assert outpost.validated == earth.validated == 1
+    assert outpost.validated == 1 and earth.validated == 0
     assert wallet.credits == mission.reward
 
 

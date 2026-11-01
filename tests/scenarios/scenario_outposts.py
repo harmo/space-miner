@@ -3,7 +3,7 @@ ship lands on its pad. Ore delivered from the cargo builds it stage after
 stage: its foundations fill the tank, its habitat keeps ore unloaded in a
 depot of its own, from where it loads back, all of it saved, its trading
 post buys ore dearer than the Earth and gives missions of its own, making
-the same reputation, and its mine digs ore into its depot on its own. """
+a reputation of its own, and its mine digs ore into its depot. """
 
 import json
 import math
@@ -235,14 +235,14 @@ def validates_it_there() -> None:
     scanner.for_missions()
     check(scenario.player.looked_for == set(mission.wanted),
           'and looked for by the scanner')
-    before = scenario.base.board.validated
+    earth = scenario.base.board.validated
     card = next(
         card for card in view().ids.missions.ids.active.children
         if card.mission is mission
     )
     scenario.press(scenario.button(card, 'Valider'))
-    check(scenario.base.board.validated == before + 1,
-          'making the reputation of the Earth too')
+    check(frontier().board.validated == 1, 'making its reputation')
+    check(scenario.base.board.validated == earth, 'not that of the Earth')
     scenario.press(scenario.button(view().ids.missions, 'Fermer'))
     check(frontier().construction.stage.name == 'Mine', 'a mine comes next')
     frontier().post.depot.stock.clear()

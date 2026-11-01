@@ -124,7 +124,7 @@ class Game(Widget):
         self.ids.outpost.setup(self.player, self.outposts, self.ids.base)
         base = self.ids.base
         if base.board is not None:
-            open_boards(self.outposts, base.wallet, base.board.standing)
+            open_boards(self.outposts, base.wallet)
         self.ids.scanner.setup(self.player, self.system, lambda: self.desks)
         self.keeper = Keeper(seed, self.player, self.ids.base, self.outposts)
         if save is not None:

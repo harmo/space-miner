@@ -44,7 +44,6 @@ class Save:
     spares: dict[str, int] = field(default_factory=dict)
     stock: Hold = field(default_factory=dict)
     cargo: Hold = field(default_factory=dict)
-    validated: int = 0
     seen_tier: int = 1
     contracts: Contracts = field(default_factory=Contracts)
     # What the scanner looks for
@@ -123,6 +122,7 @@ def contracts_of(data: Any) -> Contracts:
             int(level): float(left)
             for level, left in dict(data.get('mission_waits', {})).items()
         },
+        max(0, int(data.get('validated', 0))),
     )
 
 
@@ -134,6 +134,7 @@ def contracts_data(contracts: Contracts) -> dict[str, Any]:
         'mission_waits': {
             str(level): left for level, left in contracts.waits.items()
         },
+        'validated': contracts.validated,
     }
 
 
@@ -171,7 +172,6 @@ def dump(save: Save) -> str:
         'spares': save.spares,
         'stock': save.stock,
         'cargo': save.cargo,
-        'validated': save.validated,
         'seen_tier': save.seen_tier,
         **contracts_data(save.contracts),
         'looked_for': save.looked_for,
@@ -211,7 +211,6 @@ def load(text: str) -> Save:
             },
             stock=ores(data['stock']),
             cargo=ores(data['cargo']),
-            validated=max(0, int(data['validated'])),
             seen_tier=max(1, int(data['seen_tier'])),
             contracts=contracts_of(data),
             looked_for=[

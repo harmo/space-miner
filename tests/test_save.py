@@ -28,10 +28,10 @@ SAVE = Save(
     spares={'engine': 1, 'fins': 2},
     stock={'iron': 12.5, 'crystal': 3.},
     cargo={'gold': 4.25},
-    validated=7, seen_tier=2,
+    seen_tier=2,
     contracts=Contracts(
         [MISSION, Mission('Comptoir Orion', {'copper': 9}, 300)],
-        [Mission('Institut Cassini', {'ruby': 2}, 900)], 3,
+        [Mission('Institut Cassini', {'ruby': 2}, 900)], 3, validated=7,
     ),
     looked_for=['gold', 'ruby'],
     fuel=42.5,
