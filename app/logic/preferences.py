@@ -4,7 +4,7 @@ the slot played last """
 import json
 from dataclasses import asdict, dataclass, fields
 
-from .slots import SLOTS
+from .config import SLOTS
 
 
 @dataclass

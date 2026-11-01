@@ -3,7 +3,7 @@ go, where their docks are, and the shuttles on their way """
 
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ..mining.minerals import MINERALS
 from ..mining.ore import Hold, whole_units
@@ -81,11 +81,12 @@ def update_shuttles(
     for quay in quays:
         if quay.docks:
             target = destination_of(quay, quays)
-            quay.post.shuttle.update(
-                dt, quay.post.depot.stock,
-                target.post.depot.stock if target else None,
-                Way(quay.spot, target.spot if target else None), airspace,
-            )
+            way = Way(quay.spot, quay.post.depot.stock)
+            if target is not None:
+                way = replace(
+                    way, away=target.spot, there=target.post.depot.stock,
+                )
+            quay.post.shuttle.update(dt, way, airspace)
 
 
 def shuttle_position(quay: Quay, sun: Vec2) -> Vec2 | None:

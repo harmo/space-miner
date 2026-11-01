@@ -1,12 +1,13 @@
 from app.logic.base.board import Contracts
 from app.logic.base.outposts import Progress
+from app.logic.config import SLOTS
 from app.logic.preferences import (
     Preferences,
     dump_preferences,
     load_preferences,
 )
 from app.logic.save import Save
-from app.logic.slots import SLOTS, SlotSummary, summary
+from app.logic.slots import SlotSummary, summary
 
 
 def test_a_slot_tells_how_far_its_game_went() -> None:

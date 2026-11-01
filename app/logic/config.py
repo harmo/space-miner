@@ -107,4 +107,5 @@ SYSTEMS = [
 ]
 MAX_FRAME_TIME = 1 / 20       # avoids physics jumps after a freeze
 
+SLOTS = 3                     # games saved side by side
 AUTOSAVE_PERIOD = 5.          # seconds between checks for changes to save

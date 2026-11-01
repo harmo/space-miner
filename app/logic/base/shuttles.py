@@ -23,9 +23,11 @@ class Route:
 
 @dataclass(frozen=True)
 class Way:
-    """ The docks a shuttle flies between, as they are now """
-    home: Vec2
-    away: Vec2 | None         # None without a destination
+    """ What a shuttle goes between, as it is now """
+    home: Vec2                # its dock
+    stock: Hold               # of its depot
+    away: Vec2 | None = None  # None without a destination
+    there: Hold | None = None
 
 
 @dataclass(frozen=True)
@@ -77,27 +79,20 @@ class Shuttle:
                 stock[name] = stock.get(name, 0.) + moved
                 withdraw(self.load, name, moved)
 
-    def arrive(self, here: Hold, there: Hold | None) -> None:
+    def arrive(self, way: Way) -> None:
         if self.leg == 'out':
-            if there is not None:
-                self.unload(there)
+            if way.there is not None:
+                self.unload(way.there)
             self.leg = 'back'
         else:
-            self.unload(here)
+            self.unload(way.stock)
             self.leg, self.offset = 'waiting', None
 
-    def update(
-        self,
-        dt: float,
-        here: Hold,
-        there: Hold | None,
-        way: Way,
-        airspace: Airspace
-    ) -> None:
-        """ `there` and the way being those of its route """
+    def update(self, dt: float, way: Way, airspace: Airspace) -> None:
         if self.leg == 'waiting':
-            if there is not None and self.waiting_for(here) >= self.room:
-                self.load_up(here)
+            full = self.waiting_for(way.stock) >= self.room
+            if way.there is not None and full:
+                self.load_up(way.stock)
                 self.leg = 'out'
             return
         sun_x, sun_y = airspace.sun
@@ -111,7 +106,7 @@ class Shuttle:
         self.heading = turned(self.heading, angle, dt)
         self.offset = pos[0] - sun_x, pos[1] - sun_y
         if math.dist(pos, goal) <= step + SHUTTLE_ARRIVAL:
-            self.arrive(here, there)
+            self.arrive(way)
 
     def retire(self, stock: Hold) -> None:
         """ Its post has no dock anymore, in a game saved when it had: what

@@ -5,8 +5,6 @@ from dataclasses import dataclass
 
 from .save import Save
 
-SLOTS = 3
-
 
 @dataclass(frozen=True)
 class SlotSummary:

@@ -13,7 +13,8 @@ from kivy.properties import (
 )
 from kivy.uix.boxlayout import BoxLayout
 
-from ...logic.slots import SLOTS, SlotSummary, summary
+from ...logic.config import SLOTS
+from ...logic.slots import SlotSummary, summary
 from ..base.missions_panel import credits_text
 from ..storage import read_save, saved_at
 from .widgets import Layer, load_style

@@ -18,7 +18,7 @@ from kivy.utils import platform
 from ..logic.base.board import Board
 from ..logic.base.config import SHUTTLE_CLEARANCE, SHUTTLE_SUN_CLEARANCE
 from ..logic.base.missions import Desk
-from ..logic.base.outposts import Outpost, open_boards, site_desks
+from ..logic.base.outposts import Outpost, site_desks
 from ..logic.base.quays import Quay, shuttle_marks, update_shuttles
 from ..logic.base.shuttle_flight import Airspace, Obstacle
 from ..logic.base.sites import PERMITS
@@ -27,27 +27,23 @@ from ..logic.config import (
     MAX_FRAME_TIME,
     MOBILE_PLATFORMS,
     SYSTEMS,
-    WORLD_SIZE,
 )
 from ..logic.hud import heat_at, is_compact
-from ..logic.ship.ground import Ground, Grounds
-from ..logic.world.layout import plan_system
 from ..logic.world.space import Celestial, Vec2
-from .base.outposts import found_outposts
 from .base.post_view import PostView
 from .base.quays import quays_of
 from .entities import setup_collisions, setup_state, step_systems
 from .keeper import Keeper
+from .session import open_session
 from .ship.looks import ShipLooks
 from .ship.player import Player
 from .soundtrack import Soundtrack
 from .storage import (
     delete_save,
     read_preferences,
-    read_save,
     write_preferences,
 )
-from .textures import ground_edge, load_textures
+from .textures import load_textures
 from .ui.controls import escape, steers
 from .ui.hud import show_hud
 from .ui.map_view import Charted
@@ -87,6 +83,7 @@ class Game(Widget):
     system: SolarSystem
     player: Player
     outposts: list[Outpost]
+    looks: ShipLooks
     overlay: Overlay
     soundtrack: Soundtrack
 
@@ -130,44 +127,10 @@ class Game(Widget):
         return self.player.on_contact(space, arbiter)
 
     def open_world(self) -> None:
-        """ The game of the slot, or a new one in a solar system of its
-        own """
-        save = read_save(self.slot)
-        # The same solar system comes back with the saved game. Scenarios
-        # pick theirs with SPACE_MINER_SEED.
-        seed = save.seed if save else int(
-            os.environ.get('SPACE_MINER_SEED') or self.rng.randrange(2 ** 31)
-        )
-        self.system = SolarSystem(
-            self.gameworld, plan_system(Random(seed)),
-            center=(WORLD_SIZE / 2, WORLD_SIZE / 2), rng=self.rng,
-            sun=self.sun,
-        )
-        self.outposts = found_outposts(
-            self.system, self.rng, self.ids.base.permits,
-        )
-        self.player = Player(
-            self.gameworld, self.system, self.camera, self.rng,
-            Grounds([
-                Ground(self.system.earth, tuple(ground_edge('earth'))),
-                *(outpost.ground for outpost in self.outposts),
-            ]),
-        )
-        self.looks = ShipLooks(self.rng)  # its trail and legs
-        self.soundtrack.listen(self.player)
-        self.ids.base.setup(self.player, self.rng)
-        self.ids.outpost.setup(self.player, self.outposts, self.ids.base)
-        self.ids.base.outposts = self.outposts
-        base = self.ids.base
-        if base.board is not None:
-            open_boards(self.outposts, base.wallet)
-        self.ids.scanner.setup(self.player, self.system, lambda: self.desks)
-        self.keeper = Keeper(
-            seed, self.slot, self.player, self.ids.base, self.outposts,
-        )
-        if save is not None:
-            self.keeper.restore(save)
-        self.stars.wrap_all(self.player.anchor)
+        session = open_session(self)
+        self.system, self.outposts = session.system, session.outposts
+        self.player, self.looks = session.player, session.looks
+        self.keeper = session.keeper
 
     def close_world(self) -> None:
         """ Its entities gone, the panels left with nothing of it """
@@ -210,9 +173,8 @@ class Game(Widget):
     @property
     def boards(self) -> list[Board]:
         """ Of the Earth and the outposts giving missions """
-        boards = [self.ids.base.board]
-        boards += [outpost.board for outpost in self.outposts]
-        return [board for board in boards if board is not None]
+        boards = [outpost.board for outpost in self.outposts]
+        return [self.ids.base.board, *filter(None, boards)]
 
     @property
     def desks(self) -> list[Desk]:
@@ -220,9 +182,9 @@ class Game(Widget):
         concessions followed: a depot counts once, whatever it serves.
         Then the sites followed. """
         base = self.ids.base
-        active = base.board.active if base.board is not None else []
         concessions = base.permits.tracked(PERMITS)
-        return [Desk([*active, *concessions], base.depot.stock)] + [
+        wanted = [*base.board.active, *concessions]
+        return [Desk(wanted, base.depot.stock)] + [
             Desk(outpost.board.active, outpost.post.depot.stock)
             for outpost in self.outposts if outpost.board is not None
         ] + site_desks(self.outposts)

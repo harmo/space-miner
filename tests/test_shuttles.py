@@ -20,13 +20,13 @@ from app.logic.base.quays import (
 )
 from app.logic.base.shuttle_flight import Airspace, Obstacle, fly, turned
 from app.logic.base.shuttles import Route, Shuttle, ShuttleState, Way
+from app.logic.mining.ore import Hold
 from app.logic.world.space import Celestial, Vec2
 
 IRON = Route('there', ('iron',))
 FULL = float(SHUTTLE_LOAD)
 OPEN = Airspace((0., 0.), ())
 DT = .1
-WAY = Way((0., 0.), (1000., 0.))
 
 
 def shuttle(route: Route | None = IRON) -> Shuttle:
@@ -35,14 +35,18 @@ def shuttle(route: Route | None = IRON) -> Shuttle:
     return carrier
 
 
+def way(here: Hold, there: Hold | None) -> Way:
+    return Way((0., 0.), here, (1000., 0.), there)
+
+
 def fly_on(
     carrier: Shuttle,
-    here: dict[str, float],
-    there: dict[str, float],
+    here: Hold,
+    there: Hold,
     seconds: float
 ) -> None:
     for _ in range(round(seconds / DT)):
-        carrier.update(DT, here, there, WAY, OPEN)
+        carrier.update(DT, way(here, there), OPEN)
 
 
 def crossing_time() -> float:
@@ -51,19 +55,19 @@ def crossing_time() -> float:
 
 def test_it_waits_without_a_destination() -> None:
     carrier, here = shuttle(), {'iron': FULL}
-    carrier.update(1., here, None, WAY, OPEN)
+    carrier.update(1., way(here, None), OPEN)
     assert carrier.leg == 'waiting' and here == {'iron': FULL}
 
 
 def test_it_waits_with_nothing_to_carry() -> None:
     carrier = shuttle()
-    carrier.update(1., {}, {}, WAY, OPEN)
+    carrier.update(1., way({}, {}), OPEN)
     assert carrier.leg == 'waiting'
 
 
 def test_it_waits_to_leave_full_taking_nothing_yet() -> None:
     carrier, here = shuttle(), {'iron': FULL - 1.}
-    carrier.update(1., here, {}, WAY, OPEN)
+    carrier.update(1., way(here, {}), OPEN)
     assert carrier.leg == 'waiting' and not carrier.load
     assert here == {'iron': FULL - 1.}
     assert carrier.waiting_for(here) == SHUTTLE_LOAD - 1
@@ -71,7 +75,7 @@ def test_it_waits_to_leave_full_taking_nothing_yet() -> None:
 
 def test_it_leaves_as_soon_as_it_can_be_full() -> None:
     carrier, here = shuttle(), {'iron': FULL, 'gold': 5.}
-    carrier.update(DT, here, {}, WAY, OPEN)
+    carrier.update(DT, way(here, {}), OPEN)
     assert carrier.leg == 'out' and carrier.load == {'iron': FULL}
     assert here == {'gold': 5.}
 
@@ -79,21 +83,21 @@ def test_it_leaves_as_soon_as_it_can_be_full() -> None:
 def test_several_minerals_make_a_full_load_the_first_ones_first() -> None:
     carrier = shuttle(Route('there', ('gold', 'iron')))
     here = {'iron': 500., 'gold': 40.}
-    carrier.update(DT, here, {}, WAY, OPEN)
+    carrier.update(DT, way(here, {}), OPEN)
     assert carrier.load == {'gold': 40., 'iron': FULL - 40.}
     assert sum(carrier.load.values()) == SHUTTLE_LOAD
 
 
 def test_it_only_takes_whole_units() -> None:
     carrier, here = shuttle(), {'iron': FULL + .5}
-    carrier.update(DT, here, {}, WAY, OPEN)
+    carrier.update(DT, way(here, {}), OPEN)
     assert carrier.load == {'iron': FULL} and here == {'iron': .5}
 
 
 def test_a_whole_round_trip() -> None:
     carrier, here = shuttle(), {'iron': FULL}
     there: dict[str, float] = {}
-    carrier.update(DT, here, there, WAY, OPEN)
+    carrier.update(DT, way(here, there), OPEN)
     fly_on(carrier, here, there, crossing_time() - 2.)
     assert not there
     fly_on(carrier, here, there, 2.)
@@ -106,7 +110,7 @@ def test_a_whole_round_trip() -> None:
 def test_what_does_not_fit_comes_back() -> None:
     carrier, here = shuttle(), {'iron': FULL}
     there = {'iron': DEPOT_CAPACITY - 5.}
-    carrier.update(DT, here, there, WAY, OPEN)
+    carrier.update(DT, way(here, there), OPEN)
     fly_on(carrier, here, there, crossing_time())
     assert there['iron'] == DEPOT_CAPACITY
     assert carrier.load == {'iron': FULL - 5.}
@@ -116,7 +120,7 @@ def test_what_does_not_fit_comes_back() -> None:
 
 def test_it_comes_back_as_it_was() -> None:
     carrier, here = shuttle(), {'iron': FULL}
-    carrier.update(DT, here, {}, WAY, OPEN)
+    carrier.update(DT, way(here, {}), OPEN)
     fly_on(carrier, here, {}, 2.)
     again = Shuttle()
     again.resume(carrier.state)
@@ -276,13 +280,11 @@ def test_ore_goes_from_post_to_post_around_their_bodies() -> None:
 
 def test_it_keeps_flying_when_the_sun_moves_with_the_world() -> None:
     carrier, here = shuttle(), {'iron': FULL}
-    carrier.update(DT, here, {}, WAY, OPEN)
+    carrier.update(DT, way(here, {}), OPEN)
     fly_on(carrier, here, {}, 1.)
     before = carrier.offset
     moved = Airspace((5000., 0.), ())
-    carrier.update(
-        0., here, {}, Way((5000., 0.), (6000., 0.)), moved,
-    )
+    carrier.update(0., Way((5000., 0.), here, (6000., 0.), {}), moved)
     assert carrier.offset == before
 
 

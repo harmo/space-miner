@@ -1,7 +1,6 @@
 """ Keeps the game saved: takes it from the player and the base, and puts
 it back in them """
 
-from ..logic.base.board import Contracts
 from ..logic.base.outposts import Outpost, Progress
 from ..logic.base.shuttles import ShuttleState
 from ..logic.mining.minerals import MINERALS
@@ -45,7 +44,7 @@ class Keeper:
             # Lost when leaving in flight
             cargo=dict(self.player.miner.ore) if landed else {},
             seen_tier=base.seen_tier,
-            contracts=board.contracts if board else Contracts(),
+            contracts=board.contracts,
             looked_for=[
                 name for name in MINERALS if name in self.player.looked_for
             ],
@@ -95,9 +94,14 @@ class Keeper:
     def restore(self, save: Save) -> None:
         """ The ship comes back where it was landed, or on the Earth, the
         bodies and the outposts being restored first, for their pads """
-        base, board = self.base, self.base.board
-        system = self.player.system
-        system.resume_orbits(save.orbits)
+        self.player.system.resume_orbits(save.orbits)
+        self.restore_posts(save)
+        self.restore_ship(save)
+        self.restore_flights(save)
+        self.written = dump(save)
+
+    def restore_posts(self, save: Save) -> None:
+        base = self.base
         base.wallet.credits = save.credits
         base.inventory.spares.clear()
         base.inventory.spares.update(save.spares)
@@ -108,33 +112,35 @@ class Keeper:
         base.seen_tier = save.seen_tier
         base.permits.granted.update(save.concessions)
         base.permits.followed.update(save.followed)
-        if board is not None:
-            board.resume(save.contracts)
+        base.board.resume(save.contracts)
         for outpost in self.outposts:
             outpost.restore(save.outposts.get(outpost.key, Progress()))
-        landed = save.landed
+
+    def restore_ship(self, save: Save) -> None:
+        player, landed = self.player, save.landed
         if landed is None:
-            self.player.restart(save.design)
+            player.restart(save.design)
         else:
-            self.player.restart(
-                save.design, landed.direction, self.ground(landed),
-            )
-        tank = self.player.tank
+            player.restart(save.design, landed.direction, self.ground(landed))
         if save.fuel is not None:
-            tank.level = min(save.fuel, tank.capacity)
-        self.player.miner.ore.clear()
-        self.player.miner.ore.update(save.cargo)
-        self.player.looked_for = set(save.looked_for)
-        self.player.scan_missions = save.scan_missions
-        for quay in quays_of(base, self.outposts):
+            player.tank.level = min(save.fuel, player.tank.capacity)
+        player.miner.ore.clear()
+        player.miner.ore.update(save.cargo)
+        player.looked_for = set(save.looked_for)
+        player.scan_missions = save.scan_missions
+
+    def restore_flights(self, save: Save) -> None:
+        """ Shuttles, canisters adrift, and what goes on around them """
+        for quay in quays_of(self.base, self.outposts):
+            shuttle = quay.post.shuttle
             if quay.key in save.shuttles:
-                quay.post.shuttle.resume(save.shuttles[quay.key])
+                shuttle.resume(save.shuttles[quay.key])
                 if not quay.docks:
-                    quay.post.shuttle.retire(quay.post.depot.stock)
+                    shuttle.retire(quay.post.depot.stock)
+        system = self.player.system
         self.player.canisters.recover(save.canisters, system.attractors)
         if save.events is not None:
             system.events.resume(save.events)
-        self.written = dump(save)
 
     def save(self) -> None:
         """ When something changed """

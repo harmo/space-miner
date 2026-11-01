@@ -47,7 +47,7 @@ class EarthBase(PostView):
         self.outposts: list[Outpost] = []
         self.rng = Random()
         self.home = home_post(self.rng)
-        self.board: Board | None = None
+        self.board = Board(self.rng, self.wallet)
         self.seen_tier = 1                  # in the hangar
 
     def setup(self, player: Player, rng: Random) -> None:
@@ -108,7 +108,7 @@ class EarthBase(PostView):
         ]
 
     def update(self, dt: float) -> None:
-        if self.player is None or self.board is None:
+        if self.player is None:
             return
         player = self.player
         self.docked = player.docked_on(player.system.earth)
@@ -145,8 +145,7 @@ class EarthBase(PostView):
             return
         if panel == 'hangar':
             self.ids.hangar.open()
-            if self.board is not None:
-                self.seen_tier = tier(self.board.validated)
+            self.seen_tier = tier(self.board.validated)
         elif panel == 'market':
             self.ids.market.refresh()
         else:
