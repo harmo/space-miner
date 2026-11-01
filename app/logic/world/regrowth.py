@@ -6,8 +6,12 @@ from .config import REGROW_THRESHOLD, REGROW_TIME
 
 class Regrowth:
 
-    def __init__(self, full: int, time: float = REGROW_TIME,
-                 threshold: float = REGROW_THRESHOLD) -> None:
+    def __init__(
+        self,
+        full: int,
+        time: float = REGROW_TIME,
+        threshold: float = REGROW_THRESHOLD
+    ) -> None:
         self.full = full
         self.time = time          # for the whole belt to grow back
         self.threshold = threshold  # part of `full` it starts below

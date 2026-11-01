@@ -18,8 +18,11 @@ def fits(ore: Hold, stock: Hold, mineral: str) -> bool:
     )
 
 
-def unload(ore: Hold, stock: Hold,
-           amount: float) -> str | None:
+def unload(
+    ore: Hold,
+    stock: Hold,
+    amount: float
+) -> str | None:
     """ Move up to `amount` of the cargo into the stock, one mineral after
     the other in the order of the minerals table, those the depot has no
     room for staying there. Returns the mineral moved, None once there is
@@ -36,8 +39,12 @@ def unload(ore: Hold, stock: Hold,
     return mineral
 
 
-def load_ore(stock: Hold, ore: Hold, mineral: str,
-             room: float) -> int:
+def load_ore(
+    stock: Hold,
+    ore: Hold,
+    mineral: str,
+    room: float
+) -> int:
     """ Whole units of `mineral` back into the cargo, as many as there are
     and as fit in `room`. Returns how many. """
     units = min(whole_units(stock.get(mineral, 0.)), whole_units(room))
@@ -68,8 +75,12 @@ class Depot:
         self.unloading = False
         self.mineral = None
 
-    def update(self, ore: Hold, dt: float,
-               docked: bool) -> None:
+    def update(
+        self,
+        ore: Hold,
+        dt: float,
+        docked: bool
+    ) -> None:
         """ Taking off stops unloading """
         if not self.unloading:
             return

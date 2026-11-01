@@ -171,8 +171,12 @@ class Outpost:
             self.board.resume(progress.contracts)
 
 
-def bare_outpost(key: str, body: Celestial, rng: Random,
-                 permits: Permits | None = None) -> Outpost:
+def bare_outpost(
+    key: str,
+    body: Celestial,
+    rng: Random,
+    permits: Permits | None = None
+) -> Outpost:
     """ On its site, nothing built """
     site = SITES[key]
     return Outpost(

@@ -67,8 +67,10 @@ class CargoLine:
     mining: bool              # being extracted right now
 
 
-def cargo_lines(ore: Hold,
-                mining: str | None) -> list[CargoLine]:
+def cargo_lines(
+    ore: Hold,
+    mining: str | None
+) -> list[CargoLine]:
     """ Minerals in the cargo, and the one being mined even before the
     first unit, in the order of the minerals table """
     lines = [
@@ -94,8 +96,13 @@ class Deposits:
         """ From 0 when untouched to 1 when mined out """
         return 1. - self.left(asteroid) / ore_in(asteroid.radius)
 
-    def mine(self, asteroid: Celestial, dt: float, rate: float,
-             room: float = math.inf) -> float:
+    def mine(
+        self,
+        asteroid: Celestial,
+        dt: float,
+        rate: float,
+        room: float = math.inf
+    ) -> float:
         """ Extract ore at `rate` for dt seconds, no more than `room`,
         returns how much """
         left = self.left(asteroid)

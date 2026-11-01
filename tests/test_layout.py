@@ -172,7 +172,8 @@ def test_system_fits_in_the_repeated_world(plan: SystemPlan) -> None:
 
 
 def test_the_moon_shows_the_earth_always_the_same_face(
-        plan: SystemPlan) -> None:
+    plan: SystemPlan
+) -> None:
     [moon] = plan.planets[plan.earth].satellites
     assert moon.locked
     # Facing the Earth at first

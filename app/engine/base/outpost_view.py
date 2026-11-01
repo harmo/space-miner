@@ -109,8 +109,12 @@ class OutpostView(PostView):
         self.base: EarthBase | None = None  # its credits
         self.current: Outpost | None = None  # where the ship is parked
 
-    def setup(self, player: Player, outposts: list[Outpost],
-              base: 'EarthBase') -> None:
+    def setup(
+        self,
+        player: Player,
+        outposts: list[Outpost],
+        base: 'EarthBase'
+    ) -> None:
         self.player, self.outposts, self.base = player, outposts, base
 
     @property

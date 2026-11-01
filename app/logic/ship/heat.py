@@ -27,8 +27,11 @@ def sun_heat(distance: float) -> float:
     return closeness ** 2
 
 
-def heating(distance: float, shield: float = 0.,
-            surge: float = 1.) -> float:
+def heating(
+    distance: float,
+    shield: float = 0.,
+    surge: float = 1.
+) -> float:
     """ A second, at `distance` from the sun surface, `shield` the part of
     the heat stopped, `surge` times more during flares """
     return HEAT_GAIN * sun_heat(distance) * surge * (1 - shield)

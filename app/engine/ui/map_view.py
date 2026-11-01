@@ -138,8 +138,12 @@ class MapView(Widget):
                 Line(circle=(x, y, frame.size(planet.orbit.radius)),
                      width=1)
 
-    def asteroids(self, system: SolarSystem, player: Player,
-                  frame: Chart) -> None:
+    def asteroids(
+        self,
+        system: SolarSystem,
+        player: Player,
+        frame: Chart
+    ) -> None:
         """ Faint dots, those the scanner finds in their color """
         Color(1, 1, 1, .25)
         Point(points=[
@@ -278,8 +282,13 @@ class MapView(Widget):
         Ellipse(pos=(pos[0] - radius, pos[1] - radius),
                 size=(2 * radius, 2 * radius))
 
-    def label(self, text: str, pos: Vec2, color: Rgb,
-              size: float = 12.) -> None:
+    def label(
+        self,
+        text: str,
+        pos: Vec2,
+        color: Rgb,
+        size: float = 12.
+    ) -> None:
         """ Centered on `pos` """
         label = CoreLabel(text=text, font_size=dp(size), bold=True)
         label.refresh()

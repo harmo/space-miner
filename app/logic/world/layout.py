@@ -90,8 +90,11 @@ class BeltPlan:
     regrow_time: float = REGROW_TIME
     regrow_below: float = REGROW_THRESHOLD   # of `full`
 
-    def asteroid(self, rng: Random,
-                 angle: float | None = None) -> OrbiterPlan:
+    def asteroid(
+        self,
+        rng: Random,
+        angle: float | None = None
+    ) -> OrbiterPlan:
         distance = rng.uniform(*self.orbits)
         speed = rng.uniform(*self.speeds)
         if self.kepler:
@@ -175,8 +178,10 @@ def plan_system(rng: Random) -> SystemPlan:
     )
 
 
-def plan_ceres(orbits: tuple[float, ...],
-               earth_angle: float) -> OrbiterPlan:
+def plan_ceres(
+    orbits: tuple[float, ...],
+    earth_angle: float
+) -> OrbiterPlan:
     """ In the middle of the belt around the sun, across the sun from the
     Earth at first. Upright and not spinning, as planets: a landed ship
     stays where it is. """
@@ -220,11 +225,14 @@ def facing(orbit_angle: float) -> float:
     return orbit_angle + math.pi
 
 
-def plan_asteroid(rng: Random, orbit_radius: float, speed: float,
-                  angle: float | None = None,
-                  minerals: Sequence[str] = tuple(MINERALS),
-                  radius: tuple[float, float] = ASTEROID_RADIUS,
-                  ) -> OrbiterPlan:
+def plan_asteroid(
+    rng: Random,
+    orbit_radius: float,
+    speed: float,
+    angle: float | None = None,
+    minerals: Sequence[str] = tuple(MINERALS),
+    radius: tuple[float, float] = ASTEROID_RADIUS
+) -> OrbiterPlan:
     """ Of a mineral as common as it is among `minerals`, at `angle` on its
     orbit or anywhere """
     mineral = rng.choices(

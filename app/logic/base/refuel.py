@@ -30,8 +30,11 @@ def take_ice(wanted: float, holds: tuple[Hold, ...]) -> float:
     return taken
 
 
-def refuel(missing: float, wallet: Wallet,
-           *holds: Hold) -> Refuel:
+def refuel(
+    missing: float,
+    wallet: Wallet,
+    *holds: Hold
+) -> Refuel:
     """ Up to `missing` units of fuel, taking the ice of the holds then
     credits """
     ice = take_ice(missing / ICE_FUEL, holds)

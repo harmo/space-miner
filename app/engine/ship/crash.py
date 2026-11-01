@@ -16,8 +16,12 @@ class Crash:
     away: float               # direction from it to the ship
 
 
-def crash_of(gameworld: GameWorld, ship: Ship, arbiter: Any,
-             grounds: set[int]) -> Crash | None:
+def crash_of(
+    gameworld: GameWorld,
+    ship: Ship,
+    arbiter: Any,
+    grounds: set[int]
+) -> Crash | None:
     """ From the contact the physics engine reports, soft ones on the
     `grounds` being landings """
     first, second = (shape.body.data for shape in arbiter.shapes)

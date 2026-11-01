@@ -51,8 +51,11 @@ SUN_SEED = 21
 OUTPOST_SEED = 34
 
 
-def save_events(rng: Random, events: dict[str, SoundEvent],
-                prefix: str = '') -> None:
+def save_events(
+    rng: Random,
+    events: dict[str, SoundEvent],
+    prefix: str = ''
+) -> None:
     for name, sound in events.items():
         save(SOUNDS_DIR / f'{prefix}{name}.ogg', sound.render(rng))
 

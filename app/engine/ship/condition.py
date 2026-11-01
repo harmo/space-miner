@@ -21,13 +21,23 @@ class Condition:
         """ As much fuel as fits in the tank of the new ship """
         self.tank.resize(stats.tank)
 
-    def burn(self, dt: float, stats: ShipStats, thrust: float,
-             firing: bool) -> None:
+    def burn(
+        self,
+        dt: float,
+        stats: ShipStats,
+        thrust: float,
+        firing: bool
+    ) -> None:
         """ `thrust` from 0 to 1 """
         self.tank.burn(burn_rate(stats, thrust, firing) * dt)
 
-    def heat_up(self, dt: float, stats: ShipStats, ship: Ship,
-                sunlight: Sunlight) -> Crash | None:
+    def heat_up(
+        self,
+        dt: float,
+        stats: ShipStats,
+        ship: Ship,
+        sunlight: Sunlight
+    ) -> Crash | None:
         """ The crash of the ship once too hot """
         gain = 0. if sunlight.shaded(ship.position) else heating(
             sunlight.distance(ship.position), shield=stats.shield,

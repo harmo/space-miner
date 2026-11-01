@@ -80,8 +80,13 @@ def transmission(rng: Random, speaking: float) -> Samples:
     return faded(mix((1., message), (.06, hiss)), tail)
 
 
-def telemetry(rng: Random, freq: float, beeps: int, on: float,
-              off: float) -> Samples:
+def telemetry(
+    rng: Random,
+    freq: float,
+    beeps: int,
+    on: float,
+    off: float
+) -> Samples:
     """ Beeping, as satellites do """
     beep = times(sine(freq, length(on)), envelope(length(on), .005, 10.))
     beep = faded(beep, .005)

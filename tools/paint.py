@@ -72,8 +72,11 @@ def latitude() -> Image.Image:
     return gradient.point(lut(lambda v: abs(2 * v - 1)))
 
 
-def color_map(values: Image.Image, stops: Sequence[Color],
-              cycles: float = 1.) -> Image.Image:
+def color_map(
+    values: Image.Image,
+    stops: Sequence[Color],
+    cycles: float = 1.
+) -> Image.Image:
     """ Each value to a color between the stops, going through them
     `cycles` times, back and forth, smoothly where it turns back """
     def color(v: float) -> tuple[float, float, float]:
@@ -94,8 +97,12 @@ def color_map(values: Image.Image, stops: Sequence[Color],
     return Image.merge('RGB', channels)
 
 
-def shade(image: Image.Image, radius: float, air: Color,
-          glow: float = .55) -> None:
+def shade(
+    image: Image.Image,
+    radius: float,
+    air: Color,
+    glow: float = .55
+) -> None:
     """ Darker towards the edge of the disc, lit by a thin atmosphere on
     it """
     distance = radial(radius)

@@ -33,8 +33,11 @@ def sift(rng: Random, yields: tuple[tuple[str, float], ...]) -> str:
 
 class Crusher:
 
-    def __init__(self, rng: Random,
-                 refinery: Refinery = PLAIN_REFINERY) -> None:
+    def __init__(
+        self,
+        rng: Random,
+        refinery: Refinery = PLAIN_REFINERY
+    ) -> None:
         self.rng = rng
         self.refinery = refinery
         self.crushing = False

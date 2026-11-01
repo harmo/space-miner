@@ -171,8 +171,12 @@ class Scenario:
         ex, ey = self.game.system.earth.pos
         return math.atan2(y - ey, x - ex)
 
-    def put_ship(self, pos: Vec2, velocity: Vec2,
-                 angle: float | None = None) -> None:
+    def put_ship(
+        self,
+        pos: Vec2,
+        velocity: Vec2,
+        angle: float | None = None
+    ) -> None:
         """ Moved by hand, flying """
         player = self.player
         player.parking = None

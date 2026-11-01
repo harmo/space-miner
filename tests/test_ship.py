@@ -30,8 +30,11 @@ STATS = ShipStats(
 )
 
 
-def make_ship(position: Vec2 = (0., 0.), velocity: Vec2 = (0., 0.),
-              angle: float = 0.) -> tuple[Ship, FakeBody]:
+def make_ship(
+    position: Vec2 = (0., 0.),
+    velocity: Vec2 = (0., 0.),
+    angle: float = 0.
+) -> tuple[Ship, FakeBody]:
     body = FakeBody(position, velocity, angle)
     return Ship(0, body, STATS), body
 
@@ -43,8 +46,13 @@ def make_sun() -> Celestial:
     )
 
 
-def fly(ship: Ship, body: FakeBody, seconds: float,
-        heading: float | None, attractors: list[Celestial]) -> None:
+def fly(
+    ship: Ship,
+    body: FakeBody,
+    seconds: float,
+    heading: float | None,
+    attractors: list[Celestial]
+) -> None:
     for _ in range(round(seconds / DT)):
         ship.update(DT, heading, attractors)
         body.step(DT)
@@ -156,8 +164,12 @@ def make_belt() -> tuple[Celestial, Celestial, Celestial]:
     return sun, planet, asteroid
 
 
-def hold(ship: Ship, body: FakeBody, seconds: float,
-         system: tuple[Celestial, Celestial, Celestial]) -> list[Vec2]:
+def hold(
+    ship: Ship,
+    body: FakeBody,
+    seconds: float,
+    system: tuple[Celestial, Celestial, Celestial]
+) -> list[Vec2]:
     """ Lock on the asteroid, then return on each frame the distance to it
     and the angle between the ship and the planet, seen from the asteroid """
     sun, planet, asteroid = system
@@ -175,8 +187,10 @@ def hold(ship: Ship, body: FakeBody, seconds: float,
     return frames
 
 
-def outside_of_the_belt(system: tuple[Celestial, Celestial, Celestial],
-                        distance: float) -> Vec2:
+def outside_of_the_belt(
+    system: tuple[Celestial, Celestial, Celestial],
+    distance: float
+) -> Vec2:
     """ Point beyond the asteroid, on the line from its planet """
     _, planet, asteroid = system
     (px, py), (ax, ay) = planet.pos, asteroid.pos

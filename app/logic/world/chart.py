@@ -29,8 +29,14 @@ class Chart:
         return max(smallest, length * self.scale)
 
 
-def chart(sun: Vec2, farthest: float, middle: Vec2, frame: Vec2,
-          zoom: float = 1., ship: Vec2 | None = None) -> Chart:
+def chart(
+    sun: Vec2,
+    farthest: float,
+    middle: Vec2,
+    frame: Vec2,
+    zoom: float = 1.,
+    ship: Vec2 | None = None
+) -> Chart:
     """ `farthest` from the sun fitting in a `frame` around `middle`, or
     `zoom` times closer to the ship """
     half = min(frame) / 2

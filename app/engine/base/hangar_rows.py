@@ -88,8 +88,14 @@ def cost_text(item: Buyable, panel: Any) -> str:
     return '  ·  '.join(texts)
 
 
-def part_row(panel: Any, part_id: str | None, design: Design, slot: str,
-             chosen: str | None, load: float) -> PartRow:
+def part_row(
+    panel: Any,
+    part_id: str | None,
+    design: Design,
+    slot: str,
+    chosen: str | None,
+    load: float
+) -> PartRow:
     current = design.parts.get(slot)
     part = PARTS[part_id] if part_id else None
     fits = ship_stats(fitted(design, slot, part_id)).capacity >= load
@@ -123,8 +129,13 @@ def part_row(panel: Any, part_id: str | None, design: Design, slot: str,
     )
 
 
-def hull_row(panel: Any, hull_id: str, design: Design, chosen: str | None,
-             load: float) -> PartRow:
+def hull_row(
+    panel: Any,
+    hull_id: str,
+    design: Design,
+    chosen: str | None,
+    load: float
+) -> PartRow:
     """ A hull to move the ship onto """
     hull = HULLS[hull_id]
     fits = ship_stats(transfer(design, hull_id)[0]).capacity >= load

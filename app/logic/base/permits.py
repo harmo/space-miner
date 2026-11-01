@@ -26,8 +26,11 @@ class Permits:
     def lacks(self, permit: Permit | None) -> bool:
         return permit is not None and permit.key not in self.granted
 
-    def offered(self, permits: Sequence[Permit],
-                tier: int) -> list[Permit]:
+    def offered(
+        self,
+        permits: Sequence[Permit],
+        tier: int
+    ) -> list[Permit]:
         """ Those the reputation reached, not granted yet """
         return [
             permit for permit in permits

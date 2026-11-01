@@ -160,8 +160,12 @@ def crushing(rng: Random) -> Samples:
     )
 
 
-def chirps(n: int, notes: tuple[float, ...], step: float,
-           decay: float) -> Samples:
+def chirps(
+    n: int,
+    notes: tuple[float, ...],
+    step: float,
+    decay: float
+) -> Samples:
     """ Bright notes struck one after the other """
     return normalized(mix(*(
         (1., delayed(

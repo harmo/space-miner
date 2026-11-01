@@ -55,8 +55,13 @@ class Shuttle:
                 stock[name] = stock.get(name, 0.) + moved
                 withdraw(self.load, name, moved)
 
-    def update(self, dt: float, here: Hold, there: Hold | None,
-               trip: float) -> None:
+    def update(
+        self,
+        dt: float,
+        here: Hold,
+        there: Hold | None,
+        trip: float
+    ) -> None:
         """ `there` and `trip` being those of its route """
         if self.leg == 'waiting':
             if there is not None:

@@ -43,15 +43,24 @@ def debris(rng: Random, n: int, cutoff: float) -> Samples:
     return normalized(times(bits, envelope(n, .001, .2)))
 
 
-def burst(rng: Random, n: int, cutoff: float, attack: float,
-          decay: float) -> Samples:
+def burst(
+    rng: Random,
+    n: int,
+    cutoff: float,
+    attack: float,
+    decay: float
+) -> Samples:
     """ A puff of noise """
     puff = lowpass(lowpass(noise(rng, n), cutoff), cutoff)
     return normalized(times(puff, envelope(n, attack, decay)))
 
 
-def bell(n: int, base: float, partials: tuple[float, ...],
-         decay: float) -> Samples:
+def bell(
+    n: int,
+    base: float,
+    partials: tuple[float, ...],
+    decay: float
+) -> Samples:
     """ Struck metal: the higher partials fade faster """
     return normalized(mix(*(
         (1 / k, ring(base * ratio, n, decay / ratio ** .5))
@@ -59,8 +68,14 @@ def bell(n: int, base: float, partials: tuple[float, ...],
     )))
 
 
-def chimes(rng: Random, n: int, low: float, high: float, count: int,
-           decay: float) -> Samples:
+def chimes(
+    rng: Random,
+    n: int,
+    low: float,
+    high: float,
+    count: int,
+    decay: float
+) -> Samples:
     """ Shards tinkling, between `low` and `high` Hz, in the first half
     second """
     return normalized(mix(*(

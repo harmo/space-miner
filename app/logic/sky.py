@@ -6,8 +6,12 @@ from .world.space import Vec2
 TexCoords = tuple[float, float, float, float, float, float, float, float]
 
 
-def tile_coords(travel: Vec2, depth: float, size: Vec2,
-                tile: float) -> TexCoords:
+def tile_coords(
+    travel: Vec2,
+    depth: float,
+    size: Vec2,
+    tile: float
+) -> TexCoords:
     """ Texture coordinates of a screen of `size` pixels over an image
     repeated every `tile` pixels, slid `depth` times as far as the ship
     has travelled, in pixels too. Counterclockwise from the bottom left

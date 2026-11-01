@@ -70,9 +70,14 @@ def heat_at(pos: Vec2, sun: Round) -> float:
     return sun_heat(math.dist(pos, sun.pos) - sun.radius)
 
 
-def orbit_dots(center: Vec2, radius: float, view_center: Vec2,
-               half_size: Vec2, spacing: float,
-               hidden: tuple[Vec2, float] | None = None) -> list[Vec2]:
+def orbit_dots(
+    center: Vec2,
+    radius: float,
+    view_center: Vec2,
+    half_size: Vec2,
+    spacing: float,
+    hidden: tuple[Vec2, float] | None = None
+) -> list[Vec2]:
     """ Dots of a circular orbit inside the view, `spacing` apart. They are
     fixed on the orbit, so they don't slide as the view moves. No dot
     within `hidden`: a (position, radius) disc. """
@@ -151,8 +156,12 @@ def heat_color(warmth: Warmth) -> Rgb:
     return CARGO_ALMOST_FULL_COLOR if warmth == 'hot' else HEAT_GAUGE_COLOR
 
 
-def message(work: str, fuel: FuelState, warmth: Warmth,
-            filling: bool) -> str:
+def message(
+    work: str,
+    fuel: FuelState,
+    warmth: Warmth,
+    filling: bool
+) -> str:
     """ What matters most: blowing up, then the work of the ship, its
     fuel, its heat """
     if warmth == 'overheating':

@@ -15,8 +15,12 @@ class ShipLooks:
         self.exhaust = Exhaust(rng)
         self.gear = LandingGear()
 
-    def update(self, player: Player, heading: float | None,
-               dt: float) -> None:
+    def update(
+        self,
+        player: Player,
+        heading: float | None,
+        dt: float
+    ) -> None:
         self.exhaust.update(player, heading, dt)
         self.gear.update(player, dt)
 

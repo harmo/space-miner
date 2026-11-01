@@ -27,9 +27,14 @@ from ..world.solar_system import SolarSystem
 
 class Miner:
 
-    def __init__(self, system: SolarSystem, canisters: CanisterField,
-                 rng: Random, explosions: list[Explosion],
-                 stats: ShipStats) -> None:
+    def __init__(
+        self,
+        system: SolarSystem,
+        canisters: CanisterField,
+        rng: Random,
+        explosions: list[Explosion],
+        stats: ShipStats
+    ) -> None:
         self.system = system
         self.canisters = canisters
         self.rng = rng
@@ -123,8 +128,12 @@ class Miner:
             return f'Laser trop faible pour {mineral_of(self.lock.target).the}'
         return ''
 
-    def work(self, ship: Ship, dt: float,
-             attractors: Sequence[Celestial]) -> None:
+    def work(
+        self,
+        ship: Ship,
+        dt: float,
+        attractors: Sequence[Celestial]
+    ) -> None:
         if self.pickup is not None:
             ship.hold(dt, self.pickup, attractors)
             self.collect(ship, self.pickup.target)

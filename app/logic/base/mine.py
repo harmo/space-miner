@@ -13,8 +13,11 @@ Yields = tuple[tuple[str, int], ...]
 
 class Mine:
 
-    def __init__(self, rng: Random,
-                 yields: Yields = MINE_YIELDS) -> None:
+    def __init__(
+        self,
+        rng: Random,
+        yields: Yields = MINE_YIELDS
+    ) -> None:
         self.rng = rng
         self.yields = yields      # how often each mineral comes up
         self.dug = 0.             # units, not in the depot yet

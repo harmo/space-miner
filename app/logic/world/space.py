@@ -34,8 +34,13 @@ def angle_diff(a: float, b: float) -> float:
 class Orbit:
     """ Circular orbit around a parent celestial body """
 
-    def __init__(self, parent: Celestial, radius: float, speed: float,
-                 angle: float) -> None:
+    def __init__(
+        self,
+        parent: Celestial,
+        radius: float,
+        speed: float,
+        angle: float
+    ) -> None:
         self.parent = parent
         self.radius = radius
         self.angular_speed = speed / radius
@@ -76,8 +81,11 @@ class Round(Protocol):
 R = TypeVar('R', bound=Round)
 
 
-def closest_to(pos: Vec2, things: Iterable[R],
-               tolerance: float) -> R | None:
+def closest_to(
+    pos: Vec2,
+    things: Iterable[R],
+    tolerance: float
+) -> R | None:
     """ Closest thing whose edge is within tolerance of pos """
     closest, closest_gap = None, tolerance
     for thing in things:
@@ -109,8 +117,12 @@ class Station(Generic[T_co]):
     relative to the orbit of the target: a ship holding there flies in
     formation with it """
 
-    def __init__(self, target: T_co, start: Vec2,
-                 distance: float) -> None:
+    def __init__(
+        self,
+        target: T_co,
+        start: Vec2,
+        distance: float
+    ) -> None:
         self.target = target
         self.distance = distance
         self.angle = bearing(start, target.pos) - self.orbit_angle
@@ -146,12 +158,18 @@ class Celestial:
     """ The sun, a planet, the moon or an asteroid. Bodies on an orbit derive
     their position from it, so moving the sun moves the whole system. """
 
-    def __init__(self, entity_id: int, radius: float, *,
-                 pos: Vec2 = (0., 0.), orbit: Orbit | None = None,
-                 gravity: float = 0.,
-                 gravity_falloff: float = GRAVITY_FALLOFF,
-                 gravity_range: float | None = GRAVITY_RANGE,
-                 mineral: str | None = None) -> None:
+    def __init__(
+        self,
+        entity_id: int,
+        radius: float,
+        *,
+        pos: Vec2 = (0., 0.),
+        orbit: Orbit | None = None,
+        gravity: float = 0.,
+        gravity_falloff: float = GRAVITY_FALLOFF,
+        gravity_range: float | None = GRAVITY_RANGE,
+        mineral: str | None = None
+    ) -> None:
         self.entity_id = entity_id
         self.radius = radius
         self._pos = pos               # only used when not on an orbit
@@ -189,8 +207,11 @@ class Celestial:
         return dx / distance * pull, dy / distance * pull
 
 
-def nearest(pos: Vec2, bodies: Iterable[Celestial],
-            within: float) -> Celestial | None:
+def nearest(
+    pos: Vec2,
+    bodies: Iterable[Celestial],
+    within: float
+) -> Celestial | None:
     """ Closest body whose center is within the distance `within` """
     closest, closest_distance = None, within
     for body in bodies:
@@ -200,8 +221,10 @@ def nearest(pos: Vec2, bodies: Iterable[Celestial],
     return closest
 
 
-def closest_pulling(pos: Vec2,
-                    attractors: Sequence[Celestial]) -> Celestial | None:
+def closest_pulling(
+    pos: Vec2,
+    attractors: Sequence[Celestial]
+) -> Celestial | None:
     """ The closest body on an orbit whose gravity reaches pos: the sun is
     not one """
     pulling = [

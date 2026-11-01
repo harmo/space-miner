@@ -118,8 +118,11 @@ class CometOrbit(Orbit):
         ]
 
 
-def plan_comet(rng: Random, sun: Celestial,
-               orbits: Sequence[float]) -> CometPath:
+def plan_comet(
+    rng: Random,
+    sun: Celestial,
+    orbits: Sequence[float]
+) -> CometPath:
     """ From as far as the last planet, whichever the way """
     return CometPath(
         sun.radius + COMET_PERIHELION, orbits[-1], COMET_TIME,

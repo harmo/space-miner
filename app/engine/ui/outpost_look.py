@@ -39,8 +39,13 @@ class Frame:
             x + math.cos(angle) * distance, y + math.sin(angle) * distance,
         )
 
-    def box(self, left: float, right: float, top: float,
-            bottom: float = -3.) -> tuple[list[Vec2], list[Vec2]]:
+    def box(
+        self,
+        left: float,
+        right: float,
+        top: float,
+        bottom: float = -3.
+    ) -> tuple[list[Vec2], list[Vec2]]:
         """ Its lower and upper edges, bending with the surface: sunk a
         little into the ground, not to float above it """
         steps = max(1, math.ceil((right - left) / STEP))
@@ -198,8 +203,11 @@ def point(center: Vec2, angle: float, distance: float) -> Vec2:
     )
 
 
-def around(center: Vec2, wide: float,
-           high: float | None = None) -> list[Vec2]:
+def around(
+    center: Vec2,
+    wide: float,
+    high: float | None = None
+) -> list[Vec2]:
     """ A box `wide` and `high` both ways, or a disc `wide` across """
     if high is not None:
         x, y = center

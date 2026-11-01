@@ -58,8 +58,12 @@ def envelope(n: int, attack: float, decay: float) -> Samples:
     ]
 
 
-def ring(freq: float, n: int, decay: float,
-         attack: float = .002) -> Samples:
+def ring(
+    freq: float,
+    n: int,
+    decay: float,
+    attack: float = .002
+) -> Samples:
     """ Struck, then fading """
     return times(sine(freq, n), envelope(n, attack, decay))
 
@@ -84,8 +88,12 @@ def noise(rng: Random, n: int) -> Samples:
     return [rng.uniform(-1, 1) for _ in range(n)]
 
 
-def crackle(rng: Random, n: int, count: int,
-            decay: float = .0015) -> Samples:
+def crackle(
+    rng: Random,
+    n: int,
+    count: int,
+    decay: float = .0015
+) -> Samples:
     """ `count` clicks of random strength, fading in `decay` seconds, those
     at the end wrapping around to the start """
     out = [0.] * n
@@ -113,8 +121,11 @@ def lowpass(samples: Samples, cutoff: float, loop: bool = False) -> Samples:
     return out[len(out) - len(samples):]
 
 
-def highpass(samples: Samples, cutoff: float,
-             loop: bool = False) -> Samples:
+def highpass(
+    samples: Samples,
+    cutoff: float,
+    loop: bool = False
+) -> Samples:
     """ Softens what is below `cutoff` Hz """
     low = lowpass(samples, cutoff, loop)
     return [sample - soft for sample, soft in zip(samples, low, strict=True)]
@@ -131,8 +142,13 @@ def settled(out: Samples, n: int) -> Samples:
     return out[len(out) - n:]
 
 
-def resonant(samples: Samples, cutoff: Samples, damping: float,
-             loop: bool = False, band: bool = False) -> Samples:
+def resonant(
+    samples: Samples,
+    cutoff: Samples,
+    damping: float,
+    loop: bool = False,
+    band: bool = False
+) -> Samples:
     """ The filter of modular synthesizers, its cutoff moving along
     `cutoff`, in Hz, sample after sample: a low pass, or a band pass
     around it. It rings at its cutoff with a low `damping`, from 2 down
@@ -150,8 +166,12 @@ def resonant(samples: Samples, cutoff: Samples, damping: float,
     return settled(out, n)
 
 
-def echo(samples: Samples, seconds: float, feedback: float,
-         loop: bool = False) -> Samples:
+def echo(
+    samples: Samples,
+    seconds: float,
+    feedback: float,
+    loop: bool = False
+) -> Samples:
     """ Repeating every `seconds`, each time `feedback` as loud """
     gap = length(seconds)
     out: Samples = []
@@ -238,8 +258,11 @@ def normalized(samples: Samples) -> Samples:
     return [sample / max(rms, 1e-9) for sample in samples]
 
 
-def level(samples: Samples, db: float,
-          window: float | None = None) -> Samples:
+def level(
+    samples: Samples,
+    db: float,
+    window: float | None = None
+) -> Samples:
     """ At `db` loudness, quieter if its peaks would get beyond PEAK """
     gain = 10 ** ((db - loudness(samples, window)) / 20)
     peak = max(abs(sample) for sample in samples) * gain

@@ -9,8 +9,11 @@ from ...logic.world.layout import plan_ceres, plan_ceres_belt, plan_station
 from ..world.solar_system import SolarSystem
 
 
-def found_outposts(system: SolarSystem, rng: Random,
-                   permits: Permits) -> list[Outpost]:
+def found_outposts(
+    system: SolarSystem,
+    rng: Random,
+    permits: Permits
+) -> list[Outpost]:
     """ On their sites, nothing built yet: the Frontier on the farthest
     planet, Cérès in the belt around the sun and Icare orbiting the first
     planet, both added to the system, and Ares on Mars """

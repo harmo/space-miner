@@ -107,8 +107,12 @@ def planet() -> Celestial:
     return Celestial(1, 200., pos=(1000., 500.), gravity=250.)
 
 
-def settled(body: Celestial, pos: Vec2, velocity: Vec2,
-            seconds: float) -> tuple[Vec2, Vec2]:
+def settled(
+    body: Celestial,
+    pos: Vec2,
+    velocity: Vec2,
+    seconds: float
+) -> tuple[Vec2, Vec2]:
     """ Where a canister thrown from pos ends up, and how fast """
     for _ in range(round(seconds / DT)):
         velocity = settle(pos, velocity, body, ALTITUDE, DT)
@@ -146,8 +150,10 @@ def test_canisters_all_orbit_the_same_way() -> None:
 @pytest.mark.parametrize('distance, thrown', [
     (210., (-50., 0.)), (500., (0., 0.)), (1100., (80., 40.)),
 ])
-def test_canisters_gather_at_their_height(distance: float,
-                                          thrown: Vec2) -> None:
+def test_canisters_gather_at_their_height(
+    distance: float,
+    thrown: Vec2
+) -> None:
     body = planet()
     pos, _ = settled(body, (1000. + distance, 500.), thrown, 40.)
     assert math.dist(pos, body.pos) - body.radius == pytest.approx(
@@ -194,7 +200,8 @@ def the_sun() -> Celestial:
 
 @pytest.mark.parametrize('distance', [100., 900., 1500.])
 def test_canisters_gather_around_the_sun(
-        distance: float) -> None:
+    distance: float
+) -> None:
     sun = the_sun()
     altitude = CANISTER_SUN_ALTITUDE + 200.
     pos, velocity = (600. + distance, 0.), (0., 0.)

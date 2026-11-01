@@ -90,8 +90,13 @@ class Overlay:
         self.group.add(Color(*color, MARKER_OPACITY))
         self.group.add(Rectangle(pos=(x, y), size=(bar_width, bar_height)))
 
-    def wave(self, center: Vec2, radius: float, color: Rgb,
-             opacity: float) -> None:
+    def wave(
+        self,
+        center: Vec2,
+        radius: float,
+        color: Rgb,
+        opacity: float
+    ) -> None:
         """ A ring around `center`, `radius` in the world """
         x, y = self.to_screen(center)
         self.group.add(Color(*color, opacity))
@@ -99,8 +104,12 @@ class Overlay:
             circle=(x, y, radius / self.camera.camera_scale), width=3,
         ))
 
-    def shape(self, points: list[Vec2], color: Rgb,
-              outline: Rgb | None = None) -> None:
+    def shape(
+        self,
+        points: list[Vec2],
+        color: Rgb,
+        outline: Rgb | None = None
+    ) -> None:
         """ A convex polygon of the world, filled """
         screen = [self.to_screen(point) for point in points]
         self.group.add(Color(*color, 1))
@@ -115,8 +124,13 @@ class Overlay:
                 width=1, close=True,
             ))
 
-    def band(self, lower: list[Vec2], upper: list[Vec2], color: Rgb,
-             outline: Rgb | None = None) -> None:
+    def band(
+        self,
+        lower: list[Vec2],
+        upper: list[Vec2],
+        color: Rgb,
+        outline: Rgb | None = None
+    ) -> None:
         """ Between two lines of the world, as many points each, filled
         even where it bends """
         lower = [self.to_screen(point) for point in lower]
@@ -168,8 +182,14 @@ class Overlay:
             vertices=vertices, indices=[0, 1, 2], mode='triangles',
         ))
 
-    def circle(self, center: Vec2, radius: float, color: Rgb, width: float,
-               opacity: float = 1.) -> None:
+    def circle(
+        self,
+        center: Vec2,
+        radius: float,
+        color: Rgb,
+        width: float,
+        opacity: float = 1.
+    ) -> None:
         """ `radius` in the world, `width` on the screen """
         x, y = self.to_screen(center)
         self.group.add(Color(*color, opacity))
@@ -177,8 +197,13 @@ class Overlay:
             circle=(x, y, radius / self.camera.camera_scale), width=width,
         ))
 
-    def segment(self, start: Vec2, end: Vec2, color: Rgb,
-                width: float) -> None:
+    def segment(
+        self,
+        start: Vec2,
+        end: Vec2,
+        color: Rgb,
+        width: float
+    ) -> None:
         self.group.add(Color(*color, 1))
         self.group.add(Line(
             points=[*self.to_screen(start), *self.to_screen(end)],
@@ -199,8 +224,13 @@ class Overlay:
             self.group.add(Color(1, 1, 1, ORBIT_OPACITY))
             self.group.add(Point(points=points, pointsize=ORBIT_DOT_SIZE))
 
-    def chevron(self, target: Celestial, color: Rgb, size: float,
-                opacity: float) -> None:
+    def chevron(
+        self,
+        target: Celestial,
+        color: Rgb,
+        size: float,
+        opacity: float
+    ) -> None:
         """ Thick V on the screen edge pointing towards a target out of the
         screen, inside the bars: outlined only, to stay discreet """
         width, height = self.size
@@ -248,8 +278,13 @@ class Overlay:
                 circle=(x, y, radius, 0, 360 * progress), width=1.5
             ))
 
-    def laser(self, start: Vec2, end: Vec2, laser: Laser,
-              strong: bool = True) -> None:
+    def laser(
+        self,
+        start: Vec2,
+        end: Vec2,
+        laser: Laser,
+        strong: bool = True
+    ) -> None:
         """ Brighter and wider with its level. A laser too weak to mine is
         faint. """
         points = [*self.to_screen(start), *self.to_screen(end)]
@@ -284,8 +319,10 @@ class Overlay:
                     points=pad, width=width / scale, cap='round',
                 ))
 
-    def sparks(self, sparks: Iterable[tuple[Vec2, Rgb, float, float]]
-               ) -> None:
+    def sparks(
+        self,
+        sparks: Iterable[tuple[Vec2, Rgb, float, float]]
+    ) -> None:
         """ Soft dots of a color, an opacity and a size in pixels of the
         world """
         scale = self.camera.camera_scale

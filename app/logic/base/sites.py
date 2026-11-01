@@ -65,8 +65,13 @@ def docked(services: Services) -> Stage:
     )
 
 
-def concession(key: str, tier: int, name: str, wanted: dict[str, int],
-               reward: int) -> Permit:
+def concession(
+    key: str,
+    tier: int,
+    name: str,
+    wanted: dict[str, int],
+    reward: int
+) -> Permit:
     return Permit(key, tier, Mission(name, wanted, reward, tier))
 
 

@@ -45,8 +45,14 @@ from .ship_textures import ship_texture
 
 class Player:
 
-    def __init__(self, gameworld: GameWorld, system: SolarSystem,
-                 camera: Any, rng: Random, grounds: Grounds) -> None:
+    def __init__(
+        self,
+        gameworld: GameWorld,
+        system: SolarSystem,
+        camera: Any,
+        rng: Random,
+        grounds: Grounds
+    ) -> None:
         self.gameworld = gameworld
         self.system = system
         self.grounds = grounds
@@ -153,9 +159,12 @@ class Player:
             self.restart(design, parking.direction,
                          self.grounds.of(parking.body))
 
-    def restart(self, design: Design,
-                direction: float = math.radians(START_DIRECTION),
-                ground: Ground | None = None) -> None:
+    def restart(
+        self,
+        design: Design,
+        direction: float = math.radians(START_DIRECTION),
+        ground: Ground | None = None
+    ) -> None:
         """ A ship built after `design`, landed home, or on `ground`,
         whatever the ship was doing """
         if self.ship is not None:

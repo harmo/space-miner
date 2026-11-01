@@ -51,8 +51,10 @@ def test_landing_starts_where_the_ship_is() -> None:
 @pytest.mark.parametrize('start_degrees, spot_degrees', [
     (30., 30.), (30., 100.), (170., -150.), (0., -90.),
 ])
-def test_landing_ends_on_the_spot(start_degrees: float,
-                                  spot_degrees: float) -> None:
+def test_landing_ends_on_the_spot(
+    start_degrees: float,
+    spot_degrees: float
+) -> None:
     planet = earth()
     spot = math.radians(spot_degrees)
     landing = Landing(

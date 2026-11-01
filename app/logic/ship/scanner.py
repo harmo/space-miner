@@ -15,8 +15,11 @@ def mineral_name(asteroid: Celestial) -> str:
     return asteroid.mineral or 'rock'
 
 
-def within(asteroids: Sequence[Celestial], pos: Vec2,
-           reach: float) -> list[Celestial]:
+def within(
+    asteroids: Sequence[Celestial],
+    pos: Vec2,
+    reach: float
+) -> list[Celestial]:
     """ Closest first """
     found = [
         asteroid for asteroid in asteroids
@@ -25,8 +28,13 @@ def within(asteroids: Sequence[Celestial], pos: Vec2,
     return sorted(found, key=lambda asteroid: math.dist(pos, asteroid.pos))
 
 
-def found(asteroids: Sequence[Celestial], pos: Vec2, reach: float,
-          looked_for: Collection[str], count: int) -> list[Celestial]:
+def found(
+    asteroids: Sequence[Celestial],
+    pos: Vec2,
+    reach: float,
+    looked_for: Collection[str],
+    count: int
+) -> list[Celestial]:
     """ The `count` closest of the minerals looked for """
     return [
         asteroid for asteroid in within(asteroids, pos, reach)
@@ -34,8 +42,11 @@ def found(asteroids: Sequence[Celestial], pos: Vec2, reach: float,
     ][:count]
 
 
-def counts(asteroids: Sequence[Celestial], pos: Vec2,
-           reach: float) -> dict[str, int]:
+def counts(
+    asteroids: Sequence[Celestial],
+    pos: Vec2,
+    reach: float
+) -> dict[str, int]:
     """ Asteroids within reach, by mineral """
     counted = dict.fromkeys(MINED, 0)
     for asteroid in within(asteroids, pos, reach):

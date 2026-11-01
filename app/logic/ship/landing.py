@@ -23,9 +23,14 @@ class Landing:
     arrives without speed. Computed relative to the body, which keeps
     moving meanwhile. """
 
-    def __init__(self, body: Celestial, start: Pose,
-                 end_direction: float, length: float,
-                 duration: float = LANDING_DURATION) -> None:
+    def __init__(
+        self,
+        body: Celestial,
+        start: Pose,
+        end_direction: float,
+        length: float,
+        duration: float = LANDING_DURATION
+    ) -> None:
         self.body = body
         x, y = body.pos
         self.start_direction = bearing(start.position, body.pos)

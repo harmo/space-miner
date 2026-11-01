@@ -48,8 +48,11 @@ class MissionTracker(BoxLayout):
             row.laser = str(mineral.laser) if too_weak else ''
 
 
-def show_needs(tracker: MissionTracker, desks: list[Desk],
-               player: Player) -> None:
+def show_needs(
+    tracker: MissionTracker,
+    desks: list[Desk],
+    player: Player
+) -> None:
     """ Of the missions under way wherever they are """
     tracker.show(needs_at(desks, player.miner.ore), player.stats.laser)
 

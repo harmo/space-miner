@@ -19,8 +19,11 @@ from app.logic.world.space import (
 )
 
 
-def attractor(gravity: float = 100., falloff: float = 2.,
-              gravity_range: float | None = None) -> Celestial:
+def attractor(
+    gravity: float = 100.,
+    falloff: float = 2.,
+    gravity_range: float | None = None
+) -> Celestial:
     """ Radius 10 at the origin """
     return Celestial(
         0, 10., gravity=gravity, gravity_falloff=falloff,
@@ -67,8 +70,11 @@ def test_star_field_survives_world_recentering() -> None:
     (math.pi - .1, -math.pi + .1, -.2), (-math.pi + .1, math.pi - .1, .2),
     (7 * math.pi, 0., math.pi),
 ])
-def test_angle_diff_is_the_shortest_turn(a: float, b: float,
-                                         expected: float) -> None:
+def test_angle_diff_is_the_shortest_turn(
+    a: float,
+    b: float,
+    expected: float
+) -> None:
     assert abs(angle_diff(a, b) - expected) < 1e-9 or (
         abs(expected) == pytest.approx(math.pi)
         and abs(angle_diff(a, b)) == pytest.approx(math.pi)

@@ -247,7 +247,8 @@ def comet() -> Ground:
 
 @pytest.mark.parametrize('direction', [0., 2., -2.])
 def test_ships_hold_on_to_a_comet_where_they_come_from(
-        direction: float) -> None:
+    direction: float
+) -> None:
     ground = comet()
     grounds = Grounds([])
     grounds.fit(40.)

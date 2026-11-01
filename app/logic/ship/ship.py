@@ -54,8 +54,12 @@ class Ship:
     """ Thrusts towards a heading or coasts, or holds in front of a target
     to mine it. Always pulled by the sun and the planets. """
 
-    def __init__(self, entity_id: int, body: Body,
-                 stats: ShipStats) -> None:
+    def __init__(
+        self,
+        entity_id: int,
+        body: Body,
+        stats: ShipStats
+    ) -> None:
         self.entity_id = entity_id
         self.body = body
         self.stats = stats
@@ -89,14 +93,22 @@ class Ship:
         body.angle = pose.angle
         body.angular_velocity = 0
 
-    def update(self, dt: float, heading: float | None,
-               attractors: Sequence[Celestial]) -> None:
+    def update(
+        self,
+        dt: float,
+        heading: float | None,
+        attractors: Sequence[Celestial]
+    ) -> None:
         """ Free flight """
         self.drive(dt, heading, self.reference_velocity(attractors))
         self.apply_gravity(dt, attractors)
 
-    def hold(self, dt: float, station: Station[Target],
-             attractors: Sequence[Celestial]) -> None:
+    def hold(
+        self,
+        dt: float,
+        station: Station[Target],
+        attractors: Sequence[Celestial]
+    ) -> None:
         """ Reach and keep the station, facing its target """
         x, y = self.position
         spot_x, spot_y = station.position
@@ -125,8 +137,12 @@ class Ship:
         attractor = strongest(self.position, attractors)
         return attractor.velocity if attractor else (0., 0.)
 
-    def drive(self, dt: float, heading: float | None,
-              reference: Vec2) -> None:
+    def drive(
+        self,
+        dt: float,
+        heading: float | None,
+        reference: Vec2
+    ) -> None:
         desired_vx, desired_vy = reference
         rate = SHIP_DRAG
         if heading is not None:
@@ -160,8 +176,11 @@ class Ship:
             ay += pull_y
         return ax, ay
 
-    def apply_gravity(self, dt: float,
-                      attractors: Sequence[Celestial]) -> None:
+    def apply_gravity(
+        self,
+        dt: float,
+        attractors: Sequence[Celestial]
+    ) -> None:
         ax, ay = self.gravity(attractors)
         self.body.velocity = (
             self.body.velocity.x + ax * dt,

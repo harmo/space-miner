@@ -110,8 +110,15 @@ class Trail:
         self.sparks: list[Spark] = []
         self.owed: list[float] = []     # sparks not thrown yet, by nozzle
 
-    def update(self, dt: float, pos: Vec2, angle: float, velocity: Vec2,
-               ship_nozzles: list[Nozzle], thrust: float) -> None:
+    def update(
+        self,
+        dt: float,
+        pos: Vec2,
+        angle: float,
+        velocity: Vec2,
+        ship_nozzles: list[Nozzle],
+        thrust: float
+    ) -> None:
         """ Throws sparks for `thrust`, from 0 to 1 """
         for spark in self.sparks:
             spark.age += dt
@@ -132,8 +139,14 @@ class Trail:
                 self.throw(nozzle, angle, velocity, style, dt)
         del self.sparks[:-TRAIL_MAX]
 
-    def throw(self, nozzle: Vec2, angle: float, velocity: Vec2,
-              style: TrailStyle, dt: float) -> None:
+    def throw(
+        self,
+        nozzle: Vec2,
+        angle: float,
+        velocity: Vec2,
+        style: TrailStyle,
+        dt: float
+    ) -> None:
         rng = self.rng
         spread = math.radians(style.spread) / 2
         backwards = angle + math.pi + rng.uniform(-spread, spread)

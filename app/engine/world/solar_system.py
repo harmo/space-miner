@@ -41,8 +41,13 @@ from .events import SystemEvents
 
 class SolarSystem:
 
-    def __init__(self, gameworld: GameWorld, plan: SystemPlan,
-                 center: Vec2, rng: Random) -> None:
+    def __init__(
+        self,
+        gameworld: GameWorld,
+        plan: SystemPlan,
+        center: Vec2,
+        rng: Random
+    ) -> None:
         self.gameworld = gameworld
         self.planets: list[Celestial] = []
         self.looks: list[str] = []          # textures of the planets
@@ -102,8 +107,11 @@ class SolarSystem:
         """ The farthest planet from the sun """
         return self.planets[-1]
 
-    def add_body(self, plan: OrbiterPlan,
-                 parent: Celestial | None = None) -> Celestial:
+    def add_body(
+        self,
+        plan: OrbiterPlan,
+        parent: Celestial | None = None
+    ) -> Celestial:
         """ Around `parent`, the sun without any, solid as the planets and
         pulling if it has gravity """
         body = self.create_orbiter(plan, parent or self.sun, COLLISION_PLANET)
@@ -111,8 +119,12 @@ class SolarSystem:
             self.attractors.append(body)
         return body
 
-    def add_belt(self, belt: BeltPlan, parent: Celestial,
-                 rng: Random) -> None:
+    def add_belt(
+        self,
+        belt: BeltPlan,
+        parent: Celestial,
+        rng: Random
+    ) -> None:
         """ Full, around `parent` """
         self.belt_parents.append(parent)
         self.belt_plans.append(belt)
@@ -122,8 +134,11 @@ class SolarSystem:
         ])
         self.events.watch(belt)
 
-    def add_asteroid(self, plan: OrbiterPlan,
-                     parent: Celestial) -> Celestial:
+    def add_asteroid(
+        self,
+        plan: OrbiterPlan,
+        parent: Celestial
+    ) -> Celestial:
         asteroid = self.create_orbiter(plan, parent, COLLISION_ORBITER)
         self.asteroids.append(asteroid)
         self.planned[asteroid] = plan
@@ -178,8 +193,12 @@ class SolarSystem:
         self.bodies.append(sun)
         return sun
 
-    def create_orbiter(self, plan: OrbiterPlan, parent: Celestial,
-                       collision_type: int) -> Celestial:
+    def create_orbiter(
+        self,
+        plan: OrbiterPlan,
+        parent: Celestial,
+        collision_type: int
+    ) -> Celestial:
         orbit = Orbit(parent, plan.orbit_radius, plan.speed, plan.orbit_angle)
         entity_id = create_round_entity(self.gameworld, RoundBody(
             plan.texture, orbit.position, plan.radius, plan.mass,

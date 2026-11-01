@@ -23,8 +23,13 @@ def ore_price(name: str, factor: float = 1.) -> int:
     return max(1, round(ore_value(MINERALS[name]) * ORE_SALE * factor))
 
 
-def sell_ore(stock: Hold, name: str, units: int,
-             wallet: Wallet, factor: float = 1.) -> int:
+def sell_ore(
+    stock: Hold,
+    name: str,
+    units: int,
+    wallet: Wallet,
+    factor: float = 1.
+) -> int:
     """ Sells up to `units` whole units of the stock, returns how many """
     sold = min(units, whole_units(stock.get(name, 0.)))
     if sold <= 0:

@@ -17,8 +17,12 @@ class Exhaust:
         self.design: Design | None = None
         self.nozzles: list[Nozzle] = []     # of that design
 
-    def update(self, player: Player, heading: float | None,
-               dt: float) -> None:
+    def update(
+        self,
+        player: Player,
+        heading: float | None,
+        dt: float
+    ) -> None:
         if player.design != self.design:
             self.design = player.design
             self.nozzles = nozzles(player.design)

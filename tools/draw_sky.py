@@ -140,8 +140,13 @@ def copies(x: float, y: float, margin: float) -> list[tuple[float, float]]:
     return [(a, b) for a in xs for b in ys]
 
 
-def dots(rng: Random, image: Image.Image, count: int,
-         sizes: tuple[float, float], alphas: tuple[int, int]) -> None:
+def dots(
+    rng: Random,
+    image: Image.Image,
+    count: int,
+    sizes: tuple[float, float],
+    alphas: tuple[int, int]
+) -> None:
     draw = ImageDraw.Draw(image)
     for _ in range(count):
         x, y = rng.uniform(0, SIZE), rng.uniform(0, SIZE)

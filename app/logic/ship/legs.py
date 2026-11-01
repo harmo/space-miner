@@ -35,8 +35,13 @@ def ground_hit(hip: Vec2, foot: Vec2, ground: Round) -> Vec2:
     return hip[0] + dx * t, hip[1] + dy * t
 
 
-def legs(pos: Vec2, angle: float, size: Vec2, unfolded: float,
-         ground: Round) -> list[Leg]:
+def legs(
+    pos: Vec2,
+    angle: float,
+    size: Vec2,
+    unfolded: float,
+    ground: Round
+) -> list[Leg]:
     """ Both legs of a ship of `size`, unfolded from 0 to 1 """
     length, width = size
     hip_x = -length / 2 + 3.

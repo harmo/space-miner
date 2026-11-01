@@ -17,8 +17,13 @@ from .storage import delete_save, write_save
 
 class Keeper:
 
-    def __init__(self, seed: int, player: Player, base: EarthBase,
-                 outposts: list[Outpost]) -> None:
+    def __init__(
+        self,
+        seed: int,
+        player: Player,
+        base: EarthBase,
+        outposts: list[Outpost]
+    ) -> None:
         self.seed = seed
         self.player = player
         self.base = base

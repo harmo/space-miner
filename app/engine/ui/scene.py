@@ -112,8 +112,11 @@ def draw_orbits(overlay: Overlay, size: Vec2, system: SolarSystem) -> None:
         ))
 
 
-def draw_markers(overlay: Overlay, system: SolarSystem,
-                 outposts: list[Outpost]) -> None:
+def draw_markers(
+    overlay: Overlay,
+    system: SolarSystem,
+    outposts: list[Outpost]
+) -> None:
     """ Towards the planets, the sun, a swarm or a comet passing by, the
     ejecta of a flare and the outposts, out of the screen """
     overlay.marker(system.sun, SUN_COLOR)

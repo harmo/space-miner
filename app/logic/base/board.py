@@ -35,8 +35,12 @@ class Board:
     looking at another level changes nothing. Each board makes a
     reputation of its own. """
 
-    def __init__(self, rng: Random, wallet: Wallet,
-                 clientele: Clientele = ANY_CLIENT) -> None:
+    def __init__(
+        self,
+        rng: Random,
+        wallet: Wallet,
+        clientele: Clientele = ANY_CLIENT
+    ) -> None:
         self.rng = rng
         self.wallet = wallet
         self.validated = 0                  # its reputation

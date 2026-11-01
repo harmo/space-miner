@@ -56,17 +56,24 @@ class PostStatus:
 
 class Post:
 
-    def __init__(self, services: Services, rng: Random,
-                 refinery: Refinery = PLAIN_REFINERY,
-                 yields: Yields = MINE_YIELDS) -> None:
+    def __init__(
+        self,
+        services: Services,
+        rng: Random,
+        refinery: Refinery = PLAIN_REFINERY,
+        yields: Yields = MINE_YIELDS
+    ) -> None:
         self.services = services
         self.depot = Depot()
         self.crusher = Crusher(rng, refinery)
         self.mine = Mine(rng, yields)
         self.shuttle = Shuttle()
 
-    def status(self, cargo: Hold,
-               board: Board | None) -> PostStatus:
+    def status(
+        self,
+        cargo: Hold,
+        board: Board | None
+    ) -> PostStatus:
         """ `board` holding its missions, if it gives any """
         depot = self.depot
         return PostStatus(
@@ -80,8 +87,12 @@ class Post:
             cargo_total(cargo) > 0 and not depot.takes(cargo),
         )
 
-    def update(self, dt: float, ship: Docked | None,
-               wallet: Wallet) -> list[str]:
+    def update(
+        self,
+        dt: float,
+        ship: Docked | None,
+        wallet: Wallet
+    ) -> list[str]:
         """ Fills the tank of a ship landed there, cools its hull down in
         a shelter, unloads it, and digs ore and crushes rock even without
         any. Returns what the crushing found. """

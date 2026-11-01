@@ -9,8 +9,12 @@ from .solar_system import SolarSystem
 from .starfield import StarField
 
 
-def recenter(player: Player, camera: Any, system: SolarSystem,
-             stars: StarField) -> Vec2:
+def recenter(
+    player: Player,
+    camera: Any,
+    system: SolarSystem,
+    stars: StarField
+) -> Vec2:
     """ Keep coordinates bounded: when the ship leaves the world square,
     move it, the camera and everything else by a whole world size. Space
     repeats itself, so nothing changes on screen. Returns how much. """
@@ -28,8 +32,11 @@ def recenter(player: Player, camera: Any, system: SolarSystem,
     return shift
 
 
-def wrap_space(player: Player, system: SolarSystem,
-               stars: StarField) -> None:
+def wrap_space(
+    player: Player,
+    system: SolarSystem,
+    stars: StarField
+) -> None:
     """ Anything farther than half a period from the ship moves to its copy
     on the ship's side. This always happens far off screen, so it can't be
     seen. """

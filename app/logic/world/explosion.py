@@ -19,9 +19,16 @@ class Fragment:
 
 class Explosion:
 
-    def __init__(self, rng: Random, pos: Vec2, velocity: Vec2, color: Rgb,
-                 count: int, speed: tuple[float, float],
-                 duration: float = EXPLOSION_DURATION) -> None:
+    def __init__(
+        self,
+        rng: Random,
+        pos: Vec2,
+        velocity: Vec2,
+        color: Rgb,
+        count: int,
+        speed: tuple[float, float],
+        duration: float = EXPLOSION_DURATION
+    ) -> None:
         self.color = color
         self.duration = duration
         self.age = 0.

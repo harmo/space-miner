@@ -9,8 +9,11 @@ from PIL import Image, ImageDraw
 SUPERSAMPLING = 4             # for smooth disc edges
 
 
-def disc_mask(size: tuple[int, int], box: tuple[int, int, int, int],
-              shrink: float) -> Image.Image:
+def disc_mask(
+    size: tuple[int, int],
+    box: tuple[int, int, int, int],
+    shrink: float
+) -> Image.Image:
     """ Antialiased disc inscribed in box, shrunk by `shrink` pixels """
     left, top, right, bottom = box
     cx, cy = (left + right) / 2, (top + bottom) / 2
@@ -26,8 +29,13 @@ def disc_mask(size: tuple[int, int], box: tuple[int, int, int, int],
     return big.resize(size, Image.Resampling.LANCZOS)
 
 
-def dented_mask(rng: Random, size: int, depth: float, kept: float,
-                kept_half: float) -> Image.Image:
+def dented_mask(
+    rng: Random,
+    size: int,
+    depth: float,
+    kept: float,
+    kept_half: float
+) -> Image.Image:
     """ A disc filling a square image, its edge dented inwards by up to
     `depth` of its radius, unevenly, as an asteroid's: never beyond the
     disc, and kept round `kept_half` degrees on both sides of the angle
@@ -71,8 +79,11 @@ def holes_mask(alpha: Image.Image) -> Image.Image:
     return solid.point(lambda v: 255 if v == 0 else 0)
 
 
-def touching_rim(alpha: Image.Image, center: tuple[float, float],
-                 rim_inner: float) -> list[bool]:
+def touching_rim(
+    alpha: Image.Image,
+    center: tuple[float, float],
+    rim_inner: float
+) -> list[bool]:
     """ Whether the drawing reaches the inner edge of the outline, for
     each tenth of a degree """
     radius = rim_inner - 3

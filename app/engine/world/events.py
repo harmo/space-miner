@@ -53,8 +53,12 @@ class SystemEvents:
         self.flares.update(dt)
         self.comets.update(dt)
 
-    def grow(self, belt: BeltPlan, parent: Celestial,
-             ship: Vec2) -> Celestial:
+    def grow(
+        self,
+        belt: BeltPlan,
+        parent: Celestial,
+        ship: Vec2
+    ) -> Celestial:
         """ One asteroid back, as far from the ship as can be found """
         best, farthest = None, -1.
         for _ in range(TRIES):

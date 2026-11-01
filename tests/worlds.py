@@ -15,8 +15,11 @@ def earth() -> Celestial:
     return Celestial(1, 200., orbit=Orbit(sun, 5400., 25., 0.))
 
 
-def around(planet: Celestial, direction_degrees: float,
-           distance: float) -> Vec2:
+def around(
+    planet: Celestial,
+    direction_degrees: float,
+    distance: float
+) -> Vec2:
     x, y = planet.pos
     angle = math.radians(direction_degrees)
     return x + math.cos(angle) * distance, y + math.sin(angle) * distance

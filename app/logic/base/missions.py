@@ -79,8 +79,10 @@ class Need:
         return self.held >= self.wanted
 
 
-def needs(missions: list[Mission],
-          *holds: Hold) -> list[Need]:
+def needs(
+    missions: list[Mission],
+    *holds: Hold
+) -> list[Need]:
     """ Wanted by all the missions, against what the `holds` hold, in the
     order of the minerals table """
     wanted: dict[str, int] = {}
@@ -100,8 +102,10 @@ class Desk:
     stock: Hold   # of its depot
 
 
-def needs_at(desks: Sequence[Desk],
-             cargo: Hold) -> list[Need]:
+def needs_at(
+    desks: Sequence[Desk],
+    cargo: Hold
+) -> list[Need]:
     """ Wanted at all the desks, against the cargo and the depots of those
     wanting each mineral, in the order of the minerals table """
     wanted: dict[str, int] = {}
@@ -125,9 +129,12 @@ def paid(wanted: dict[str, int], bonus: float) -> int:
     return int(max(10, round(value * MISSION_BONUS * bonus, -1)))
 
 
-def make_mission(rng: Random, level: int = 1,
-                 clients: Sequence[str] = CLIENTS,
-                 bonus: float = 1.) -> Mission:
+def make_mission(
+    rng: Random,
+    level: int = 1,
+    clients: Sequence[str] = CLIENTS,
+    bonus: float = 1.
+) -> Mission:
     """ One or two minerals, the rarer the fewer, picked as often as they
     are found, and what a laser of that level can mine. Missions of a
     higher level order more of them, rare ones more often, and pay more

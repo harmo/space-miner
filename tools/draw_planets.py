@@ -94,8 +94,13 @@ def square(x: float, y: float, half: float) -> tuple[float, ...]:
     return x - half, y - half, x + half, y + half
 
 
-def craters(rng: Random, image: Image.Image, count: int, radius: float,
-            shadow: Color) -> None:
+def craters(
+    rng: Random,
+    image: Image.Image,
+    count: int,
+    radius: float,
+    shadow: Color
+) -> None:
     dark = Image.new('L', (SIZE, SIZE), 0)
     light = Image.new('L', (SIZE, SIZE), 0)
     for _ in range(count):
@@ -125,8 +130,12 @@ def caps(rng: Random, image: Image.Image) -> None:
     image.alpha_composite(layer((236, 226, 220), ice))
 
 
-def ring(image: Image.Image, stops: Sequence[Color], radius: float,
-         behind: bool) -> None:
+def ring(
+    image: Image.Image,
+    stops: Sequence[Color],
+    radius: float,
+    behind: bool
+) -> None:
     """ Ellipses around the planet, tilted: the part behind it, or the one
     in front """
     rings = Image.new('RGBA', (SIZE, SIZE), (0, 0, 0, 0))

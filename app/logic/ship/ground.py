@@ -62,8 +62,11 @@ class Ground:
         return ground_spots(self.edge, ground_margin(self.body, width))
 
 
-def pad_edge(radius: float, direction: float,
-             width: float) -> tuple[bool, ...]:
+def pad_edge(
+    radius: float,
+    direction: float,
+    width: float
+) -> tuple[bool, ...]:
     """ The ground of an outpost: a pad `width` wide, in `direction` from
     the center of a body of `radius` """
     half = math.degrees(width / 2 / radius)
@@ -117,8 +120,12 @@ def surface_distance(pos: Vec2, body: Celestial) -> float:
     return math.dist(pos, body.pos) - body.radius
 
 
-def ground_gap(pos: Vec2, angle: float, body: Celestial,
-               size: ShipSize) -> float:
+def ground_gap(
+    pos: Vec2,
+    angle: float,
+    body: Celestial,
+    size: ShipSize
+) -> float:
     """ Between the ground and the ship, a box of `size` turned by
     `angle`: it lies closer to the ground on its side than on its nose """
     x, y = body.pos

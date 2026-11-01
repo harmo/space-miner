@@ -44,8 +44,10 @@ class Inventory:
             del self.spares[part_id]
 
 
-def missing_materials(item: Buyable,
-                      stock: Hold) -> dict[str, int]:
+def missing_materials(
+    item: Buyable,
+    stock: Hold
+) -> dict[str, int]:
     """ Ore lacking in the depot to build it, by mineral """
     lacking = {
         name: units - whole_units(stock.get(name, 0.))
@@ -54,8 +56,11 @@ def missing_materials(item: Buyable,
     return {name: units for name, units in lacking.items() if units > 0}
 
 
-def can_buy(item: Buyable, wallet: Wallet,
-            stock: Hold) -> bool:
+def can_buy(
+    item: Buyable,
+    wallet: Wallet,
+    stock: Hold
+) -> bool:
     return wallet.can_pay(item.price) and not missing_materials(item, stock)
 
 
@@ -69,8 +74,12 @@ def pay(item: Buyable, wallet: Wallet, stock: Hold) -> bool:
     return True
 
 
-def buy(part_id: str, wallet: Wallet, stock: Hold,
-        inventory: Inventory) -> bool:
+def buy(
+    part_id: str,
+    wallet: Wallet,
+    stock: Hold,
+    inventory: Inventory
+) -> bool:
     """ Into the hangar """
     if not pay(PARTS[part_id], wallet, stock):
         return False
@@ -78,16 +87,24 @@ def buy(part_id: str, wallet: Wallet, stock: Hold,
     return True
 
 
-def buy_hull(hull_id: str, wallet: Wallet, stock: Hold,
-             inventory: Inventory) -> bool:
+def buy_hull(
+    hull_id: str,
+    wallet: Wallet,
+    stock: Hold,
+    inventory: Inventory
+) -> bool:
     if hull_id in inventory.hulls or not pay(HULLS[hull_id], wallet, stock):
         return False
     inventory.hulls.add(hull_id)
     return True
 
 
-def rehull(design: Design, hull_id: str, inventory: Inventory,
-           load: float = 0.) -> Design | None:
+def rehull(
+    design: Design,
+    hull_id: str,
+    inventory: Inventory,
+    load: float = 0.
+) -> Design | None:
     """ The ship moved onto another hull of the hangar, with the parts that
     fit, the others going to the hangar. None when the hull isn't owned,
     or when the cargo couldn't hold the `load` anymore. """
@@ -115,8 +132,13 @@ def sell(part_id: str, wallet: Wallet, inventory: Inventory) -> bool:
     return True
 
 
-def refit(design: Design, slot_id: str, part_id: str | None,
-          inventory: Inventory, load: float = 0.) -> Design | None:
+def refit(
+    design: Design,
+    slot_id: str,
+    part_id: str | None,
+    inventory: Inventory,
+    load: float = 0.
+) -> Design | None:
     """ The design with a part of the hangar on the slot, or nothing, the
     part there going back to the hangar. None when the part isn't in the
     hangar, or when the cargo couldn't hold the `load` anymore. """

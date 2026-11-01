@@ -30,8 +30,11 @@ class Parking:
         return Pose(self.position, self.body.velocity, self.angle)
 
 
-def parking_on(body: Celestial, direction: float,
-               length: float) -> Parking:
+def parking_on(
+    body: Celestial,
+    direction: float,
+    length: float
+) -> Parking:
     """ Landed in `direction`, with the nose pointing the same way """
     return Parking(
         body, direction, landed_distance(body, length), direction,

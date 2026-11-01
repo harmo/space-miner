@@ -56,8 +56,13 @@ class Soundtrack:
             for loop in (self.engine, self.laser, self.machine):
                 loop.stop()
 
-    def work(self, game: 'Game', dt: float, heading: float | None,
-             volume: float) -> None:
+    def work(
+        self,
+        game: 'Game',
+        dt: float,
+        heading: float | None,
+        volume: float
+    ) -> None:
         """ The engine following the thrust, the laser firing, and the
         machine of the post """
         player, stop = game.player, game.stop

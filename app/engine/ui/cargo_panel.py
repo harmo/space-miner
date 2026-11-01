@@ -50,8 +50,14 @@ class CargoPanel(BoxLayout):
             )
         self.shown: list[str] = []
 
-    def show(self, ore: Hold, mining: str | None, fill: float,
-             load: str, bar_color: Rgb) -> None:
+    def show(
+        self,
+        ore: Hold,
+        mining: str | None,
+        fill: float,
+        load: str,
+        bar_color: Rgb
+    ) -> None:
         """ `mining` is highlighted, as mined, or unloaded """
         self.fill = fill
         self.load = load
@@ -72,8 +78,11 @@ class CargoPanel(BoxLayout):
             row.mining = line.mining
 
 
-def show_cargo(panel: CargoPanel, miner: Miner,
-               highlight: str | None) -> str:
+def show_cargo(
+    panel: CargoPanel,
+    miner: Miner,
+    highlight: str | None
+) -> str:
     """ Returns how much it holds, as shown """
     fill = cargo_fill(miner.ore, miner.capacity)
     load = f'{cargo_total(miner.ore)} / {int(miner.capacity)}'

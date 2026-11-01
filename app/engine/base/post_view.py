@@ -35,8 +35,13 @@ class PostView(Widget):
         """ The one shown """
         return None
 
-    def show_post(self, post: Post, found: list[str], board: Board | None,
-                  wallet: Wallet) -> None:
+    def show_post(
+        self,
+        post: Post,
+        found: list[str],
+        board: Board | None,
+        wallet: Wallet
+    ) -> None:
         """ What it tells now, `found` being what its refinery just found.
         The market shows that, and when it is over. """
         if self.player is None:

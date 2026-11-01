@@ -12,8 +12,12 @@ class FakeBody:
     """ Stands for a cymunk Body: no collisions, step() moves it along its
     velocity """
 
-    def __init__(self, position: Vec2 = (0., 0.),
-                 velocity: Vec2 = (0., 0.), angle: float = 0.) -> None:
+    def __init__(
+        self,
+        position: Vec2 = (0., 0.),
+        velocity: Vec2 = (0., 0.),
+        angle: float = 0.
+    ) -> None:
         self._position = FakeVector(*position)
         self._velocity = FakeVector(*velocity)
         self.angle = angle

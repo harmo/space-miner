@@ -57,8 +57,12 @@ class ScannerPanel(BoxLayout):
         self.scans: ClockEvent | None = None
         self.rows: dict[str, ScanRow] = {}
 
-    def setup(self, player: Player, system: SolarSystem,
-              desks: Callable[[], list[Desk]]) -> None:
+    def setup(
+        self,
+        player: Player,
+        system: SolarSystem,
+        desks: Callable[[], list[Desk]]
+    ) -> None:
         self.player, self.system, self.desks = player, system, desks
         rows = self.ids.rows
         for name in MINED:

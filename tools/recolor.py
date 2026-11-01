@@ -34,8 +34,11 @@ class Palette:
     fill: Color
 
 
-def layer(size: tuple[int, int], color: Color,
-          mask: Image.Image) -> Image.Image:
+def layer(
+    size: tuple[int, int],
+    color: Color,
+    mask: Image.Image
+) -> Image.Image:
     image = Image.new('RGBA', size, (*color, 0))
     image.putalpha(mask)
     return image

@@ -90,8 +90,11 @@ class CanisterField:
             ))
         return states
 
-    def recover(self, lost: Iterable[LostCanister],
-                attractors: Sequence[Celestial]) -> None:
+    def recover(
+        self,
+        lost: Iterable[LostCanister],
+        attractors: Sequence[Celestial]
+    ) -> None:
         """ Around the same bodies, moving along with them """
         plans = []
         for canister in lost:
@@ -111,8 +114,12 @@ class CanisterField:
     def at(self, pos: Vec2, tolerance: float) -> Canister | None:
         return closest_to(pos, self.canisters, tolerance)
 
-    def update(self, dt: float, asteroids: Sequence[Celestial],
-               attractors: Sequence[Celestial]) -> None:
+    def update(
+        self,
+        dt: float,
+        asteroids: Sequence[Celestial],
+        attractors: Sequence[Celestial]
+    ) -> None:
         """ Canisters gather on an orbit around the closest planet in
         reach, or around the sun inside the orbit of the first planet.
         Elsewhere, they slow down relative to the asteroids around them

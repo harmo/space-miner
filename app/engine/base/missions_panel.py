@@ -81,8 +81,12 @@ class MissionCard(BoxLayout):
     can_act = BooleanProperty(False)
     accepted = BooleanProperty(False)   # can be abandoned
 
-    def __init__(self, mission: Mission, permit: Permit | None = None,
-                 **kwargs: Any) -> None:
+    def __init__(
+        self,
+        mission: Mission,
+        permit: Permit | None = None,
+        **kwargs: Any
+    ) -> None:
         self.mission = mission
         self.permit = permit    # the concession it stands for
         super().__init__(**kwargs)

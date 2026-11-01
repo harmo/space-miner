@@ -40,8 +40,10 @@ def setup_state(gameworld: GameWorld) -> None:
     )
 
 
-def setup_collisions(gameworld: GameWorld,
-                     on_ship_contact: CollisionHandler) -> None:
+def setup_collisions(
+    gameworld: GameWorld,
+    on_ship_contact: CollisionHandler
+) -> None:
     """ Only the ship collides: with the planets, the orbiters and the
     canisters. Everything else goes through each other. """
     def ignore(space: Any, arbiter: Any) -> bool:
@@ -121,8 +123,12 @@ def create_round_entity(gameworld: GameWorld, body: RoundBody) -> int:
     return entity_id
 
 
-def create_ship_entity(gameworld: GameWorld, pose: Pose, texture: str,
-                       size: ShipSize) -> int:
+def create_ship_entity(
+    gameworld: GameWorld,
+    pose: Pose,
+    texture: str,
+    size: ShipSize
+) -> int:
     length, width = size
     pos = pose.position
     entity_id: int = gameworld.init_entity(

@@ -45,7 +45,7 @@ EARTH = 'earth'
 
 @dataclass
 class Save:
-    seed: int                           # of the solar system
+    seed: int  # of the solar system
     credits: int = 0
     design: Design = field(default_factory=Design)
     hulls: list[str] = field(default_factory=lambda: ['scout'])  # owned
@@ -56,7 +56,7 @@ class Save:
     contracts: Contracts = field(default_factory=Contracts)
     # What the scanner looks for
     looked_for: list[str] = field(default_factory=lambda: list(LOOKED_FOR))
-    fuel: float | None = None           # in the tank, None when full
+    fuel: float | None = None  # in the tank, None when full
     # By site, those not started left out
     outposts: dict[str, Progress] = field(default_factory=dict)
     # Saved in flight, the ship comes back on the Earth, its cargo lost

@@ -51,16 +51,28 @@ class Sketch:
     def points(self, points: Sequence[Point]) -> list[Point]:
         return [(x * SCALE, y * SCALE) for x, y in points]
 
-    def polygon(self, points: Sequence[Point], fill: Color,
-                outline: bool = True) -> None:
+    def polygon(
+        self,
+        points: Sequence[Point],
+        fill: Color,
+        outline: bool = True
+    ) -> None:
         self.draw.polygon(
             self.points(points), fill=(*fill, 255),
             outline=(*LINES, 255) if outline else None,
             width=round(OUTLINE * SCALE),
         )
 
-    def box(self, left: float, top: float, right: float, bottom: float,
-            fill: Color, radius: float = 0., outline: bool = True) -> None:
+    def box(
+        self,
+        left: float,
+        top: float,
+        right: float,
+        bottom: float,
+        fill: Color,
+        radius: float = 0.,
+        outline: bool = True
+    ) -> None:
         self.draw.rounded_rectangle(
             self.points([(left, top), (right, bottom)]),
             radius=radius * SCALE, fill=(*fill, 255),
@@ -68,23 +80,39 @@ class Sketch:
             width=round(OUTLINE * SCALE),
         )
 
-    def oval(self, left: float, top: float, right: float, bottom: float,
-             fill: Color, outline: bool = True) -> None:
+    def oval(
+        self,
+        left: float,
+        top: float,
+        right: float,
+        bottom: float,
+        fill: Color,
+        outline: bool = True
+    ) -> None:
         self.draw.ellipse(
             self.points([(left, top), (right, bottom)]), fill=(*fill, 255),
             outline=(*LINES, 255) if outline else None,
             width=round(OUTLINE * SCALE),
         )
 
-    def line(self, points: Sequence[Point], color: Color,
-             width: float = OUTLINE) -> None:
+    def line(
+        self,
+        points: Sequence[Point],
+        color: Color,
+        width: float = OUTLINE
+    ) -> None:
         self.draw.line(
             self.points(points), fill=(*color, 255),
             width=round(width * SCALE),
         )
 
-    def glint(self, left: float, top: float, right: float,
-              bottom: float) -> None:
+    def glint(
+        self,
+        left: float,
+        top: float,
+        right: float,
+        bottom: float
+    ) -> None:
         """ Translucent white highlight, drawn on its own layer to blend
         with what is below """
         layer = Image.new('RGBA', self.image.size, (0, 0, 0, 0))

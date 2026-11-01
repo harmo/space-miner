@@ -36,8 +36,13 @@ def canister_texture(mineral: str) -> str:
     return f'canister_{mineral}'
 
 
-def eject_cargo(rng: Random, ore: Hold, pos: Vec2,
-                velocity: Vec2, away: float) -> list[CanisterPlan]:
+def eject_cargo(
+    rng: Random,
+    ore: Hold,
+    pos: Vec2,
+    velocity: Vec2,
+    away: float
+) -> list[CanisterPlan]:
     """ The ore split in canisters of CANISTER_UNITS at most, thrown from
     `pos` in a fan around the direction `away`, along with `velocity` """
     plans = []
@@ -63,8 +68,13 @@ def eject_cargo(rng: Random, ore: Hold, pos: Vec2,
     return plans
 
 
-def flow_velocity(pos: Vec2, center: Vec2, center_velocity: Vec2,
-                  angular_speed: float, dt: float) -> Vec2:
+def flow_velocity(
+    pos: Vec2,
+    center: Vec2,
+    center_velocity: Vec2,
+    angular_speed: float,
+    dt: float
+) -> Vec2:
     """ Velocity turning pos around a center moving at center_velocity, as
     an orbit at angular_speed does. Computed from the exact rotation over
     dt, so that it stays on its circle. """
@@ -76,8 +86,12 @@ def flow_velocity(pos: Vec2, center: Vec2, center_velocity: Vec2,
     )
 
 
-def orbit_flow(pos: Vec2, body: Celestial, altitude: float,
-               dt: float) -> Vec2:
+def orbit_flow(
+    pos: Vec2,
+    body: Celestial,
+    altitude: float,
+    dt: float
+) -> Vec2:
     """ Velocity turning around `body`, slower than its pull would make
     them for the ship to catch them, and closing in on the orbit at
     `altitude` above its surface. All turn the same way: canisters are
@@ -96,8 +110,12 @@ def orbit_flow(pos: Vec2, body: Celestial, altitude: float,
     return flow_x + dx * gather, flow_y + dy * gather
 
 
-def drift(velocity: Vec2, flow: Vec2, dt: float,
-          drag: float = CANISTER_DRAG) -> Vec2:
+def drift(
+    velocity: Vec2,
+    flow: Vec2,
+    dt: float,
+    drag: float = CANISTER_DRAG
+) -> Vec2:
     """ The velocity relative to the flow fades away """
     keep = math.exp(-drag * dt)
     return (
@@ -106,8 +124,13 @@ def drift(velocity: Vec2, flow: Vec2, dt: float,
     )
 
 
-def settle(pos: Vec2, velocity: Vec2, body: Celestial, altitude: float,
-           dt: float) -> Vec2:
+def settle(
+    pos: Vec2,
+    velocity: Vec2,
+    body: Celestial,
+    altitude: float,
+    dt: float
+) -> Vec2:
     """ Turning around `body` as fast as the canister goes, not to fly off
     or fall in while it picks up speed, what departs from the orbit fading
     away """

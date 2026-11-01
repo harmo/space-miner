@@ -40,8 +40,11 @@ HALF_SIZE = (960., 540.)
     (math.pi / 2, (0., 540.), False),
     (-math.pi / 2, (0., -540.), False),
 ])
-def test_edge_point_straight(direction: float, point: Vec2,
-                             on_side: bool) -> None:
+def test_edge_point_straight(
+    direction: float,
+    point: Vec2,
+    on_side: bool
+) -> None:
     (x, y), side = edge_point(direction, HALF_SIZE)
     assert (x, y) == pytest.approx(point, abs=1e-9)
     assert side == on_side

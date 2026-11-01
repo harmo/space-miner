@@ -84,8 +84,13 @@ DRONES = (
 )
 
 
-def slow(n: int, cycles: int, low: float, high: float,
-         phase: float = 0.) -> Samples:
+def slow(
+    n: int,
+    cycles: int,
+    low: float,
+    high: float,
+    phase: float = 0.
+) -> Samples:
     """ From `low` to `high` and back, `cycles` times over the loop, by
     equal ratios: as cutoffs and pitches are heard """
     step = 2 * math.pi * cycles / n
