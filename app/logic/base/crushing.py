@@ -7,6 +7,7 @@ from random import Random
 
 from ..mining.ore import Hold, whole_units, withdraw
 from .config import CRUSH_RATE, CRUSH_YIELDS
+from .unloading import depot_room
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,8 @@ class Crusher:
         while self.ground >= 1:
             self.ground -= 1
             mineral = sift(self.rng, self.refinery.yields)
-            stock[mineral] = stock.get(mineral, 0.) + 1
+            # Lost, with no room for it
+            if depot_room(stock, mineral) >= 1:
+                stock[mineral] = stock.get(mineral, 0.) + 1
             found.append(mineral)
         return found

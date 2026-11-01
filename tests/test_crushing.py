@@ -2,7 +2,7 @@ from random import Random
 
 import pytest
 
-from app.logic.base.config import CRUSH_RATE, CRUSH_YIELDS
+from app.logic.base.config import CRUSH_RATE, CRUSH_YIELDS, DEPOT_CAPACITY
 from app.logic.base.crushing import PLAIN_REFINERY, Crusher, Refinery, sift
 from app.logic.base.sites import CERES, FRONTIER, ICARE
 
@@ -39,7 +39,7 @@ def test_crushed_rock_gives_other_ore_now_and_then() -> None:
     found = crusher.update(stock, 10000. / CRUSH_RATE)
     for mineral, chance in CRUSH_YIELDS:
         assert found.count(mineral) == pytest.approx(10000 * chance, rel=.2)
-        assert stock[mineral] == found.count(mineral)
+        assert stock[mineral] == min(found.count(mineral), DEPOT_CAPACITY)
 
 
 def test_most_of_it_is_regolith() -> None:
@@ -67,3 +67,11 @@ def test_ceres_crushes_faster_and_richer_than_the_earth() -> None:
 
 def test_only_ceres_has_a_refinery_of_its_own() -> None:
     assert FRONTIER.refinery == ICARE.refinery == PLAIN_REFINERY
+
+
+def test_crushing_keeps_within_the_limit_of_each_mineral() -> None:
+    crusher = Crusher(Random(7), Refinery(yields=(('iron', 1.),)))
+    stock = {'rock': 10., 'iron': DEPOT_CAPACITY - 4.}
+    crusher.start(stock)
+    crusher.update(stock, 100.)
+    assert stock == {'iron': DEPOT_CAPACITY}

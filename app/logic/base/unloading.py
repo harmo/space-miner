@@ -2,25 +2,32 @@
 to empty it, and loading it back from there """
 
 from ..mining.minerals import MINERALS
-from ..mining.ore import EPSILON, Hold, cargo_load, whole_units, withdraw
+from ..mining.ore import EPSILON, Hold, whole_units, withdraw
 from .config import DEPOT_CAPACITY, UNLOAD_RATE
 
 
-def depot_room(stock: Hold) -> float:
-    """ Ore that still fits in a depot """
-    return max(0., DEPOT_CAPACITY - cargo_load(stock))
+def depot_room(stock: Hold, mineral: str) -> float:
+    """ Of that mineral, what still fits in a depot """
+    return max(0., DEPOT_CAPACITY - stock.get(mineral, 0.))
+
+
+def fits(ore: Hold, stock: Hold, mineral: str) -> bool:
+    """ Whether some of that mineral can go from the cargo to the depot """
+    return ore.get(mineral, 0.) > 0 and (
+        depot_room(stock, mineral) > EPSILON
+    )
 
 
 def unload(ore: Hold, stock: Hold,
            amount: float) -> str | None:
     """ Move up to `amount` of the cargo into the stock, one mineral after
-    the other in the order of the minerals table. Returns the mineral
-    moved, None once the cargo is empty or the depot full. """
-    mineral = next((name for name in MINERALS if ore.get(name, 0.) > 0), None)
-    room = depot_room(stock)
-    if mineral is None or room <= EPSILON:
+    the other in the order of the minerals table, those the depot has no
+    room for staying there. Returns the mineral moved, None once there is
+    none left to move. """
+    mineral = next((m for m in MINERALS if fits(ore, stock, m)), None)
+    if mineral is None:
         return None
-    moved = min(amount, ore[mineral], room)
+    moved = min(amount, ore[mineral], depot_room(stock, mineral))
     stock[mineral] = stock.get(mineral, 0.) + moved
     ore[mineral] -= moved
     if ore[mineral] <= EPSILON:
@@ -50,12 +57,12 @@ class Depot:
         self.unloading = False
         self.mineral: str | None = None      # being unloaded right now
 
-    @property
-    def full(self) -> bool:
-        return depot_room(self.stock) <= EPSILON
+    def takes(self, ore: Hold) -> bool:
+        """ Whether it has room for some of `ore` """
+        return any(fits(ore, self.stock, name) for name in ore)
 
     def start(self, ore: Hold) -> None:
-        self.unloading = cargo_load(ore) > 0 and not self.full
+        self.unloading = self.takes(ore)
 
     def stop(self) -> None:
         self.unloading = False

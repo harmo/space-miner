@@ -82,6 +82,9 @@ def test_a_mission_can_be_validated_from_the_depot_and_the_cargo() -> None:
 
 def test_a_full_depot_tells_so_and_takes_no_cargo() -> None:
     post = Post(Services(depot=True), Random(11))
-    post.depot.stock['gold'] = float(DEPOT_CAPACITY)
+    post.depot.stock['iron'] = float(DEPOT_CAPACITY)
     status = post.status({'iron': 5.}, None)
     assert status.full and not status.can_unload
+    status = post.status({'gold': 5.}, None)
+    assert status.can_unload and not status.full
+    assert not post.status({}, None).full

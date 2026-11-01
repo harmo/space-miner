@@ -48,7 +48,7 @@ class PostStatus:
     crushing: bool
     can_unload: bool          # a cargo into its depot
     to_validate: bool         # a mission, from its depot and the cargo
-    full: bool                # its depot
+    full: bool                # its depot, for what the cargo holds
 
 
 class Post:
@@ -68,12 +68,12 @@ class Post:
         return PostStatus(
             depot.unloading, self.crusher.crushing,
             self.services.depot and not depot.unloading
-            and not depot.full and cargo_total(cargo) > 0,
+            and depot.takes(cargo) and cargo_total(cargo) > 0,
             board is not None and any(
                 mission.can_validate(depot.stock, cargo)
                 for mission in board.active
             ),
-            depot.full,
+            cargo_total(cargo) > 0 and not depot.takes(cargo),
         )
 
     def update(self, dt: float, ship: Docked | None,

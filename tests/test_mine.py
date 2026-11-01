@@ -29,23 +29,39 @@ def test_a_mine_digs_mostly_helium() -> None:
     assert stock['helium3'] == pytest.approx(3 * stock['ice'], rel=.1)
 
 
-def test_a_mine_stops_when_the_depot_is_full() -> None:
-    stock = {'rock': DEPOT_CAPACITY - 3.}
+def full_of(capacity: float = DEPOT_CAPACITY) -> dict[str, float]:
+    return {'helium3': capacity, 'ice': capacity}
+
+
+def test_a_mine_stops_when_the_depot_has_no_room_for_what_it_digs() -> None:
+    stock = full_of(DEPOT_CAPACITY - 2.)
     mine = Mine(Random(3))
     mine.update(stock, 100 / MINE_RATE)
-    assert sum(stock.values()) == DEPOT_CAPACITY
+    assert stock == full_of()
     mine.update(stock, 100 / MINE_RATE)
-    assert sum(stock.values()) == DEPOT_CAPACITY
+    assert stock == full_of()
+
+
+def test_a_mine_goes_on_with_what_still_has_room() -> None:
+    stock = {'helium3': float(DEPOT_CAPACITY)}
+    Mine(Random(10)).update(stock, 50 / MINE_RATE)
+    assert stock == {'helium3': DEPOT_CAPACITY, 'ice': 50.}
+
+
+def test_other_minerals_do_not_stop_a_mine() -> None:
+    stock = {'rock': float(DEPOT_CAPACITY)}
+    Mine(Random(11)).update(stock, 10 / MINE_RATE)
+    assert sum(stock.values()) == DEPOT_CAPACITY + 10.
 
 
 def test_a_full_mine_gets_going_again_once_there_is_room() -> None:
-    stock = {'rock': float(DEPOT_CAPACITY)}
+    stock = full_of()
     mine = Mine(Random(7))
     mine.update(stock, 100 / MINE_RATE)
     assert mine.dug == 0.
-    stock['rock'] -= 5.
+    stock['ice'] -= 5.
     mine.update(stock, 5 / MINE_RATE)
-    assert sum(stock.values()) == DEPOT_CAPACITY
+    assert stock == full_of()
 
 
 def test_a_mine_digs_with_no_ship_around() -> None:

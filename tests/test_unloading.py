@@ -79,35 +79,43 @@ def test_nothing_without_room_or_ore() -> None:
 
 
 def test_a_depot_takes_what_fits() -> None:
-    ore, stock = {'iron': 20.}, {'gold': DEPOT_CAPACITY - 5.}
+    ore, stock = {'iron': 20.}, {'iron': DEPOT_CAPACITY - 5.}
     assert unload(ore, stock, 15.) == 'iron'
-    assert stock['iron'] == 5. and ore == {'iron': 15.}
+    assert stock['iron'] == DEPOT_CAPACITY and ore == {'iron': 15.}
 
 
-def test_a_full_depot_takes_nothing() -> None:
+def test_the_limit_is_for_each_mineral() -> None:
     ore, stock = {'iron': 20.}, {'gold': float(DEPOT_CAPACITY)}
+    assert unload(ore, stock, 15.) == 'iron'
+    assert stock['iron'] == 15.
+
+
+def test_what_has_no_room_stays_and_the_rest_goes() -> None:
+    ore = {'iron': 20., 'gold': 10.}
+    stock = {'iron': float(DEPOT_CAPACITY)}
+    assert unload(ore, stock, 15.) == 'gold'
+    assert ore == {'iron': 20.} and stock['gold'] == 10.
     assert unload(ore, stock, 15.) is None
-    assert ore == {'iron': 20.}
 
 
-def test_unloading_stops_once_the_depot_is_full() -> None:
+def test_unloading_stops_with_nothing_left_that_fits() -> None:
     depot = Depot()
-    depot.stock['gold'] = DEPOT_CAPACITY - 5.
+    depot.stock['iron'] = DEPOT_CAPACITY - 5.
     ore = {'iron': 20.}
     depot.start(ore)
     for _ in range(20):
         depot.update(ore, .1, True)
-    assert not depot.unloading and depot.full
+    assert not depot.unloading and not depot.takes(ore)
     assert ore == {'iron': 15.}
 
 
-def test_nothing_starts_unloading_into_a_full_depot() -> None:
+def test_nothing_starts_unloading_when_nothing_fits() -> None:
     depot = Depot()
-    depot.stock['gold'] = float(DEPOT_CAPACITY)
+    depot.stock['iron'] = float(DEPOT_CAPACITY)
     depot.start({'iron': 20.})
     assert not depot.unloading
+    assert depot.takes({'gold': 1.})
 
 
-def test_older_saves_may_hold_more_and_take_nothing() -> None:
-    stock = {'gold': DEPOT_CAPACITY + 500.}
-    assert depot_room(stock) == 0.
+def test_older_saves_may_hold_more_and_take_no_more_of_it() -> None:
+    assert depot_room({'gold': DEPOT_CAPACITY + 500.}, 'gold') == 0.

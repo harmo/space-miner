@@ -62,7 +62,7 @@ def stopped() -> None:
     check(0 < ice < 40, f'the rest stays in the cargo: {ice:.1f}')
     check(base.ids.depot.opacity == 0, 'the depot hides once flying')
     base.depot.stock.clear()
-    base.depot.stock['gold'] = DEPOT_CAPACITY - 5.
+    base.depot.stock['iron'] = DEPOT_CAPACITY - 5.
     scenario.player.restart(scenario.player.design)
     scenario.player.miner.ore.clear()
     scenario.player.miner.ore['iron'] = 20.
@@ -71,14 +71,14 @@ def stopped() -> None:
 @scenario.step(.3)
 def fills_the_depot() -> None:
     base = scenario.base
-    check(base.ids.depot.load == '995 / 1000', f'{base.ids.depot.load}')
     scenario.press(base.ids.unload_button)
 
 
 @scenario.step(1.)
 def as_far_as_it_goes() -> None:
     base = scenario.base
-    check(base.ids.depot.load == '1000 / 1000', f'{base.ids.depot.load}')
+    stock = base.depot.stock
+    check(stock == {'iron': DEPOT_CAPACITY}, f'as far as it goes: {stock}')
     check(scenario.player.miner.ore == {'iron': 15.},
           f'the rest stays: {scenario.player.miner.ore}')
     button = base.ids.unload_button
