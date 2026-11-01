@@ -8,6 +8,7 @@ from ...logic.hud import message
 from .cargo_panel import show_cargo
 from .gauges import show_fuel, show_heat
 from .land_button import show_shortcut
+from .news import NewsBoard  # noqa: F401
 from .tracker import show_needs
 
 if TYPE_CHECKING:
@@ -33,6 +34,4 @@ def show_hud(game: 'Game') -> None:
         miner.message, player.tank.state, player.heat.warmth,
         post is not None and post.services.fuel,
     )
-    events = game.system.events
-    ids.news_label.text = events.headline
-    ids.news_label.color = (*events.headline_color, 1)
+    ids.news.show(game.system.events.headlines)

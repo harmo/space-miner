@@ -6,8 +6,8 @@ import math
 from random import Random
 from typing import TYPE_CHECKING
 
-from ...logic.colors import Rgb
 from ...logic.config import COMET_COLOR, FLARE_COLOR, SWARM_COLOR
+from ...logic.world.bulletin import Headline
 from ...logic.world.config import REGROW_AWAY
 from ...logic.world.layout import BeltPlan
 from ...logic.world.regrowth import Regrowth
@@ -101,15 +101,11 @@ class SystemEvents:
         self.comets.resume(state.comet)
 
     @property
-    def headline(self) -> str:
+    def headlines(self) -> list[Headline]:
         """ Shown at the top of the screen, the flares first """
-        return (
-            self.flares.headline or self.comets.headline
-            or self.swarms.headline
+        told = (
+            (self.flares.headline, FLARE_COLOR),
+            (self.comets.headline, COMET_COLOR),
+            (self.swarms.headline, SWARM_COLOR),
         )
-
-    @property
-    def headline_color(self) -> Rgb:
-        if self.flares.headline:
-            return FLARE_COLOR
-        return COMET_COLOR if self.comets.headline else SWARM_COLOR
+        return [Headline(text, color) for text, color in told if text]

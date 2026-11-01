@@ -6,6 +6,7 @@ import math
 from typing import Any
 
 from app.engine.entities import get_body
+from app.logic.config import COMET_COLOR, SWARM_COLOR
 from app.logic.world.comets import tail_length
 from app.logic.world.config import COMET_ICE
 from app.logic.world.swarms import RICH
@@ -44,8 +45,22 @@ def a_comet_comes() -> None:
     check(abs(distance - system.orbits[-1]) < 50,
           f'from as far as the last planet: {distance:.0f}')
     check('comet' in played and 'swarm' not in played, f'heard: {played}')
-    news = scenario.game.ids.news_label.text
+    news = scenario.game.ids.news.text
     check('Comète' in news and 'près du soleil' in news, f'told: {news}')
+    events().swarms.bulletin.tell("L'essaim a quitté le système")
+
+
+@scenario.step(.2)
+def is_told_along_with_the_rest() -> None:
+    lines = scenario.game.ids.news.children
+    check(len(lines) == 2, f'a line each: {scenario.game.ids.news.text}')
+    comet, swarm = reversed(lines)
+    check('Comète' in comet.text and 'essaim' in swarm.text,
+          'the comet first')
+    check(tuple(comet.color[:3]) == COMET_COLOR
+          and tuple(swarm.color[:3]) == SWARM_COLOR, 'each with its color')
+    scenario.screenshot('news')
+    events().swarms.bulletin.left = 0.
     scenario.press(scenario.game.ids.map_button)
 
 
@@ -112,7 +127,7 @@ def shows_its_tail() -> None:
 
 @scenario.step(.2)
 def leaves() -> None:
-    news = scenario.game.ids.news_label.text
+    news = scenario.game.ids.news.text
     check('repart' in news, f'told: {news}')
     jump(math.pi - .001)
 
@@ -123,7 +138,7 @@ def is_gone() -> None:
     check(not events().comets.debris, 'with what it shed')
     asteroids = scenario.game.system.asteroids
     check(not set(remembered['debris']) & set(asteroids), 'all of it')
-    check(scenario.game.ids.news_label.text == '', 'told no more')
+    check(scenario.game.ids.news.text == '', 'told no more')
 
 
 scenario.run()

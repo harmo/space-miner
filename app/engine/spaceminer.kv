@@ -161,14 +161,12 @@ Game:
             color: 1, .55, .5, .9
 
         # What happens in the solar system, at the top
-        Label:
-            id: news_label
-            size: self.texture_size
-            # From the size, which changes with the text
-            x: root.center_x - self.width / 2
+        NewsBoard:
+            id: news
+            width: root.width
+            x: root.x
+            # From the height, which changes with the lines
             y: root.top - dp(22) - self.height
-            font_size: '16sp'
-            bold: True
 
         # Landing shortcut, shown near the Earth
         PanelButton:

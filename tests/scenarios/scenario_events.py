@@ -56,10 +56,9 @@ def a_swarm_arrives() -> None:
     swarm = events().swarms.asteroids
     check(len(swarm) == SWARM_ASTEROIDS, 'a swarm arrives')
     check(all(asteroid.mineral in RICH for asteroid in swarm), 'rich')
-    check(events().headline.startswith('Essaim riche de passage'),
-          f'and is told: {events().headline}')
-    check(scenario.game.ids.news_label.text == events().headline,
-          'at the top of the screen')
+    news = scenario.game.ids.news.text
+    check(news.startswith('Essaim riche de passage'),
+          f'told at the top of the screen: {news}')
     # The loneliest, not to bump into another
     asteroid = max(swarm, key=lambda rock: min(
         math.dist(rock.pos, other.pos)
@@ -96,8 +95,8 @@ def the_swarm_leaves() -> None:
     check(remembered['locked'] not in system.asteroids, 'with its asteroids')
     check(scenario.player.miner.lock is None,
           'the ship stops mining what left')
-    check(events().headline == "L'essaim a quitté le système",
-          f'which is told: {events().headline}')
+    news = scenario.game.ids.news.text
+    check(news == "L'essaim a quitté le système", f'which is told: {news}')
 
 
 scenario.run()

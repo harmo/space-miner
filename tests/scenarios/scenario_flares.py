@@ -22,7 +22,7 @@ def flares() -> Any:
 
 
 def headline() -> str:
-    return str(scenario.game.ids.news_label.text)
+    return str(scenario.game.ids.news.text)
 
 
 @scenario.step(1.)

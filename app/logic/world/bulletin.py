@@ -1,6 +1,17 @@
 """ News shown for a few seconds at the top of the screen """
 
+from dataclasses import dataclass
+
+from ..colors import Rgb
+
 NEWS_TIME = 6.                # seconds
+
+
+@dataclass(frozen=True)
+class Headline:
+    """ A line at the top of the screen """
+    text: str
+    color: Rgb
 
 
 class Bulletin:
