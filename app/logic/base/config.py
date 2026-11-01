@@ -39,7 +39,6 @@ PAD_WIDTH = 90.               # pixels, where ships land on their site
 PAD_DIRECTION = 90.           # degrees, from the center of their body
 
 # Mines, filling the depot of their outpost
-MINE_RATE = .05               # units a second
 # How often each comes up: at the Frontier, and at Ares, on Mars
 MINE_YIELDS = (('helium3', 3), ('ice', 1))
 ARES_YIELDS = (('iron', 3), ('copper', 2), ('regolith', 1))
@@ -47,6 +46,8 @@ ARES_YIELDS = (('iron', 3), ('copper', 2), ('regolith', 1))
 # Shuttles, carrying ore from dock to depot
 DOCK_ALONG = 96.              # pixels along the ground, from the pad
 SHUTTLE_LOAD = 100            # units, in all: it leaves full
+SHUTTLE_PACE = 300.           # seconds: a mine fills one that fast
+MINE_RATE = SHUTTLE_LOAD / SHUTTLE_PACE  # units a second, all it digs
 SHUTTLE_SPEED = 150.          # pixels a second
 SHUTTLE_TURN = 3.             # radians a second, of its nose
 SHUTTLE_ARRIVAL = 6.          # pixels from a dock, it is there
