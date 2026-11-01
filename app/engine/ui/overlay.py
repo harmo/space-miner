@@ -29,10 +29,12 @@ from ...logic.ship.config import LEG_COLOR, LEG_OUTLINE
 from ...logic.ship.lasers import Laser
 from ...logic.ship.legs import Leg
 from ...logic.world.explosion import Explosion
+from ...logic.world.shadow import Shadow
 from ...logic.world.space import Celestial, Round, Vec2
 from ..textures import make_texture, star_pixel
 
 SOFT_DOT = 1.8               # size of the dots of the sparks, times theirs
+SHADOW_OPACITY = .45         # of what lies in the shadow of a planet
 CHEVRON_OPENING = math.radians(40)    # between each arm and its axis
 CHEVRON_THICKNESS = .45               # of the V, for its size
 
@@ -134,6 +136,17 @@ class Overlay:
                 ],
                 width=1, close=True,
             ))
+
+    def shadow(self, shadow: Shadow) -> None:
+        """ Darkening what lies in it """
+        vertices = [
+            value for pos in shadow
+            for value in (*self.to_screen(pos), 0., 0.)
+        ]
+        self.group.add(Color(0., 0., 0., SHADOW_OPACITY))
+        self.group.add(Mesh(
+            vertices=vertices, indices=[0, 1, 2], mode='triangles',
+        ))
 
     def circle(self, center: Vec2, radius: float, color: Rgb, width: float,
                opacity: float = 1.) -> None:

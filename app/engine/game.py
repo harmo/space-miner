@@ -196,10 +196,11 @@ class Game(Widget):
         self.draw_sky()
 
     def draw_sky(self) -> None:
-        self.sky.draw(
-            self.pos, self.size, self.camera,
-            heat_at(self.player.anchor, self.system.sun),
+        anchor = self.player.anchor
+        heat = 0. if self.system.sunlight.shaded(anchor) else heat_at(
+            anchor, self.system.sun,
         )
+        self.sky.draw(self.pos, self.size, self.camera, heat)
 
     def play(self) -> None:
         """ Leave the home page """

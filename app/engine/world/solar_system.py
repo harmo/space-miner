@@ -21,6 +21,7 @@ from ...logic.world.config import (
     SUN_RADIUS,
 )
 from ...logic.world.layout import BeltPlan, OrbiterPlan, SystemPlan, facing
+from ...logic.world.shadow import shadow_of
 from ...logic.world.space import Celestial, Orbit, Vec2, closest_to
 from ..entities import GameWorld, create_round_entity, get_body, move_body
 from .events import SystemEvents
@@ -103,9 +104,12 @@ class SolarSystem:
 
     @property
     def sunlight(self) -> Sunlight:
-        """ Surging during flares """
-        sun = self.sun
-        return Sunlight(sun.pos, sun.radius, self.events.flares.surge)
+        """ Surging during flares, the closest planet casting its shadow """
+        sun, planet = self.sun, self.planets[0]
+        return Sunlight(
+            sun.pos, sun.radius, self.events.flares.surge,
+            shadow_of(planet.pos, planet.radius, sun.pos),
+        )
 
     def update(self, dt: float, ship: Vec2) -> None:
         """ Out of the sight of the ship, where it is now """

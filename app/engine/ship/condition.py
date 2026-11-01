@@ -29,10 +29,11 @@ class Condition:
     def heat_up(self, dt: float, stats: ShipStats, ship: Ship,
                 sunlight: Sunlight) -> Crash | None:
         """ The crash of the ship once too hot """
-        self.heat.update(dt, heating(
+        gain = 0. if sunlight.shaded(ship.position) else heating(
             sunlight.distance(ship.position), shield=stats.shield,
             surge=sunlight.surge,
-        ))
+        )
+        self.heat.update(dt, gain)
         if not self.heat.burnt:
             return None
         (x, y), (sun_x, sun_y) = ship.position, sunlight.pos

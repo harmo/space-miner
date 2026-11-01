@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from ..config import HEAT_RANGE
+from ..world.shadow import Shadow
 from ..world.space import Vec2
 from .config import (
     HEAT_COOLING,
@@ -39,10 +40,14 @@ class Sunlight:
     pos: Vec2                 # of the sun
     radius: float
     surge: float = 1.         # times more during flares
+    shadow: Shadow | None = None  # no heat comes there
 
     def distance(self, pos: Vec2) -> float:
         """ From the sun surface """
         return math.dist(pos, self.pos) - self.radius
+
+    def shaded(self, pos: Vec2) -> bool:
+        return self.shadow is not None and self.shadow.covers(pos)
 
 
 class HullHeat:

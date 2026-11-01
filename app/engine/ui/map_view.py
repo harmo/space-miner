@@ -34,6 +34,7 @@ from ..world.solar_system import SolarSystem
 
 FRAME_MARGIN = 20             # dp, above and below the round map
 CANISTER_COLOR = (1., .6, .3)
+SHADOW_MAP_COLOR = (1., 1., 1., .14)
 SHIP_COLOR = (1., 1., 1.)
 
 
@@ -93,6 +94,7 @@ class MapView(Widget):
             self.lost(player, frame)
             self.swarm(system, frame)
             self.ejecta(system, frame)
+            self.shadow(system, frame)
             self.outposts(self.shown.outposts, frame)
             self.ship(player, frame)
 
@@ -127,6 +129,15 @@ class MapView(Widget):
             if points:
                 Color(*mineral.color, 1)
                 Point(points=points, pointsize=dp(1.8))
+
+    def shadow(self, system: SolarSystem, frame: Chart) -> None:
+        """ Where the sun can't reach, behind the closest planet """
+        shadow = system.sunlight.shadow
+        if shadow is not None:
+            Color(*SHADOW_MAP_COLOR)
+            Triangle(points=[
+                value for pos in shadow for value in frame.place(pos)
+            ])
 
     def bodies(self, system: SolarSystem, frame: Chart) -> None:
         self.disc(frame.place(system.sun.pos),

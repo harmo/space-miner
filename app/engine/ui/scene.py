@@ -41,6 +41,9 @@ def draw_scene(overlay: Overlay, size: Vec2, system: SolarSystem,
     if preferences.orbits:
         draw_orbits(overlay, size, system)
     draw_wave(overlay, system)
+    shadow = system.sunlight.shadow
+    if shadow is not None:
+        overlay.shadow(shadow)
     for outpost in outposts:
         draw_outpost(overlay, outpost)
     ship.exhaust.draw(overlay)

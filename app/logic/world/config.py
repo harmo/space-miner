@@ -16,6 +16,7 @@ EARTH_ORBIT = 2               # the Earth is the third planet
 BELT_AFTER = 3                # the belt around the sun, after the fourth
 PLANET_SPEED = 40.            # on the first orbit, slower farther out
 PLANET_MASS = 1e6             # heavy enough not to be pushed by the ship
+SHADOW_LENGTH = 1400.         # of the shadow of the closest planet to the sun
 EARTH_RADIUS = 200.
 # From the sun outwards, as in the real solar system, their texture and
 # their radius: Mercury, Venus, the Earth, Mars, Jupiter, Saturn, Uranus
