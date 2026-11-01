@@ -28,18 +28,24 @@ PHONE = {'SPACE_MINER_PLATFORM': 'android', 'SPACE_MINER_WINDOW': '960x432'}
 TIMEOUT = 120                 # seconds for a scenario
 TOGETHER = 4                  # scenarios at a time
 SCREEN = '1280x720x24'        # the unseen one
-STARTS = 3                    # tries to get it
+STARTS = 3                    # tries to get it, or to connect to it
+NO_SCREEN = "Couldn't connect to X server"
+# How the X11 protocol starts: little endian, version 11.0, no authorization
+X11_HELLO = bytes((0x6c, 0, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+X11_WELCOME = bytes((1,))
 
 
 def answers(display: str) -> bool:
-    """ Whether a screen takes connections, which comes after it says its
-    number """
+    """ Whether a screen really serves clients, shaking hands with it as
+    they do: it may say its number, even take connections, and never do """
     with socket.socket(socket.AF_UNIX) as client:
+        client.settimeout(1.)
         try:
             client.connect(f'/tmp/.X11-unix/X{display}')
+            client.sendall(X11_HELLO)
+            return client.recv(1) == X11_WELCOME
         except OSError:
             return False
-    return True
 
 
 def start_screen() -> tuple[subprocess.Popen[bytes], str]:
@@ -48,7 +54,7 @@ def start_screen() -> tuple[subprocess.Popen[bytes], str]:
         read, write = os.pipe()
         screen = subprocess.Popen(
             ['Xvfb', '-displayfd', str(write), '-screen', '0', SCREEN,
-             '+extension', 'GLX', '-nolisten', 'tcp'],
+             '+extension', 'GLX', '-nolisten', 'tcp', '-noreset'],
             pass_fds=[write], stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -93,10 +99,15 @@ def play(name: str, phone: bool, screen: dict[str, str]) -> bool:
         env.pop('WAYLAND_DISPLAY', None)
     started = time.monotonic()
     try:
-        result = subprocess.run(
-            [sys.executable, '-m', f'tests.scenarios.{name}'], cwd=ROOT,
-            env=env, capture_output=True, text=True, timeout=TIMEOUT,
-        )
+        for attempt in range(STARTS):
+            result = subprocess.run(
+                [sys.executable, '-m', f'tests.scenarios.{name}'], cwd=ROOT,
+                env=env, capture_output=True, text=True, timeout=TIMEOUT,
+            )
+            # Not a failure of the game: it never started
+            if NO_SCREEN not in result.stderr + result.stdout:
+                break
+            print(f'{name}: no screen, try {attempt + 1}', flush=True)
     except subprocess.TimeoutExpired:
         print(f'{name}: too long, over {TIMEOUT} s')
         return False
