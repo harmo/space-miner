@@ -1,7 +1,8 @@
 """ How outposts look as they are built. On the ground, drawn along the
 curve of the surface as small bodies are round: a beacon on a bare site,
-then a pad, a dome and tanks, towers, a mine. In orbit, stations: a floating
-beacon, then a ring around a hub with its port, lit, solar panels. """
+then a pad, a dome and tanks, towers, a mine or a refinery. In orbit,
+stations: a floating beacon, then a ring around a hub with its port, lit,
+solar panels. """
 
 import math
 import time
@@ -14,6 +15,7 @@ from .overlay import Overlay
 STEEL = (.42, .47, .54)
 DARK = (.16, .18, .22)
 GLASS = (.7, .82, .9)
+RUBBLE = (.45, .41, .36)
 RED = (1., .3, .25)
 BLINK = 1.2                   # seconds, of the lights
 SEEN = 2000.                  # drawn only this close to the camera
@@ -82,6 +84,8 @@ def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
         towers(overlay, frame, half + 22)
     if services.mine:
         derrick(overlay, frame, -half - 124)
+    if services.refinery:
+        refinery(overlay, frame, -half - 124)
     beacon(overlay, frame, half + 50 if services.market else half + 10)
 
 
@@ -120,6 +124,21 @@ def towers(overlay: Overlay, frame: Frame, along: float) -> None:
         for t in (math.pi * k / 8 for k in range(9))
     ]
     overlay.shape(dish, GLASS, DARK)
+
+
+def refinery(overlay: Overlay, frame: Frame, along: float) -> None:
+    """ A crusher under its hopper, its chimney lit, and a heap of rock """
+    overlay.band(*frame.box(along - 16, along + 16, 18), STEEL, DARK)
+    overlay.shape([
+        frame.at(along - 13, 18), frame.at(along + 13, 18),
+        frame.at(along + 19, 32), frame.at(along - 19, 32),
+    ], DARK, STEEL)
+    overlay.band(*frame.box(along + 20, along + 26, 34), STEEL, DARK)
+    overlay.light(frame.at(along + 23, 36), RED, blinking(.75))
+    overlay.shape([
+        frame.at(along - 40, -2), frame.at(along - 30, 9),
+        frame.at(along - 20, -2),
+    ], RUBBLE, DARK)
 
 
 def derrick(overlay: Overlay, frame: Frame, along: float) -> None:

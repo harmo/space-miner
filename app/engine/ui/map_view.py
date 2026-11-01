@@ -15,6 +15,7 @@ from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
 
 from ...logic.base.outposts import Outpost
+from ...logic.base.sites import offered
 from ...logic.colors import Rgb
 from ...logic.config import (
     COMET_COLOR,
@@ -37,6 +38,7 @@ FRAME_MARGIN = 20             # dp, above and below the round map
 CANISTER_COLOR = (1., .6, .3)
 SHADOW_MAP_COLOR = (1., 1., 1., .14)
 COMET_PATH_POINTS = 120
+OFFERED_FONT = 10             # sp, of what outposts offer
 SHIP_COLOR = (1., 1., 1.)
 
 
@@ -212,6 +214,10 @@ class MapView(Widget):
                 Line(rectangle=(x - side / 2, y - side / 2, side, side),
                      width=1.2)
             self.label(outpost.name, (x, y + dp(16)), OUTPOST_COLOR)
+            self.label(
+                offered(outpost.construction.services), (x, y - dp(16)),
+                OUTPOST_COLOR, OFFERED_FONT,
+            )
 
     def ship(self, player: Player, frame: Chart) -> None:
         """ Pointing where it heads, within the reach of its scanner """
@@ -237,9 +243,10 @@ class MapView(Widget):
         Ellipse(pos=(pos[0] - radius, pos[1] - radius),
                 size=(2 * radius, 2 * radius))
 
-    def label(self, text: str, pos: Vec2, color: Rgb) -> None:
+    def label(self, text: str, pos: Vec2, color: Rgb,
+              size: float = 12.) -> None:
         """ Centered on `pos` """
-        label = CoreLabel(text=text, font_size=dp(12), bold=True)
+        label = CoreLabel(text=text, font_size=dp(size), bold=True)
         label.refresh()
         texture = label.texture
         Color(*color, 1)

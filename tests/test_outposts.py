@@ -19,6 +19,7 @@ from app.logic.base.sites import (
     ICARE,
     MINING,
     TRADING_POST,
+    offered,
     unlocked,
 )
 from app.logic.base.wallet import Wallet
@@ -176,3 +177,14 @@ def test_an_outpost_gets_its_reputation_back() -> None:
     open_boards([again], Wallet())
     again.restore(outpost.progress)
     assert again.board is not None and again.board.validated == 5
+
+
+def test_a_post_tells_what_it_offers() -> None:
+    assert offered(Services()) == 'Chantier'
+    assert offered(FRONTIER.stages[-1].services) == (
+        'Plein · Entrepôt · Marché · Missions · Mine'
+    )
+    assert offered(CERES.stages[-1].services) == (
+        'Plein · Entrepôt · Marché · Missions · Raffinerie'
+    )
+    assert offered(ICARE.stages[0].services) == 'Plein · Abri'

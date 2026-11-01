@@ -128,6 +128,21 @@ OFFERED = (
 )
 
 
+# As shown on the map
+SHOWN = (
+    ('fuel', 'Plein'), ('depot', 'Entrepôt'), ('market', 'Marché'),
+    ('missions', 'Missions'), ('refinery', 'Raffinerie'), ('shelter', 'Abri'),
+    ('mine', 'Mine'),
+)
+
+
+def offered(services: Services) -> str:
+    """ What a post offers, in a few words """
+    return ' · '.join(
+        word for name, word in SHOWN if getattr(services, name)
+    ) or 'Chantier'
+
+
 def unlocked(stage: Stage, before: Services) -> list[str]:
     """ What building `stage` adds to what was offered `before` """
     return [
