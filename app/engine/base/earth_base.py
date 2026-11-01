@@ -14,6 +14,7 @@ from ...logic.base.crushing import Crusher
 from ...logic.base.outposts import Outpost
 from ...logic.base.permits import Permits
 from ...logic.base.post import Post, home_post
+from ...logic.base.quays import can_send
 from ...logic.base.refuel import tow, tow_price
 from ...logic.base.reputation import tier
 from ...logic.base.shop import Inventory
@@ -152,6 +153,8 @@ class EarthBase(PostView):
             if self.board is not None:
                 self.seen_tier = tier(self.board.validated)
         elif panel == 'market':
+            quays = quays_of(self, self.outposts)
+            self.ids.market.shuttles = can_send(quays[0], quays)
             self.ids.market.refresh()
         else:
             self.ids.missions.laser = self.player.stats.laser

@@ -55,7 +55,7 @@ class MarketPanel(BoxLayout):
     refinery = BooleanProperty(True)    # if the post has one
     refinery_told = StringProperty('')
     selling = BooleanProperty(True)     # or the depot alone
-    shuttles = BooleanProperty(True)    # a dock, where they are chosen
+    shuttles = BooleanProperty(False)   # a dock, with somewhere to send to
 
     def __init__(self, **kwargs: Any) -> None:
         self.register_event_type('on_close')

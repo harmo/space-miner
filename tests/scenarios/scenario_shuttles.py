@@ -26,6 +26,18 @@ def choices(box: str) -> dict[str, Any]:
 
 
 @scenario.step(1.)
+def opens_the_market() -> None:
+    scenario.press(scenario.base.ids.market_button)
+
+
+@scenario.step(.3)
+def has_nowhere_to_send_to() -> None:
+    market = scenario.base.ids.market
+    check(not market.shuttles, 'no depot elsewhere: no shuttles')
+    scenario.press(scenario.button(market, 'Fermer'))
+
+
+@scenario.step(.3)
 def builds_a_depot_at_ares() -> None:
     scenario.grant_concessions()
     ares = outpost('ares')
@@ -38,6 +50,7 @@ def builds_a_depot_at_ares() -> None:
 @scenario.step(.3)
 def opens_the_dock() -> None:
     market = scenario.base.ids.market
+    check(market.shuttles, 'a depot elsewhere: shuttles')
     scenario.press(scenario.button(market, 'Navettes'))
 
 

@@ -11,6 +11,7 @@ from app.logic.base.config import (
 from app.logic.base.post import HOME_SERVICES, Post, Services
 from app.logic.base.quays import (
     Quay,
+    can_send,
     destination_of,
     shuttle_position,
     trip_time,
@@ -118,6 +119,20 @@ def test_only_posts_with_a_depot_are_destinations() -> None:
     assert destination_of(start, [start, bare]) is None
     served = quay('b', 500., Services(depot=True))
     assert destination_of(start, [start, served]) is served
+
+
+def test_a_dock_needs_a_depot_elsewhere_to_send_to() -> None:
+    start = quay('a', 0.)
+    bare = quay('b', 500., Services(fuel=True))
+    served = quay('c', 900., Services(depot=True))
+    assert not can_send(start, [start])
+    assert not can_send(start, [start, bare])
+    assert can_send(start, [start, bare, served])
+
+
+def test_no_sending_without_a_dock() -> None:
+    start = quay('a', 0., Services(depot=True))
+    assert not can_send(start, [start, quay('b', 500.)])
 
 
 def test_shuttles_only_run_from_docks_built() -> None:

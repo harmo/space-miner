@@ -16,6 +16,7 @@ from kivy.uix.widget import Widget
 
 from ...logic.base.outposts import Outpost
 from ...logic.base.post import Post
+from ...logic.base.quays import can_send
 from ...logic.base.sites import unlocked
 from ...logic.config import IMAGES
 from ...logic.mining.minerals import MINERALS, asteroid_texture
@@ -187,7 +188,9 @@ class OutpostView(PostView):
         elif panel == 'market':
             market = self.ids.market
             market.selling = current.post.services.market
-            market.shuttles = current.post.services.dock
+            quays = quays_of(base, self.outposts)
+            here = next(q for q in quays if q.key == current.key)
+            market.shuttles = can_send(here, quays)
             market.wallet, market.stock = base.wallet, depot.stock
             market.depot, market.miner = depot, player.miner
             refinery = current.post.services.refinery

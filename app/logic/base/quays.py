@@ -28,6 +28,13 @@ class Quay:
         return self.post.services.depot
 
 
+def can_send(quay: Quay, quays: Sequence[Quay]) -> bool:
+    """ It has a dock, and another post a depot to send ore to """
+    return quay.docks and any(
+        other.takes for other in quays if other is not quay
+    )
+
+
 def trip_time(start: Quay, end: Quay) -> float:
     """ Seconds one way, from where they are now """
     distance = math.dist(start.body.pos, end.body.pos)
