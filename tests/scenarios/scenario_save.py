@@ -4,6 +4,7 @@ Plays three sessions sharing their data, each in a process of its own.
 """
 
 import json
+import math
 import os
 import subprocess
 import sys
@@ -36,6 +37,7 @@ if SESSION is None:
     sys.exit(drive())
 
 # Imported once the session has its data folder
+from app.engine.entities import get_body  # noqa: E402
 from app.logic.base.missions import Mission  # noqa: E402
 from app.logic.ship.shipyard import Design  # noqa: E402
 
@@ -52,6 +54,11 @@ Steps = list[tuple[float, Callable[[], None]]]
 def first_slot() -> Any:
     slots = scenario.game.ids.home.ids.slots.children
     return next(card for card in slots if card.slot == 1)
+
+
+def angles() -> list[float]:
+    system = scenario.game.system
+    return [body.orbit.angle for body in (system.earth, system.neptune)]
 
 
 def planets() -> list[float]:
@@ -71,11 +78,19 @@ def plays() -> None:
     base.board.offers[0] = MISSION
     base.board.accept(MISSION)
     (DATA / 'planets.json').write_text(json.dumps(planets()))
+    # Far from where they start, the ship landed on one of them
+    system = scenario.game.system
+    moved = system.angles
+    for body in (system.earth, system.neptune):
+        moved[system.lasting.index(body)] += 1.
+    system.resume_orbits(moved)
 
 
 def saved() -> None:
     saved = json.loads((DATA / 'save.json').read_text())
     check(saved['credits'] == 9000, 'saved on its own')
+    check(scenario.player.parking is not None, 'still landed')
+    (DATA / 'angles.json').write_text(json.dumps(angles()))
 
 
 # Session 2: back, then a new game
@@ -92,6 +107,18 @@ def comes_back() -> None:
     check(planets() == json.loads((DATA / 'planets.json').read_text()),
           'the solar system is back')
     check(player.parking is not None, 'landed on the Earth')
+    system = scenario.game.system
+    before = json.loads((DATA / 'angles.json').read_text())
+    check(all(abs(math.remainder(now - then, math.tau)) < .1
+              for now, then in zip(angles(), before, strict=True)),
+          f'the planets are back in their places: {angles()}, {before}')
+    distance = math.dist(player.anchor, system.earth.pos)
+    check(distance < system.earth.radius + 80,
+          f'the ship on the Earth, wherever it is: {distance:.0f}')
+    moon = next(b for b in system.lasting if b.orbit.parent is system.earth)
+    body = get_body(scenario.game.gameworld, moon.entity_id)
+    check(math.dist((body.position.x, body.position.y), moon.pos) < 5,
+          'and all that turns around it')
     scenario.game.playing = False
     scenario.press(scenario.button(scenario.game.ids.home, 'Réglages'))
 

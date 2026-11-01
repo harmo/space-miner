@@ -67,6 +67,8 @@ class Save:
     # By post, those with a route or on their way
     shuttles: dict[str, ShuttleState] = field(default_factory=dict)
     canisters: list[LostCanister] = field(default_factory=list)
+    # Of the bodies always there, none in older saves
+    orbits: list[float] = field(default_factory=list)
     # None in older saves: nothing going on
     events: EventsState | None = None
 
@@ -205,6 +207,7 @@ def dump(save: Save) -> str:
         'concessions': save.concessions,
         'followed': save.followed,
         'scan_missions': save.scan_missions,
+        'orbits': save.orbits,
         'shuttles': {
             post: shuttle_data(state) for post, state in save.shuttles.items()
         },
@@ -244,6 +247,7 @@ def load(text: str) -> Save:
             scan_missions=bool(data.get('scan_missions', False)),
             shuttles=shuttles_of(data.get('shuttles', {})),
             canisters=canisters_of(data.get('canisters', [])),
+            orbits=[float(angle) for angle in data.get('orbits', [])],
             events=events_of(data.get('events')),
             landed=landed_of(data.get('landed')),
         )

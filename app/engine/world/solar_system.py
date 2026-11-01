@@ -38,6 +38,8 @@ from ..entities import (
 )
 from .events import SystemEvents
 
+ANGLE_DIGITS = 5              # radians: less than a pixel on any orbit
+
 
 class SolarSystem:
 
@@ -246,6 +248,36 @@ class SolarSystem:
         comet = Celestial(entity_id, COMET_RADIUS, orbit=orbit)
         self.bodies.append(comet)
         return comet
+
+    @property
+    def lasting(self) -> list[Celestial]:
+        """ What always turns there, the planets and what the outposts
+        added, neither asteroids nor comets. Always in the same order. """
+        comet = self.events.comets.comet
+        return [
+            body for body in self.bodies
+            if body.orbit and body not in self.planned and body is not comet
+        ]
+
+    @property
+    def angles(self) -> list[float]:
+        """ Where they are on their orbits, to save """
+        return [
+            round(body.orbit.angle % math.tau, ANGLE_DIGITS)
+            for body in self.lasting if body.orbit
+        ]
+
+    def resume_orbits(self, angles: list[float]) -> None:
+        """ Back where they were, with all that turns around them, older
+        saves leaving them where the solar system starts """
+        for body, angle in zip(self.lasting, angles, strict=False):
+            if body.orbit:
+                body.orbit.angle = angle
+        for celestial in self.bodies:
+            if celestial.orbit:
+                body = get_body(self.gameworld, celestial.entity_id)
+                body.position = celestial.orbit.position
+                body.velocity = celestial.orbit.velocity
 
     def move_orbiters(self, dt: float) -> None:
         """ Steer every orbiting body along its orbit, parents first so that

@@ -10,8 +10,7 @@ from .space import Vec2
 
 @dataclass(frozen=True)
 class LostCanister:
-    """ Lost in a crash, from what it floats around: bodies come back where
-    the solar system starts, not where they were """
+    """ Lost in a crash, from what it floats around """
     mineral: str
     amount: float
     altitude: float           # of its orbit, around a planet

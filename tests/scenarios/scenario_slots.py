@@ -50,7 +50,8 @@ def plays_the_first() -> None:
     remembered['planets'] = planets()
     remembered['entities'] = entities()
     # An empty slot draws its own solar system
-    os.environ['SPACE_MINER_SEED'] = '2'
+    seed = int(os.environ['SPACE_MINER_SEED'])
+    os.environ['SPACE_MINER_SEED'] = str(seed + 1)
     scenario.game.pause()
 
 

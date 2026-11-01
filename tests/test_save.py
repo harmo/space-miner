@@ -52,6 +52,7 @@ SAVE = Save(
         Route('earth', ('iron', 'copper')), 'out', 12.5, 20., {'iron': 60.},
     )},
     canisters=[LostCanister('gold', 7.5, 180., 3, (120., -40.))],
+    orbits=[.5, 1.25, 6.],
     events=EventsState(
         'ejecta', 42., [ASTEROID], 100., 25., [ASTEROID], 300.,
         CometState(-.5, 1.2, -1, 9, [ASTEROID]),

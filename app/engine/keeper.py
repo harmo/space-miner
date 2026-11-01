@@ -59,6 +59,7 @@ class Keeper:
                 if quay.post.shuttle.state != ShuttleState()
             },
             canisters=self.player.canisters.lost(system.attractors),
+            orbits=system.angles,
             events=system.events.state(),
             outposts={
                 outpost.key: outpost.progress for outpost in self.outposts
@@ -93,8 +94,10 @@ class Keeper:
 
     def restore(self, save: Save) -> None:
         """ The ship comes back where it was landed, or on the Earth, the
-        outposts being restored first, for their pads """
+        bodies and the outposts being restored first, for their pads """
         base, board = self.base, self.base.board
+        system = self.player.system
+        system.resume_orbits(save.orbits)
         base.wallet.credits = save.credits
         base.inventory.spares.clear()
         base.inventory.spares.update(save.spares)
@@ -126,7 +129,6 @@ class Keeper:
         for quay in quays_of(base, self.outposts):
             if quay.key in save.shuttles:
                 quay.post.shuttle.resume(save.shuttles[quay.key])
-        system = self.player.system
         self.player.canisters.recover(save.canisters, system.attractors)
         if save.events is not None:
             system.events.resume(save.events)
