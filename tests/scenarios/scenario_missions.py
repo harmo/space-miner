@@ -3,6 +3,8 @@ while flying """
 
 from typing import Any
 
+from kivy.core.text import Label as CoreLabel
+
 from app.logic.base.missions import Mission
 
 from .harness import Scenario
@@ -17,6 +19,9 @@ def panel() -> Any:
     return scenario.base.ids.missions
 
 
+LONGEST = Mission('Chantier orbital Vesta', {'iron': 5}, 123456, 5)
+
+
 def cards(kind: str) -> list[Any]:
     return list(reversed(panel().ids[kind].children))
 
@@ -25,7 +30,24 @@ def cards(kind: str) -> list[Any]:
 def opens() -> None:
     board = scenario.base.board
     board.offers[0], board.offers[1] = FIRST, SECOND
+    board.offers[2] = LONGEST
     scenario.press(scenario.base.ids.missions_button)
+
+
+@scenario.step(.4)
+def shows_names_in_full() -> None:
+    card = cards('offers')[2]
+    label = next(
+        widget for widget in card.walk()
+        if getattr(widget, 'text', None) == LONGEST.client
+    )
+    text = CoreLabel(
+        text=LONGEST.client, font_size=label.font_size, bold=True,
+    )
+    text.refresh()
+    check(text.texture.width <= label.width,
+          f'the longest name fits: {text.texture.width} in {label.width}')
+    scenario.screenshot('names')
 
 
 @scenario.step(.4)

@@ -1,10 +1,12 @@
 # The missions, see missions_panel.py
+#:import Window kivy.core.window.Window
 
 # Offers on the left, accepted missions on the right
 <MissionsPanel>:
     orientation: 'vertical'
     size_hint: None, None
-    size: dp(680), self.minimum_height
+    # Wide enough for the names of clients, on any screen
+    size: min(dp(900), Window.width - dp(24)), self.minimum_height
     padding: dp(18), dp(14), dp(18), dp(16)
     spacing: dp(12)
     canvas.before:
