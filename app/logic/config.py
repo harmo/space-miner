@@ -62,6 +62,7 @@ ORBIT_OPACITY = .18
 ORBIT_PLANET_GAP = 30.        # no dots this close to the planet surface
 HOME_COLOR = (.23, .49, .76)  # the Earth
 PLANET_COLOR = (.85, .85, .9)  # the other planets
+SHUTTLE_COLOR = (1., .76, .28)  # shuttles, on the map and in their hull
 SWARM_COLOR = (1., .4, .85)   # rich asteroids passing by
 FLARE_COLOR = (1., .55, .2)   # waves of solar flares, and their ejecta
 OUTPOST_COLOR = (.5, .9, .78)  # sites of outposts, and outposts

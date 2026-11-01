@@ -16,9 +16,11 @@ from kivy.uix.widget import Widget
 from kivy.utils import platform
 
 from ..logic.base.board import Board
+from ..logic.base.config import SHUTTLE_CLEARANCE, SHUTTLE_SUN_CLEARANCE
 from ..logic.base.missions import Desk
 from ..logic.base.outposts import Outpost, open_boards, site_desks
-from ..logic.base.quays import Quay, shuttle_position, update_shuttles
+from ..logic.base.quays import Quay, shuttle_marks, update_shuttles
+from ..logic.base.shuttle_flight import Airspace, Obstacle
 from ..logic.base.sites import PERMITS
 from ..logic.config import (
     AUTOSAVE_PERIOD,
@@ -194,6 +196,18 @@ class Game(Widget):
         return quays_of(self.ids.base, self.outposts)
 
     @property
+    def airspace(self) -> Airspace:
+        """ All that shuttles fly around """
+        sun = self.system.sun
+        return Airspace(sun.pos, [
+            Obstacle(sun.pos, sun.radius + SHUTTLE_SUN_CLEARANCE),
+            *(
+                Obstacle(body.pos, body.radius + SHUTTLE_CLEARANCE)
+                for body in self.system.lasting
+            ),
+        ])
+
+    @property
     def boards(self) -> list[Board]:
         """ Of the Earth and the outposts giving missions """
         boards = [self.ids.base.board]
@@ -230,7 +244,7 @@ class Game(Widget):
         self.ids.base.update(dt)
         for board in self.boards:
             board.update(dt)
-        update_shuttles(self.quays, dt)
+        update_shuttles(self.quays, self.airspace, dt)
         self.scanning = self.player.stats.scan > 0
         self.system.update(dt, self.player.anchor)
         shift = recenter(self.player, self.camera, self.system, self.stars)
@@ -312,11 +326,9 @@ class Game(Widget):
             self.ids.outpost.close()
             self.ids.scanner.open = False
             self.pointer = None
-            quays = self.quays
-            shuttles = [shuttle_position(quay, quays) for quay in quays]
             self.ids.map.show(Charted(
                 self.system, self.player, self.outposts,
-                [pos for pos in shuttles if pos is not None],
+                shuttle_marks(self.quays, self.system.sun.pos),
             ))
 
     def toggle_cargo(self) -> None:
@@ -324,7 +336,7 @@ class Game(Widget):
 
     def draw_overlay(self) -> None:
         draw_scene(self.overlay, self.size, SceneView(
-            self.system, self.outposts, self.player, self.looks,
+            self.system, self.outposts, self.quays, self.player, self.looks,
             self.playing, self.preferences,
         ))
 

@@ -24,7 +24,7 @@ def shuttles_of(data: Any) -> dict[str, ShuttleState]:
     return {
         str(post): ShuttleState(
             route_of(state['route']), leg_of(state['leg']),
-            float(state['left']), float(state['trip']),
+            offset_of(state.get('offset')), float(state.get('heading', 0.)),
             {
                 name: float(units)
                 for name, units in dict(state['load']).items()
@@ -33,6 +33,11 @@ def shuttles_of(data: Any) -> dict[str, ShuttleState]:
         )
         for post, state in dict(data).items()
     }
+
+
+def offset_of(data: Any) -> tuple[float, float] | None:
+    """ None in older saves: it flies on from its dock """
+    return None if data is None else (float(data[0]), float(data[1]))
 
 
 def leg_of(data: Any) -> Leg:
@@ -46,8 +51,8 @@ def shuttle_data(state: ShuttleState) -> dict[str, Any]:
             'destination': route.destination,
             'minerals': list(route.minerals),
         } if route else None,
-        'leg': state.leg, 'left': state.left, 'trip': state.trip,
-        'load': state.load,
+        'leg': state.leg, 'heading': state.heading, 'load': state.load,
+        'offset': list(state.offset) if state.offset else None,
     }
 
 

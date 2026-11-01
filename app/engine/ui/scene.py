@@ -5,6 +5,7 @@ import math
 from dataclasses import dataclass
 
 from ...logic.base.outposts import Outpost
+from ...logic.base.quays import Quay
 from ...logic.config import (
     COMET_COLOR,
     FLARE_COLOR,
@@ -31,6 +32,7 @@ from ..world.solar_system import SolarSystem
 from ..world.spots import Spot
 from .outpost_look import draw_outpost
 from .overlay import Overlay
+from .shuttle_look import draw_quay
 
 OUTPOST_SIZE = 60.            # around the pad, for its marker
 
@@ -40,6 +42,7 @@ class SceneView:
     """ What is drawn over the game """
     system: SolarSystem
     outposts: list[Outpost]
+    quays: list[Quay]
     player: Player
     ship: ShipLooks
     playing: bool
@@ -61,6 +64,9 @@ def draw_scene(overlay: Overlay, size: Vec2, view: SceneView) -> None:
         overlay.shadow(shadow)
     for outpost in outposts:
         draw_outpost(overlay, outpost)
+    for quay in view.quays:
+        if quay.docks:
+            draw_quay(overlay, quay, system.sun.pos)
     ship.exhaust.draw(overlay)
     ship.gear.draw(overlay, player)
     if playing:

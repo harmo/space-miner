@@ -49,7 +49,8 @@ SAVE = Save(
     followed=['ceres_refinery'],
     scan_missions=True,
     shuttles={'ares': ShuttleState(
-        Route('earth', ('iron', 'copper')), 'out', 12.5, 20., {'iron': 60.},
+        Route('earth', ('iron', 'copper')), 'out', (12.5, -20.), 1.5,
+        {'iron': 60.},
     )},
     canisters=[LostCanister('gold', 7.5, 180., 3, (120., -40.))],
     orbits=[.5, 1.25, 6.],

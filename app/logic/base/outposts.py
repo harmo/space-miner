@@ -13,7 +13,7 @@ from ..ship.ground import Ground, pad_edge
 from ..ship.parking import Parking
 from ..world.space import Celestial, Vec2
 from .board import Board, Contracts
-from .config import PAD_DIRECTION
+from .config import DOCK_ALONG, PAD_DIRECTION
 from .missions import Desk, Mission
 from .permits import Permits
 from .post import Post, Services
@@ -134,6 +134,16 @@ class Outpost:
             kind='port' if site.form == 'orbit' else 'pad',
             port_direction=self.direction,
         )
+
+    @property
+    def dock_direction(self) -> float:
+        """ Of its dock, from the body center: past what stands by the
+        pad, on the ground, and facing away from the port, in orbit """
+        site = self.construction.site
+        if site.form == 'orbit':
+            return self.direction + math.pi
+        along = site.pad_width / 2 + DOCK_ALONG
+        return self.direction + along / self.body.radius
 
     @property
     def pos(self) -> Vec2:

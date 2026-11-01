@@ -1,20 +1,29 @@
 """ The map of the solar system: its orbits, planets and belts, the ship
 with the reach of its scanner and what it finds, lost canisters, the
-swarm passing by and the ejecta of a flare. Drawn once when opened, the
-game standing still. """
+swarm passing by, the ejecta of a flare, and shuttles on their way. Drawn
+once when opened, the game standing still. """
 
 import math
 from dataclasses import dataclass
 from typing import Any
 
 from kivy.core.text import Label as CoreLabel
-from kivy.graphics import Color, Ellipse, Line, Point, Rectangle, Triangle
+from kivy.graphics import (
+    Color,
+    Ellipse,
+    Line,
+    Mesh,
+    Point,
+    Rectangle,
+    Triangle,
+)
 from kivy.input.motionevent import MotionEvent
 from kivy.metrics import dp
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
 
 from ...logic.base.outposts import Outpost
+from ...logic.base.quays import ShuttleMark
 from ...logic.base.sites import offered
 from ...logic.colors import Rgb
 from ...logic.config import (
@@ -24,6 +33,7 @@ from ...logic.config import (
     OUTPOST_COLOR,
     PLANET_COLORS,
     RINGED,
+    SHUTTLE_COLOR,
     SUN_COLOR,
     SWARM_COLOR,
 )
@@ -39,7 +49,7 @@ CANISTER_COLOR = (1., .6, .3)
 SHADOW_MAP_COLOR = (1., 1., 1., .14)
 COMET_PATH_POINTS = 120
 OFFERED_FONT = 11             # sp, of what outposts offer
-TAP_REACH = 24                # dp, around an outpost
+TAP_REACH = 24                # dp, around what can be tapped
 SHIP_COLOR = (1., 1., 1.)
 
 
@@ -49,7 +59,7 @@ class Charted:
     system: SolarSystem
     player: Player
     outposts: list[Outpost]
-    shuttles: list[Vec2]      # those on their way
+    shuttles: list[ShuttleMark]     # those on their way
 
 
 class MapView(Widget):
@@ -60,7 +70,8 @@ class MapView(Widget):
         super().__init__(**kwargs)
         self.shown: Charted | None = None
         self.chart: Chart | None = None     # as drawn last
-        self.picked: Outpost | None = None  # telling what it offers
+        # Telling what it offers, or carries
+        self.picked: Outpost | ShuttleMark | None = None
 
     def show(self, charted: Charted) -> None:
         self.shown = charted
@@ -73,30 +84,34 @@ class MapView(Widget):
 
     def on_touch_down(self, touch: MotionEvent) -> bool:
         """ The mouse wheel zooms, and tapping an outpost tells what it
-        offers, until tapping anywhere else """
+        offers, or a shuttle what it carries, until tapping anywhere
+        else """
         if self.collide_point(*touch.pos) and touch.is_mouse_scrolling:
             self.zoom_by(touch.button == 'scrolldown')
             return True
         if super().on_touch_down(touch):
             return True
         if self.collide_point(*touch.pos):
-            picked = self.outpost_at(touch.pos)
+            picked = self.tapped(touch.pos)
             self.picked = None if picked is self.picked else picked
             self.draw()
             return True
         return False
 
-    def outpost_at(self, pos: Vec2) -> Outpost | None:
+    def tapped(self, pos: Vec2) -> Outpost | ShuttleMark | None:
         """ The closest to `pos`, within the reach of a finger """
         if self.shown is None or self.chart is None:
             return None
         frame = self.chart
+        items: list[Outpost | ShuttleMark] = [
+            *self.shown.shuttles, *self.shown.outposts,
+        ]
         return min(
             (
-                outpost for outpost in self.shown.outposts
-                if math.dist(frame.place(outpost.pos), pos) < dp(TAP_REACH)
+                item for item in items
+                if math.dist(frame.place(item.pos), pos) < dp(TAP_REACH)
             ),
-            key=lambda outpost: math.dist(frame.place(outpost.pos), pos),
+            key=lambda item: math.dist(frame.place(item.pos), pos),
             default=None,
         )
 
@@ -252,11 +267,24 @@ class MapView(Widget):
                     OUTPOST_COLOR, OFFERED_FONT,
                 )
 
-    def shuttles(self, shuttles: list[Vec2], frame: Chart) -> None:
-        Color(*OUTPOST_COLOR, 1)
-        for pos in shuttles:
-            x, y = frame.place(pos)
-            Ellipse(pos=(x - dp(2.5), y - dp(2.5)), size=(dp(5), dp(5)))
+    def shuttles(self, shuttles: list[ShuttleMark], frame: Chart) -> None:
+        """ A diamond each, telling what it carries once tapped """
+        for mark in shuttles:
+            x, y = frame.place(mark.pos)
+            side = dp(5)
+            Color(*SHUTTLE_COLOR, 1)
+            Mesh(
+                vertices=[
+                    x - side, y, 0, 0, x, y + side, 0, 0,
+                    x + side, y, 0, 0, x, y - side, 0, 0,
+                ],
+                indices=[0, 1, 2, 3], mode='triangle_fan',
+            )
+            if mark is self.picked:
+                Line(circle=(x, y, dp(10)), width=1.4)
+                self.label(mark.way, (x, y + dp(18)), SHUTTLE_COLOR)
+                self.label(mark.carried, (x, y - dp(18)), SHUTTLE_COLOR,
+                           OFFERED_FONT)
 
     def ship(self, player: Player, frame: Chart) -> None:
         """ Pointing where it heads, within the reach of its scanner """

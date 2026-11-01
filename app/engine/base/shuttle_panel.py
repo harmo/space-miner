@@ -6,7 +6,8 @@ from typing import Any
 from kivy.properties import BooleanProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 
-from ...logic.base.quays import Quay, destination_of
+from ...logic.base.config import SHUTTLE_LOAD
+from ...logic.base.quays import Quay, carried_text, destination_of
 from ...logic.base.shuttles import Route
 from ...logic.mining.minerals import MINERALS
 from ...logic.mining.ore import whole_units
@@ -47,7 +48,7 @@ class ShuttlePanel(BoxLayout):
         quay = self.quay
         if quay is None:
             return
-        self.title = f'NAVETTES  ·  {quay.name}'
+        self.title = f'NAVETTE  ·  {quay.name}'
         places = self.ids.places
         places.clear_widgets()
         for other in self.quays:
@@ -89,15 +90,16 @@ class ShuttlePanel(BoxLayout):
             return
         shuttle = quay.post.shuttle
         target = destination_of(quay, self.quays)
-        left = round(shuttle.left)
+        carried = carried_text(shuttle.load)
         if shuttle.route is None or target is None:
             self.status = 'Choisissez une destination et des ressources'
         elif shuttle.leg == 'out':
-            self.status = f'En route vers {target.name}  ·  {left} s'
+            self.status = f'En route vers {target.name}  ·  {carried}'
         elif shuttle.leg == 'back':
-            self.status = f'Au retour  ·  {left} s'
+            self.status = f'Au retour  ·  {carried}'
         else:
-            self.status = 'À quai, en attente de ressources'
+            ready = shuttle.waiting_for(quay.post.depot.stock)
+            self.status = f'À quai, part pleine  ·  {ready} / {SHUTTLE_LOAD}'
 
 
 load_style(__file__)

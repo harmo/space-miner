@@ -45,9 +45,14 @@ MINE_YIELDS = (('helium3', 3), ('ice', 1))
 ARES_YIELDS = (('iron', 3), ('copper', 2), ('regolith', 1))
 
 # Shuttles, carrying ore from dock to depot
-SHUTTLE_LOAD = 60             # units, in all
+DOCK_ALONG = 96.              # pixels along the ground, from the pad
+SHUTTLE_LOAD = 100            # units, in all: it leaves full
 SHUTTLE_SPEED = 150.          # pixels a second
-SHUTTLE_MIN_TRIP = 20.        # seconds, however close
+SHUTTLE_TURN = 3.             # radians a second, of its nose
+SHUTTLE_ARRIVAL = 6.          # pixels from a dock, it is there
+SHUTTLE_DOCK_HEIGHT = 18.     # pixels above the surface, where it stands
+SHUTTLE_CLEARANCE = 12.       # pixels it stays off bodies, under its dock
+SHUTTLE_SUN_CLEARANCE = 300.  # pixels it stays off the sun
 
 # Refinery: rock of the depot crushed into what little it holds
 CRUSH_RATE = 4.               # units of rock a second

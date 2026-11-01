@@ -9,7 +9,7 @@ import time
 
 from ...logic.base.outposts import Outpost
 from ...logic.config import OUTPOST_COLOR
-from ...logic.world.space import Vec2
+from ...logic.world.space import Celestial, Vec2
 from .overlay import Overlay
 
 STEEL = (.42, .47, .54)
@@ -23,13 +23,13 @@ STEP = 8.                     # pixels, between points of long shapes
 
 
 class Frame:
-    """ On the surface, `along` it from the middle of the pad, and `up`
-    from it, in pixels """
+    """ On the surface, `along` it from `direction`, the middle of what is
+    drawn, and `up` from it, in pixels """
 
-    def __init__(self, outpost: Outpost) -> None:
-        self.center = outpost.body.pos
-        self.radius = outpost.body.radius
-        self.direction = outpost.direction
+    def __init__(self, body: Celestial, direction: float) -> None:
+        self.center = body.pos
+        self.radius = body.radius
+        self.direction = direction
 
     def at(self, along: float, up: float) -> Vec2:
         x, y = self.center
@@ -70,7 +70,7 @@ def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
     if outpost.construction.site.form == 'orbit':
         draw_station(overlay, outpost)
         return
-    frame = Frame(outpost)
+    frame = Frame(outpost.body, outpost.direction)
     built = outpost.construction.built
     half = outpost.construction.site.pad_width / 2
     if built == 0:
@@ -160,7 +160,7 @@ def derrick(overlay: Overlay, frame: Frame, along: float) -> None:
 
 def draw_station(overlay: Overlay, outpost: Outpost) -> None:
     """ Its body unseen, the ring is as wide, its port on top """
-    frame = Frame(outpost)
+    frame = Frame(outpost.body, outpost.direction)
     center, radius = outpost.body.pos, outpost.body.radius
     built = outpost.construction.built
     if built == 0:
