@@ -14,6 +14,7 @@ ASIDE: dict[GroundKind, str] = {
     'land': "Au-dessus de l'eau",
     'pad': 'Hors de la plateforme',
     'port': 'Hors du port',
+    'comet': 'Hors de la comète',
 }
 
 
@@ -31,4 +32,4 @@ def shortcut_text(state: Shortcut, kind: GroundKind) -> str:
     """ Shown on the shortcut, near that kind of ground """
     if state == 'aside':
         return ASIDE[kind]
-    return "S'amarrer" if kind == 'port' else 'Atterrir'
+    return {'port': "S'amarrer", 'comet': "S'accrocher"}.get(kind, 'Atterrir')

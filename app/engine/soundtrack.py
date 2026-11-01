@@ -132,5 +132,5 @@ def moment_of(game: 'Game') -> Moment:
         stranded=player.stranded,
         warmth=player.heat.warmth,
         flare=events.flares.clock.phase,
-        port=ground is not None and ground.kind == 'port',
+        port=ground is not None and ground.docking,
     )

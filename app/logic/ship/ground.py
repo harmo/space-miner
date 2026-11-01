@@ -15,8 +15,9 @@ from .config import (
 )
 from .pose import Pose, ShipSize
 
-# What ships land on: land, the pad of an outpost, the port of a station
-GroundKind = Literal['land', 'pad', 'port']
+# What ships land on: land, the pad of an outpost, the port of a station,
+# or a comet they hold on to
+GroundKind = Literal['land', 'pad', 'port', 'comet']
 
 
 def landed_distance(body: Celestial, length: float) -> float:
@@ -40,14 +41,22 @@ def landed_on(body: Celestial, direction: float, length: float) -> Vec2:
 class Ground:
     """ A body ships can land on, and where: one sample per degree,
     counterclockwise from the east, true over solid ground. Ships of any
-    size dock at a port, wherever they come from. """
+    size dock at a port, and hold on to a comet anywhere, wherever they
+    come from. """
     body: Celestial
     edge: tuple[bool, ...]
     kind: GroundKind = 'land'
     port: float = 0.          # direction of the port, if it is one
 
+    @property
+    def docking(self) -> bool:
+        return self.kind in ('port', 'comet')
+
     def spots(self, width: float) -> list[float]:
-        """ Directions where a ship of `width` fits """
+        """ Directions where a ship of `width` fits, on a comet where it
+        comes from """
+        if self.kind == 'comet':
+            return []
         if self.kind == 'port':
             return [self.port]
         return ground_spots(self.edge, ground_margin(self.body, width))
@@ -140,6 +149,7 @@ class Grounds:
     def __init__(self, grounds: Sequence[Ground]) -> None:
         self.grounds = tuple(grounds)
         self.fits: dict[int, list[float]] = {}  # spots, by body
+        self.width = 0.                     # of the ship
 
     @property
     def home(self) -> Ground:
@@ -152,19 +162,27 @@ class Grounds:
 
     def fit(self, width: float) -> None:
         """ For a ship of `width` """
+        self.width = width
         self.fits = {
             ground.body.entity_id: ground.spots(width)
             for ground in self.grounds
         }
+
+    def add(self, ground: Ground) -> None:
+        """ One passing by """
+        self.grounds = (*self.grounds, ground)
+        self.fits[ground.body.entity_id] = ground.spots(self.width)
+
+    def remove(self, ground: Ground) -> None:
+        self.grounds = tuple(g for g in self.grounds if g is not ground)
+        self.fits.pop(ground.body.entity_id, None)
 
     def spots(self, ground: Ground) -> list[float]:
         return self.fits[ground.body.entity_id]
 
     def within_reach(self, ground: Ground, direction: float) -> bool:
         """ Whether the ship can come down from `direction` on `ground` """
-        return ground.kind == 'port' or over_ground(
-            direction, self.spots(ground),
-        )
+        return ground.docking or over_ground(direction, self.spots(ground))
 
     def nearest(self, pos: Vec2) -> Ground:
         """ The closest to `pos` """

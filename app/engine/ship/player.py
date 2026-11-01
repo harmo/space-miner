@@ -49,6 +49,7 @@ class Player:
         self.gameworld = gameworld
         self.system = system
         self.grounds = grounds
+        self.comet_ground: Ground | None = None  # one passing by
         self.camera = camera
         self.rng = rng
         self.ship: Ship | None = None       # None while exploded
@@ -205,7 +206,25 @@ class Player:
             return TRAIL_HOLDING
         return 1. if heading is not None else 0.
 
+    def follow_comet(self) -> None:
+        """ It can be held on to while it is there. Gone, it lets go. """
+        comet = self.system.events.comet
+        ground = self.comet_ground
+        if (ground.body if ground else None) is comet:
+            return
+        if ground is not None:
+            self.grounds.remove(ground)
+            if self.parking and self.parking.body is ground.body:
+                self.parking = None
+            if self.landing and self.landing.body is ground.body:
+                self.landing = None
+        self.comet_ground = None
+        if comet is not None:
+            self.comet_ground = Ground(comet, (), 'comet')
+            self.grounds.add(self.comet_ground)
+
     def update(self, dt: float, heading: float | None) -> None:
+        self.follow_comet()
         if self.crash is not None:
             self.explode(self.crash)
         if self.ship is None:

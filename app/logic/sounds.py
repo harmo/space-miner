@@ -76,7 +76,7 @@ class Moment:
     stranded: bool = False    # out of fuel away from the Earth
     warmth: Warmth = 'cool'   # of the hull
     flare: Phase = 'quiet'    # of the sun
-    port: bool = False        # parked at the port of a station
+    port: bool = False        # docked to a station, or a comet
     comet: bool = False       # passing through the solar system
 
 

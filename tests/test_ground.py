@@ -241,6 +241,40 @@ def test_a_pad_is_only_within_reach_from_above() -> None:
     assert not grounds.within_reach(pad, math.pi)
 
 
+def comet() -> Ground:
+    return Ground(Celestial(5, 45.), (), 'comet')
+
+
+@pytest.mark.parametrize('direction', [0., 2., -2.])
+def test_ships_hold_on_to_a_comet_where_they_come_from(
+        direction: float) -> None:
+    ground = comet()
+    grounds = Grounds([])
+    grounds.fit(40.)
+    grounds.add(ground)
+    assert grounds.spots(ground) == []
+    assert closest_spot(direction, grounds.spots(ground)) == direction
+    assert grounds.within_reach(ground, direction)
+
+
+def test_a_comet_is_a_ground_while_it_passes_by() -> None:
+    home = Ground(earth(), (True,) * 360)
+    ground = comet()
+    grounds = Grounds([home])
+    grounds.add(ground)
+    assert grounds.of(ground.body) is ground
+    assert 5 in grounds.landable
+    grounds.remove(ground)
+    assert grounds.of(ground.body) is None
+    assert grounds.landable == {home.body.entity_id}
+    assert grounds.home is home
+
+
+def test_the_shortcut_holds_on_to_a_comet() -> None:
+    assert shortcut_text('ready', 'comet') == "S'accrocher"
+    assert shortcut_text('far', 'comet') == "S'accrocher"
+
+
 def test_grounds_know_where_a_ship_fits() -> None:
     pad = Ground(Celestial(2, 100.), pad_edge(100., 0., 60.), 'pad')
     grounds = Grounds([pad])
