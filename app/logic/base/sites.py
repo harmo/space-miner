@@ -51,16 +51,20 @@ class Site:
 FUEL = Services(fuel=True)
 DEPOT = replace(FUEL, depot=True)
 TRADING_POST = replace(DEPOT, market=True, missions=True)
+MINING = replace(TRADING_POST, mine=True)
 REFINING = replace(DEPOT, market=True, missions=True, refinery=True)
 SHELTER = replace(FUEL, shelter=True)
 
 # On the farthest planet from the sun, far from everything: ore is dearer
-# there, ice most of all as fuel is lacking
+# there, ice most of all as fuel is lacking, and a mine digs helium-3 and
+# ice out of it, on its own
 FRONTIER = Site('Base Frontière', 'ground', (
     Stage('Fondations', (('rock', 120),), FUEL),
     Stage('Habitat', (('rock', 160), ('iron', 40)), DEPOT),
     Stage('Comptoir', (('rock', 200), ('iron', 60), ('copper', 30)),
           TRADING_POST),
+    Stage('Mine', (('rock', 260), ('iron', 100), ('copper', 60),
+                   ('crystal', 15)), MINING),
 ), Trade(1.3, (('ice', 2.),), Clientele((
     'Colonie Thulé', 'Relais Éclipse', 'Forge Boréale', 'Halte des Confins',
 ), 1.25)))
@@ -101,7 +105,7 @@ SITES = {'frontier': FRONTIER, 'ceres': CERES, 'icare': ICARE}
 OFFERED = (
     ('fuel', 'le plein'), ('depot', 'un entrepôt'), ('market', 'un marché'),
     ('missions', 'des missions'), ('refinery', 'une raffinerie'),
-    ('shelter', 'un abri contre la chaleur'),
+    ('shelter', 'un abri contre la chaleur'), ('mine', 'une mine'),
 )
 
 

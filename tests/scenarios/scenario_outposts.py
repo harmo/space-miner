@@ -1,9 +1,9 @@
 """ Outposts: the site of the Frontier on the farthest planet, where the
 ship lands on its pad. Ore delivered from the cargo builds it stage after
 stage: its foundations fill the tank, its habitat keeps ore unloaded in a
-depot of its own, from where it loads back, all of it saved, and its
-trading post buys ore dearer than the Earth and gives missions of its
-own, making the same reputation. """
+depot of its own, from where it loads back, all of it saved, its trading
+post buys ore dearer than the Earth and gives missions of its own, making
+the same reputation, and its mine digs ore into its depot on its own. """
 
 import json
 import math
@@ -243,6 +243,29 @@ def validates_it_there() -> None:
     scenario.press(scenario.button(card, 'Valider'))
     check(scenario.base.board.validated == before + 1,
           'making the reputation of the Earth too')
+    scenario.press(scenario.button(view().ids.missions, 'Fermer'))
+    check(frontier().construction.stage.name == 'Mine', 'a mine comes next')
+    frontier().post.depot.stock.clear()
+    frontier().deliver(dict(
+        (name, float(units))
+        for name, units in frontier().construction.stage.materials
+    ))
+    check(frontier().post.services.mine, 'the mine is built')
+
+
+@scenario.step(.3)
+def has_its_mine_built() -> None:
+    check(not view().building, 'nothing left to build')
+    check(not frontier().post.depot.stock, 'nothing dug yet')
+    frontier().post.mine.dug = 3.5
+
+
+@scenario.step(.3)
+def digs_on_its_own() -> None:
+    stock = frontier().post.depot.stock
+    check(sum(stock.values()) == 3., f'ore in its depot: {stock}')
+    check(set(stock) <= {'helium3', 'ice'}, f'helium and ice: {stock}')
+    scenario.screenshot('mine')
 
 
 scenario.run()

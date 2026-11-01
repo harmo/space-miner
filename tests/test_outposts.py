@@ -18,6 +18,7 @@ from app.logic.base.sites import (
     FRONTIER,
     FUEL,
     ICARE,
+    MINING,
     TRADING_POST,
     unlocked,
 )
@@ -58,7 +59,7 @@ def test_each_stage_offers_more() -> None:
         outpost.deliver({name: float(units) for name, units in
                          stage.materials})
         offered.append(outpost.services)
-    assert offered == [FUEL, DEPOT, TRADING_POST]
+    assert offered == [FUEL, DEPOT, TRADING_POST, MINING]
     assert outpost.stage is None and outpost.needed == {}
     assert outpost.deliver({'rock': 50.}) is None
 
@@ -84,10 +85,11 @@ def test_how_far_it_was_built_comes_back() -> None:
 
 
 def test_each_stage_tells_what_it_adds() -> None:
-    first, second, third = FRONTIER.stages
+    first, second, third, fourth = FRONTIER.stages
     assert unlocked(first, Services()) == ['le plein']
     assert unlocked(second, FUEL) == ['un entrepôt']
     assert unlocked(third, DEPOT) == ['un marché', 'des missions']
+    assert unlocked(fourth, TRADING_POST) == ['une mine']
 
 
 def test_the_frontier_pays_more_for_ore_ice_most_of_all() -> None:

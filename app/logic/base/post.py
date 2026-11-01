@@ -9,6 +9,7 @@ from ..ship.fuel import Tank
 from ..ship.heat import HullHeat
 from .board import Board
 from .crushing import PLAIN_REFINERY, Crusher, Refinery
+from .mine import Mine
 from .refuel import fill
 from .unloading import Depot
 from .wallet import Wallet
@@ -23,6 +24,7 @@ class Services:
     missions: bool = False
     refinery: bool = False    # rock of the depot crushed
     shelter: bool = False     # their hull cooled, out of the heat
+    mine: bool = False        # ore dug into the depot
 
 
 HOME_SERVICES = Services(
@@ -54,6 +56,7 @@ class Post:
         self.services = services
         self.depot = Depot()
         self.crusher = Crusher(rng, refinery)
+        self.mine = Mine(rng)
 
     def status(self, cargo: Hold,
                board: Board | None) -> PostStatus:
@@ -72,14 +75,16 @@ class Post:
     def update(self, dt: float, ship: Docked | None,
                wallet: Wallet) -> list[str]:
         """ Fills the tank of a ship landed there, cools its hull down in
-        a shelter, unloads it, and crushes rock even without any. Returns
-        what the crushing found. """
+        a shelter, unloads it, and digs ore and crushes rock even without
+        any. Returns what the crushing found. """
         stock = self.depot.stock
         if ship is not None and self.services.fuel:
             fill(ship.tank, wallet, ship.ore, stock)
         if ship is not None and self.services.shelter:
             ship.heat.shelter(dt)
         self.depot.update(ship.ore if ship else {}, dt, ship is not None)
+        if self.services.mine:
+            self.mine.update(stock, dt)
         if not self.services.refinery:
             return []
         return self.crusher.update(stock, dt)

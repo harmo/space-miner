@@ -1,6 +1,6 @@
 """ How outposts look as they are built. On the ground, drawn along the
 curve of the surface as small bodies are round: a beacon on a bare site,
-then a pad, a dome and tanks, towers. In orbit, stations: a floating
+then a pad, a dome and tanks, towers, a mine. In orbit, stations: a floating
 beacon, then a ring around a hub with its port, lit, solar panels. """
 
 import math
@@ -79,6 +79,8 @@ def draw_outpost(overlay: Overlay, outpost: Outpost) -> None:
         overlay.band(*frame.box(-half - 84, -half - 74, 9), STEEL, DARK)
     if built >= 3:
         towers(overlay, frame, half + 22)
+    if built >= 4:
+        derrick(overlay, frame, -half - 124)
     beacon(overlay, frame, half + 10 if built < 3 else half + 50)
 
 
@@ -117,6 +119,18 @@ def towers(overlay: Overlay, frame: Frame, along: float) -> None:
         for t in (math.pi * k / 8 for k in range(9))
     ]
     overlay.shape(dish, GLASS, DARK)
+
+
+def derrick(overlay: Overlay, frame: Frame, along: float) -> None:
+    """ A tower over the shaft, its light on top, and a shed by it """
+    overlay.shape([
+        frame.at(along - 12, -2), frame.at(along + 12, -2),
+        frame.at(along + 2, 38), frame.at(along - 2, 38),
+    ], STEEL, DARK)
+    for up, half in ((12., 8.), (24., 5.)):
+        overlay.band(*frame.box(along - half, along + half, up + 2, up), DARK)
+    overlay.light(frame.at(along, 40), RED, blinking(.25))
+    overlay.band(*frame.box(along + 16, along + 34, 10), STEEL, DARK)
 
 
 def draw_station(overlay: Overlay, outpost: Outpost) -> None:
