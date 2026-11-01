@@ -45,13 +45,12 @@
             height: self.minimum_height
             spacing: dp(4)
     Label:
-        text:
-            'Les missions paient bien mieux que le marché' if root.selling \
-            else 'Rechargé dans la soute, il peut être livré au chantier'
+        text: 'Rechargé dans la soute, il peut être livré au chantier'
         font_size: '12sp'
         color: 1, 1, 1, .4
         size_hint_y: None
-        height: dp(18)
+        height: 0 if root.selling else dp(18)
+        opacity: 0 if root.selling else 1
         text_size: self.size
         halign: 'left'
         valign: 'middle'
